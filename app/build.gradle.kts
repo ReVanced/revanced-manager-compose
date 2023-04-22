@@ -5,19 +5,6 @@ plugins {
     kotlin("plugin.serialization") version "1.8.20"
 }
 
-repositories {
-    mavenCentral()
-    maven("https://jitpack.io")
-    google()
-    maven {
-        url = uri("https://maven.pkg.github.com/revanced/revanced-patcher")
-        credentials {
-            username = (project.findProperty("gpr.user") ?: System.getenv("GITHUB_ACTOR")) as String
-            password = (project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")) as String
-        }
-    }
-}
-
 android {
     namespace = "app.revanced.manager.compose"
     compileSdk = 33
