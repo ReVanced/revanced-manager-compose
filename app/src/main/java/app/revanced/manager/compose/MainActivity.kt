@@ -9,8 +9,14 @@ import app.revanced.manager.compose.domain.manager.PreferencesManager
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import app.revanced.manager.compose.destination.Destination
 import app.revanced.manager.compose.destination.DashboardDestination
-import app.revanced.manager.compose.ui.screen.DashboardPage
+import app.revanced.manager.compose.ui.component.settings.AboutScreen
+import app.revanced.manager.compose.ui.component.settings.DownloaderSettings
+import app.revanced.manager.compose.ui.component.settings.GeneralSettings
+import app.revanced.manager.compose.ui.component.settings.ImportExportSettings
+import app.revanced.manager.compose.ui.component.settings.SourcesSettings
+import app.revanced.manager.compose.ui.component.settings.UpdatesSettings
 import app.revanced.manager.compose.ui.screen.HomeScreen
+import app.revanced.manager.compose.ui.screen.SettingsScreen
 import app.revanced.manager.compose.ui.theme.ReVancedManagerTheme
 import app.revanced.manager.compose.ui.theme.Theme
 import dev.olshevski.navigation.reimagined.*
@@ -39,7 +45,74 @@ class MainActivity : ComponentActivity() {
                     when (destination) {
                         is DashboardDestination -> {
                             HomeScreen(
-                                pages = DashboardPage.values()
+                                onSettingsClick = {
+                                    navController.navigate(Destination.Settings)
+                                }
+                            )
+                        }
+
+                        is Destination.Settings -> {
+                            SettingsScreen(
+                                onBackClick = {
+                                    navController.pop()
+                                },
+                                navigate = {
+                                    navController.navigate(it)
+                                }
+                            )
+                        }
+
+                        is Destination.GeneralSettings -> {
+                            GeneralSettings(
+                                onBackClick = {
+                                    navController.pop()
+                                },
+                                preferences = prefs
+                            )
+                        }
+
+                        is Destination.UpdatesSettings -> {
+                            UpdatesSettings(
+                                onBackClick = {
+                                    navController.pop()
+                                },
+                                preferences = prefs
+                            )
+                        }
+
+                        is Destination.SourcesSettings -> {
+                            SourcesSettings(
+                                onBackClick = {
+                                    navController.pop()
+                                },
+                                preferences = prefs
+                            )
+                        }
+
+                        is Destination.DownloaderSettings -> {
+                            DownloaderSettings(
+                                onBackClick = {
+                                    navController.pop()
+                                },
+                                preferences = prefs
+                            )
+                        }
+
+                        is Destination.ImportExportSettings -> {
+                            ImportExportSettings(
+                                onBackClick = {
+                                    navController.pop()
+                                },
+                                preferences = prefs
+                            )
+                        }
+
+                        is Destination.About -> {
+                            AboutScreen(
+                                onBackClick = {
+                                    navController.pop()
+                                },
+                                preferences = prefs
                             )
                         }
                     }

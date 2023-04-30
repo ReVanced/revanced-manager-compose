@@ -53,6 +53,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.paging:paging-common-ktx:3.1.1")
     implementation("androidx.core:core-ktx:1.10.0")
+    implementation("androidx.compose.material:material-icons-extended:+")
 
     // Accompanist
     val accompanistVersion = "0.30.1"
@@ -64,6 +65,7 @@ dependencies {
 
     // KotlinX
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5")
 
     // Material 3
     implementation("androidx.compose.material3:material3")
