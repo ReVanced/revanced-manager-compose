@@ -37,11 +37,12 @@ enum class DashboardPage(
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun DashboardScreen() {
-    val pages: Array<DashboardPage> = DashboardPage.values()
-
+fun DashboardScreen(
+    onSettingsClick: () -> Unit
+) {
     val pagerState = rememberPagerState()
     val coroutineScope = rememberCoroutineScope()
+    val pages: Array<DashboardPage> = DashboardPage.values()
 
     Scaffold(
         topBar = {
@@ -54,14 +55,21 @@ fun DashboardScreen() {
                     IconButton(onClick = {}) {
                         Icon(imageVector = Icons.Outlined.Notifications, contentDescription = null)
                     }
-                    IconButton(onClick = {}) {
+                    IconButton(onClick = onSettingsClick) {
                         Icon(imageVector = Icons.Outlined.Settings, contentDescription = null)
                     }
                 }
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = {}) {
+            FloatingActionButton(onClick = {
+                if (pagerState.currentPage == DashboardPage.DASHBOARD.ordinal) {
+
+                } else {
+
+                }
+            }
+            ) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = null)
             }
         }
