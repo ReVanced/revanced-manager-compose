@@ -99,6 +99,7 @@ class MainActivity : ComponentActivity() {
                                 onBackClick = { navController.pop() },
                                 preferences = prefs
                             )
+
                         }
                     }
                 }

@@ -44,6 +44,7 @@ fun DashboardScreen(
     val coroutineScope = rememberCoroutineScope()
     val pages: Array<DashboardPage> = DashboardPage.values()
 
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -56,6 +57,7 @@ fun DashboardScreen(
                         Icon(imageVector = Icons.Outlined.Notifications, contentDescription = null)
                     }
                     IconButton(onClick = onSettingsClick) {
+
                         Icon(imageVector = Icons.Outlined.Settings, contentDescription = null)
                     }
                 }

@@ -28,5 +28,5 @@ sealed interface Destination: Parcelable {
 
     @Parcelize
     object About: Destination
-
+  
 }
