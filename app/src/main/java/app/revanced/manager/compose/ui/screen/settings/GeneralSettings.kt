@@ -1,4 +1,4 @@
-package app.revanced.manager.compose.ui.component.settings
+package app.revanced.manager.compose.ui.screen.settings
 
 import android.os.Build
 import androidx.compose.foundation.layout.Column
@@ -19,6 +19,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import app.revanced.manager.compose.R
 import app.revanced.manager.compose.domain.manager.PreferencesManager
+import app.revanced.manager.compose.ui.component.settings.RadioSetting
+import app.revanced.manager.compose.ui.component.settings.SettingsHeader
+import app.revanced.manager.compose.ui.component.settings.SwitchSetting
 import app.revanced.manager.compose.ui.theme.Theme
 import kotlinx.collections.immutable.toImmutableMap
 
@@ -67,33 +70,3 @@ fun GeneralSettings(
         }
     }
 }
-
-@Composable
-fun UpdatesSettings(
-    onBackClick: () -> Unit,
-    preferences: PreferencesManager,
-) {}
-
-@Composable
-fun SourcesSettings(
-    onBackClick: () -> Unit,
-    preferences: PreferencesManager,
-) {}
-
-@Composable
-fun DownloaderSettings(
-    onBackClick: () -> Unit,
-    preferences: PreferencesManager,
-) {}
-
-@Composable
-fun ImportExportSettings(
-    onBackClick: () -> Unit,
-    preferences: PreferencesManager,
-) {}
-
-@Composable
-fun AboutScreen(
-    onBackClick: () -> Unit,
-    preferences: PreferencesManager,
-) {}
