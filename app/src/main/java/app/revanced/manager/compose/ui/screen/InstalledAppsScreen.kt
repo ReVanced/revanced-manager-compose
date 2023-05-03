@@ -12,12 +12,13 @@ import app.revanced.manager.compose.R
 
 @Composable
 fun InstalledAppsScreen() {
-    Box(Modifier.fillMaxSize()) {
+    Box(
+        Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
         Text(
             text = stringResource(R.string.no_patched_apps_found),
             fontSize = 24.sp,
-            modifier = Modifier
-                .align(alignment = Alignment.Center)
         )
     }
 }

@@ -8,7 +8,6 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -20,18 +19,23 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.font.FontWeight
 import app.revanced.manager.compose.R
 import kotlinx.coroutines.launch
 
 enum class DashboardPage(
     val titleResId: Int,
+    val iconResId: Int,
 ) {
-    DASHBOARD(R.string.tab_apps),
-    SOURCES(R.string.tab_sources),
+    DASHBOARD(R.string.tab_apps, R.drawable.outline_apps_24),
+    SOURCES(R.string.tab_sources, R.drawable.outline_topic_24),
 }
 
 
@@ -47,12 +51,12 @@ fun DashboardScreen() {
         topBar = {
             TopAppBar(
                 title = { Text("ReVanced Manager") },
+                colors = TopAppBarDefaults.largeTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                ),
                 actions = {
                     IconButton(onClick = {}) {
                         Icon(imageVector = Icons.Outlined.Info, contentDescription = null)
-                    }
-                    IconButton(onClick = {}) {
-                        Icon(imageVector = Icons.Outlined.Notifications, contentDescription = null)
                     }
                     IconButton(onClick = {}) {
                         Icon(imageVector = Icons.Outlined.Settings, contentDescription = null)
@@ -67,13 +71,17 @@ fun DashboardScreen() {
         }
     ) { paddingValues ->
         Column(Modifier.padding(paddingValues)) {
-            TabRow(selectedTabIndex = pagerState.currentPage) {
+            TabRow(
+                selectedTabIndex = pagerState.currentPage,
+                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+            ) {
                 pages.forEachIndexed { index, page ->
                     val title = stringResource(id = page.titleResId)
                     Tab(
                         selected = pagerState.currentPage == index,
                         onClick = { coroutineScope.launch { pagerState.animateScrollToPage(index) } },
-                        text = { Text(text = title) },
+                        text = { Text(text = title, fontWeight = FontWeight.W500) },
+                        icon = { Icon(imageVector = ImageVector.vectorResource(id = page.iconResId), contentDescription = null) },
                         selectedContentColor = MaterialTheme.colorScheme.primary,
                         unselectedContentColor = MaterialTheme.colorScheme.onSurface,
                     )
@@ -84,7 +92,6 @@ fun DashboardScreen() {
                 pageCount = pages.size,
                 state = pagerState,
                 userScrollEnabled = true,
-                contentPadding = paddingValues,
                 pageContent = { index ->
                     when (pages[index]) {
                         DashboardPage.DASHBOARD -> {
