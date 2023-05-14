@@ -14,7 +14,7 @@ import java.nio.file.Files
 internal typealias PatchClass = Class<out Patch<Context>>
 internal typealias PatchList = List<PatchClass>
 
-class Session(cacheDir: String, private val input: File, patchBundle: Iterable<PatchClass>) : Closeable {
+class Session(cacheDir: String, private val input: File) : Closeable {
     private val logger = LogcatLogger
     private val patcher = Patcher(
         PatcherOptions(
@@ -25,13 +25,9 @@ class Session(cacheDir: String, private val input: File, patchBundle: Iterable<P
         )
     )
 
-    private val allPatches = patchBundle.toList()
-
     private val temporary = File(cacheDir).resolve("manager").also { it.mkdirs() }
 
     private companion object {
-        const val allowExperimental = false
-
         const val shouldSign = false
     }
 
@@ -46,28 +42,6 @@ class Session(cacheDir: String, private val input: File, patchBundle: Iterable<P
         }
     }
 
-    /**
-     * @return A list of patches that are compatible with this Apk.
-     */
-    fun getPatchesFiltered(packageName: String, packageVersion: String) = allPatches.filter { patch ->
-        val compatiblePackages = patch.compatiblePackages
-            ?: // The patch has no compatibility constraints, which means it is universal.
-            return@filter true
-
-        if (!compatiblePackages.any { it.name == packageName }) {
-            // Patch is not compatible with this package.
-            return@filter false
-        }
-
-        if (!(allowExperimental || compatiblePackages.any { it.versions.isEmpty() || it.versions.any { version -> version == packageVersion } })) {
-            // Patch is not compatible with this version.
-            return@filter false
-        }
-
-        true
-    }
-
-    fun getRecommendedVersion(packageName: String) = "0.69.420"
 
     fun run(output: File, selectedPatches: PatchList) {
         with(patcher) {
