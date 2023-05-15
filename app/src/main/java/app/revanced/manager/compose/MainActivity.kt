@@ -12,6 +12,7 @@ import app.revanced.manager.compose.ui.screen.AppSelectorScreen
 import app.revanced.manager.compose.ui.screen.DashboardScreen
 import app.revanced.manager.compose.ui.screen.PatchesSelectorScreen
 import app.revanced.manager.compose.ui.screen.SettingsScreen
+import app.revanced.manager.compose.ui.screen.PatchingScreen
 import app.revanced.manager.compose.ui.theme.ReVancedManagerTheme
 import app.revanced.manager.compose.ui.theme.Theme
 import app.revanced.manager.compose.util.PM
@@ -56,7 +57,15 @@ class MainActivity : ComponentActivity() {
 
                         is Destination.Dashboard -> DashboardScreen(
                             onSettingsClick = { navController.navigate(Destination.Settings) },
-                            onAppSelectorClick = { navController.navigate(Destination.AppSelector) }
+                            onAppSelectorClick = { navController.navigate(Destination.AppSelector) },
+                            onPatcherClick = {
+                                navController.navigate(
+                                    Destination.Patching(
+                                        it,
+                                        listOf("export-all-activities")
+                                    )
+                                )
+                            }
                         )
 
                         is Destination.Settings -> SettingsScreen(
@@ -72,6 +81,7 @@ class MainActivity : ComponentActivity() {
                             onBackClick = { navController.pop() }
                         )
 
+                        is Destination.Patching -> PatchingScreen(destination.input, destination.selectedPatches)
                     }
                 }
             }
