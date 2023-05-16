@@ -10,11 +10,25 @@ import app.revanced.patcher.patch.Patch
 import java.io.Closeable
 import java.io.File
 import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 
 internal typealias PatchClass = Class<out Patch<Context>>
 internal typealias PatchList = List<PatchClass>
 
-class Session(cacheDir: String, frameworkDir: String, aaptPath: String, private val input: File) : Closeable {
+class Session(
+    cacheDir: String,
+    frameworkDir: String,
+    aaptPath: String,
+    private val input: File,
+    private val onProgress: suspend (Progress) -> Unit = { }
+) : Closeable {
+    enum class Progress {
+        PREPARING,
+        PATCHING,
+        SAVING,
+        FINISHED,
+    }
+
     private val logger = LogcatLogger
     private val temporary = File(cacheDir).resolve("manager").also { it.mkdirs() }
     private val patcher = Patcher(
@@ -26,7 +40,6 @@ class Session(cacheDir: String, frameworkDir: String, aaptPath: String, private 
             logger = logger,
         )
     )
-
 
     private companion object {
         const val shouldSign = false
@@ -43,18 +56,21 @@ class Session(cacheDir: String, frameworkDir: String, aaptPath: String, private 
         }
     }
 
+    suspend fun run(output: File, selectedPatches: PatchList) {
+        onProgress(Progress.PREPARING)
 
-    fun run(output: File, selectedPatches: PatchList) {
         with(patcher) {
             logger.info("Merging integrations")
             addIntegrations(emptyList()) {} // TODO: actually add integrations
-
             addPatches(selectedPatches)
 
             logger.info("Applying patches...")
+            onProgress(Progress.PATCHING)
+
             applyPatchesVerbose()
         }
 
+        onProgress(Progress.SAVING)
         logger.info("Writing patched files...")
         val result = patcher.save()
 
@@ -64,7 +80,8 @@ class Session(cacheDir: String, frameworkDir: String, aaptPath: String, private 
 
         logger.info("Patched apk saved to $patched")
 
-        Files.copy(patched.toPath(), output.toPath())
+        Files.move(patched.toPath(), output.toPath(), StandardCopyOption.REPLACE_EXISTING)
+        onProgress(Progress.FINISHED)
     }
 
     private fun sign(aligned: File): File = TODO()

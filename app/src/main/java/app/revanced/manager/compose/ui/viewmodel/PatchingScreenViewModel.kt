@@ -14,6 +14,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.work.*
 import app.revanced.manager.compose.patcher.ReVancedWorker
+import app.revanced.manager.compose.patcher.Session
 import app.revanced.manager.compose.service.InstallService
 import app.revanced.manager.compose.service.UninstallService
 import app.revanced.manager.compose.util.PM
@@ -28,15 +29,18 @@ class PatchingScreenViewModel(
     val app: Application
 ) : ViewModel() {
 
-    sealed class Status {
-        object Idle : Status()
-        object Patching : Status()
-        object Success : Status()
-        object Failure : Status()
+    sealed class Status(val header: String) {
+        override fun toString() = header
+
+        object Idle : Status("Idle")
+        object Starting : Status("Starting")
+        object Success : Status("Success")
+        object Failure : Status("Failed")
+        data class Patching(val progress: Session.Progress) : Status(progress.toString())
     }
 
     val workManager = WorkManager.getInstance(app)
-    var installFailure by mutableStateOf(false)
+    var installStatus by mutableStateOf<Boolean?>(null)
     var pmStatus by mutableStateOf(-999)
     var extra by mutableStateOf("")
 
@@ -69,7 +73,9 @@ class PatchingScreenViewModel(
 
     private val observer = Observer { workInfo: WorkInfo -> // observer for observing patch status
         status = when (workInfo.state) {
-            WorkInfo.State.RUNNING -> Status.Patching
+            WorkInfo.State.RUNNING -> workInfo.progress.getString(ReVancedWorker.Progress)
+                ?.let { Status.Patching(Session.Progress.valueOf(it)) } ?: Status.Starting
+
             WorkInfo.State.SUCCEEDED -> Status.Success
             WorkInfo.State.FAILED -> Status.Failure
             else -> Status.Idle
@@ -107,12 +113,7 @@ class PatchingScreenViewModel(
     }
 
     fun postInstallStatus() {
-        if (pmStatus == PackageInstaller.STATUS_SUCCESS) {
-            // log(PatchLog.Success("Successfully installed!"))
-        } else {
-            installFailure = true
-            // log(PatchLog.Error("Failed to install!"))
-        }
+        installStatus = pmStatus == PackageInstaller.STATUS_SUCCESS
     }
 
     override fun onCleared() {

@@ -16,10 +16,6 @@ import org.koin.core.parameter.parametersOf
 fun PatchingScreen(input: Uri, selectedPatches: List<String>, vm: PatchingScreenViewModel = getViewModel { parametersOf(input, selectedPatches) }) {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text(
-            text = "amogus",
-            style = MaterialTheme.typography.titleLarge
-        )
-        Text(
             text = vm.status.toString(),
             style = MaterialTheme.typography.titleLarge
         )
