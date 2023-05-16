@@ -9,9 +9,14 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import java.io.File
 
-class ReVancedWorker(private val context: Context, parameters: WorkerParameters, private val patcherState: PatcherState): Worker(context, parameters), KoinComponent {
+class ReVancedWorker(context: Context, parameters: WorkerParameters): Worker(context, parameters), KoinComponent {
+    private val patcherState: PatcherState by inject()
+    private val frameworkPath =
+        applicationContext.filesDir.resolve("framework").also { it.mkdirs() }.absolutePath
+
     @Serializable
     data class Args(val input: String, val output: String, val selectedPatches: List<String>, val packageName: String, val packageVersion: String)
     override fun doWork(): Result {
@@ -25,7 +30,7 @@ class ReVancedWorker(private val context: Context, parameters: WorkerParameters,
 
         val patchList = patcherState.patchClassesFor(args.packageName, args.packageVersion).filter { selected.contains(it.patchName) }
 
-        val session = Session(context.cacheDir.path, File(args.input))
+        val session = Session(applicationContext.cacheDir.path, frameworkPath, File(args.input))
 
         return try {
             session.run(File(args.output), patchList)
