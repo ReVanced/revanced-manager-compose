@@ -16,17 +16,17 @@ internal typealias PatchList = List<PatchClass>
 
 class Session(cacheDir: String, frameworkDir: String, aaptPath: String, private val input: File) : Closeable {
     private val logger = LogcatLogger
+    private val temporary = File(cacheDir).resolve("manager").also { it.mkdirs() }
     private val patcher = Patcher(
         PatcherOptions(
             inputFile = input,
-            resourceCacheDirectory = cacheDir,
+            resourceCacheDirectory = temporary.resolve("aapt-resources").path,
             frameworkFolderLocation = frameworkDir,
             aaptPath = aaptPath,
             logger = logger,
         )
     )
 
-    private val temporary = File(cacheDir).resolve("manager").also { it.mkdirs() }
 
     private companion object {
         const val shouldSign = false
