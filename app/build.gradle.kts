@@ -30,6 +30,13 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
+    packagingOptions {
+        resources {
+            excludes += "/prebuilt/**"
+        }
+    }
+
     kotlinOptions {
         jvmTarget = "11"
     }

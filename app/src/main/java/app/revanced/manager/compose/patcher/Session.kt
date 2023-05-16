@@ -14,14 +14,14 @@ import java.nio.file.Files
 internal typealias PatchClass = Class<out Patch<Context>>
 internal typealias PatchList = List<PatchClass>
 
-class Session(cacheDir: String, frameworkDir: String, private val input: File) : Closeable {
+class Session(cacheDir: String, frameworkDir: String, aaptPath: String, private val input: File) : Closeable {
     private val logger = LogcatLogger
     private val patcher = Patcher(
         PatcherOptions(
             inputFile = input,
             resourceCacheDirectory = cacheDir,
             frameworkFolderLocation = frameworkDir,
-            aaptPath = null,
+            aaptPath = aaptPath,
             logger = logger,
         )
     )

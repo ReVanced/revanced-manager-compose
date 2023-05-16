@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import androidx.work.Worker
 import androidx.work.WorkerParameters
+import app.revanced.manager.compose.patcher.aapt.Aapt
 import app.revanced.patcher.extensions.PatchExtensions.patchName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -11,6 +12,7 @@ import kotlinx.serialization.json.Json
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.io.File
+import java.io.FileNotFoundException
 
 class ReVancedWorker(context: Context, parameters: WorkerParameters): Worker(context, parameters), KoinComponent {
     private val patcherState: PatcherState by inject()
@@ -24,13 +26,14 @@ class ReVancedWorker(context: Context, parameters: WorkerParameters): Worker(con
             Log.d("revanced-worker", "Android requested retrying but retrying is disabled.")
             return Result.failure()
         }
+        val aaptPath = Aapt.binary(applicationContext)?.absolutePath ?: throw FileNotFoundException("Could not resolve aapt.")
 
         val args = Json.decodeFromString<Args>(inputData.getString("args")!!)
         val selected = args.selectedPatches.toSet()
 
         val patchList = patcherState.patchClassesFor(args.packageName, args.packageVersion).filter { selected.contains(it.patchName) }
 
-        val session = Session(applicationContext.cacheDir.path, frameworkPath, File(args.input))
+        val session = Session(applicationContext.cacheDir.path, frameworkPath, aaptPath, File(args.input))
 
         return try {
             session.run(File(args.output), patchList)
