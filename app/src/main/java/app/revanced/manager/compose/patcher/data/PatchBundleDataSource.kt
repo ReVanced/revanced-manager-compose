@@ -1,8 +1,9 @@
-package app.revanced.manager.compose.patcher
+package app.revanced.manager.compose.patcher.data
 
+import app.revanced.manager.compose.patcher.PatchClass
 import app.revanced.patcher.extensions.PatchExtensions.compatiblePackages
 
-class PatchBundle(inner: Iterable<PatchClass>) {
+class PatchBundleDataSource(inner: Iterable<PatchClass>) {
     private companion object {
         const val allowExperimental = false
     }
@@ -29,8 +30,6 @@ class PatchBundle(inner: Iterable<PatchClass>) {
 
         true
     }
-
-
 
     fun getRecommendedVersion(packageName: String) = "0.69.420"
 }

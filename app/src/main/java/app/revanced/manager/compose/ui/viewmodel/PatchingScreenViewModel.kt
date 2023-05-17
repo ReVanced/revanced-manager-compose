@@ -13,7 +13,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.work.*
-import app.revanced.manager.compose.patcher.ReVancedWorker
+import app.revanced.manager.compose.patcher.worker.PatcherWorker
 import app.revanced.manager.compose.patcher.Session
 import app.revanced.manager.compose.service.InstallService
 import app.revanced.manager.compose.service.UninstallService
@@ -53,12 +53,12 @@ class PatchingScreenViewModel(
     }
 
     private val patcherWorker =
-        OneTimeWorkRequest.Builder(ReVancedWorker::class.java) // create Worker
+        OneTimeWorkRequest.Builder(PatcherWorker::class.java) // create Worker
             .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST).setInputData(
                 Data.Builder().putString(
                     "args",
                     Json.Default.encodeToString(
-                        ReVancedWorker.Args(
+                        PatcherWorker.Args(
                             inputFile.path,
                             outputFile.path,
                             selectedPatches,
@@ -73,7 +73,7 @@ class PatchingScreenViewModel(
 
     private val observer = Observer { workInfo: WorkInfo -> // observer for observing patch status
         status = when (workInfo.state) {
-            WorkInfo.State.RUNNING -> workInfo.progress.getString(ReVancedWorker.Progress)
+            WorkInfo.State.RUNNING -> workInfo.progress.getString(PatcherWorker.Progress)
                 ?.let { Status.Patching(Session.Progress.valueOf(it)) } ?: Status.Starting
 
             WorkInfo.State.SUCCEEDED -> Status.Success

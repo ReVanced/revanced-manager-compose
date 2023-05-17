@@ -1,7 +1,8 @@
-package app.revanced.manager.compose.patcher
+package app.revanced.manager.compose.patcher.data.repository
 
 import android.app.Application
 import androidx.compose.runtime.mutableStateOf
+import app.revanced.manager.compose.patcher.data.PatchBundleDataSource
 import app.revanced.patcher.annotation.Description
 import app.revanced.patcher.annotation.Name
 import app.revanced.patcher.annotation.Version
@@ -15,7 +16,7 @@ import app.revanced.patcher.patch.annotations.Patch
 @Name("export-all-activities")
 @Description("Makes all app activities exportable.")
 @Version("0.0.1")
-class ExportAllActivitiesPatch : ResourcePatch {
+private class ExportAllActivitiesPatch : ResourcePatch {
     override fun execute(context: ResourceContext): PatchResult {
         context.xmlEditor["AndroidManifest.xml"].use { editor ->
             val document = editor.file
@@ -46,10 +47,10 @@ class ExportAllActivitiesPatch : ResourcePatch {
     }
 }
 
-val testingPatchBundle = listOf(ExportAllActivitiesPatch::class.java)
+private val testingPatchBundle = listOf(ExportAllActivitiesPatch::class.java)
 
-class PatcherState(val app: Application) {
-    private val bundle = mutableStateOf(PatchBundle(testingPatchBundle))
+class PatchesRepository(val app: Application) {
+    private val bundle = mutableStateOf(PatchBundleDataSource(testingPatchBundle))
 
     fun patchClassesFor(packageName: String, packageVersion: String) = bundle.value.getPatchesFiltered(packageName, packageVersion)
 }

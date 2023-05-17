@@ -1,10 +1,9 @@
 package app.revanced.manager.compose.di
 
-import app.revanced.manager.compose.patcher.ReVancedWorker
-import org.koin.android.ext.koin.androidContext
-import org.koin.androidx.workmanager.dsl.worker
+import app.revanced.manager.compose.patcher.worker.PatcherWorker
+import org.koin.androidx.workmanager.dsl.workerOf
 import org.koin.dsl.module
 
 val workerModule = module {
-    worker { ReVancedWorker(androidContext(), get()) }
+    workerOf(::PatcherWorker)
 }

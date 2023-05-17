@@ -20,7 +20,6 @@ class ManagerApplication : Application() {
                 serviceModule,
                 workerModule,
                 viewModelModule,
-                patcherModule,
             )
         }
     }
