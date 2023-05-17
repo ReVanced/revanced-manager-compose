@@ -9,6 +9,5 @@ import org.koin.dsl.module
 val repositoryModule = module {
     singleOf(::ReVancedRepositoryImpl)
     singleOf(::ManagerAPI)
-    singleOf(::BundleRepository)
     singleOf(::PatchesRepository)
 }
