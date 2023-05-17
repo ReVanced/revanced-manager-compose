@@ -18,7 +18,7 @@ import java.io.File
 import java.io.FileNotFoundException
 
 class PatcherWorker(context: Context, parameters: WorkerParameters) : CoroutineWorker(context, parameters), KoinComponent {
-    private val patcherState: PatchesRepository by inject()
+    private val patchesRepository: PatchesRepository by inject()
 
     companion object {
         const val Progress = "progress"
@@ -47,7 +47,7 @@ class PatcherWorker(context: Context, parameters: WorkerParameters) : CoroutineW
         val args = Json.decodeFromString<Args>(inputData.getString("args")!!)
         val selected = args.selectedPatches.toSet()
 
-        val patchList = patcherState.patchClassesFor(args.packageName, args.packageVersion)
+        val patchList = patchesRepository.patchClassesFor(args.packageName, args.packageVersion)
             .filter { selected.contains(it.patchName) }
 
         val session = Session(applicationContext.cacheDir.path, frameworkPath, aaptPath, File(args.input)) {
@@ -55,7 +55,7 @@ class PatcherWorker(context: Context, parameters: WorkerParameters) : CoroutineW
         }
 
         return try {
-            session.run(File(args.output), patchList)
+            session.run(File(args.output), patchList, patchesRepository.getIntegrations())
             Log.i("revanced-worker", "Patching succeeded")
             Result.success()
         } catch (e: Throwable) {

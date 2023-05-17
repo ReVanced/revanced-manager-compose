@@ -74,7 +74,7 @@ fun DashboardScreen(
                     IconButton(onClick = onSettingsClick) {
                         Icon(Icons.Outlined.Settings, stringResource(R.string.settings))
                     }
-                    IconButton(onClick = { pickApkLauncher.launch("*/*")}) {
+                    IconButton(onClick = { pickApkLauncher.launch("*/*") }) {
                         Icon(imageVector = Icons.Outlined.Warning, contentDescription = null)
                     }
                 }

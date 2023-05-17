@@ -56,12 +56,12 @@ class Session(
         }
     }
 
-    suspend fun run(output: File, selectedPatches: PatchList) {
+    suspend fun run(output: File, selectedPatches: PatchList, integrations: List<File>) {
         onProgress(Progress.PREPARING)
 
         with(patcher) {
             logger.info("Merging integrations")
-            addIntegrations(emptyList()) {} // TODO: actually add integrations
+            addIntegrations(integrations) {}
             addPatches(selectedPatches)
 
             logger.info("Applying patches...")

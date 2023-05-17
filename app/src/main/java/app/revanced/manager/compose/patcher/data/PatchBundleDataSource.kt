@@ -1,19 +1,33 @@
 package app.revanced.manager.compose.patcher.data
 
 import app.revanced.manager.compose.patcher.PatchClass
+import app.revanced.patcher.Patcher
 import app.revanced.patcher.extensions.PatchExtensions.compatiblePackages
+import app.revanced.patcher.util.patch.PatchBundle
+import dalvik.system.PathClassLoader
+import java.io.File
 
-class PatchBundleDataSource(inner: Iterable<PatchClass>) {
+class PatchBundleDataSource(private val loader: Iterable<PatchClass>, val integrations: File?) {
+    constructor(bundleJar: String, integrations: File?) : this(
+        object : Iterable<PatchClass> {
+            private val bundle = PatchBundle.Dex(
+                bundleJar,
+                PathClassLoader(bundleJar, Patcher::class.java.classLoader)
+            )
+
+            override fun iterator() = bundle.loadPatches().iterator()
+        },
+        integrations
+    )
+
     private companion object {
         const val allowExperimental = false
     }
 
-    private val allPatches = inner.toList()
-
     /**
      * @return A list of patches that are compatible with this Apk.
      */
-    fun getPatchesFiltered(packageName: String, packageVersion: String) = allPatches.filter { patch ->
+    fun getPatchesFiltered(packageName: String, packageVersion: String) = loader.filter { patch ->
         val compatiblePackages = patch.compatiblePackages
             ?: // The patch has no compatibility constraints, which means it is universal.
             return@filter true

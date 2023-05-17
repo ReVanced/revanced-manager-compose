@@ -62,7 +62,7 @@ class MainActivity : ComponentActivity() {
                                 navController.navigate(
                                     Destination.Patching(
                                         it,
-                                        listOf("export-all-activities")
+                                        listOf("export-all-activities", "predictive-back-gesture")
                                     )
                                 )
                             }
