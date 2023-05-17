@@ -8,12 +8,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import app.revanced.manager.compose.ui.viewmodel.PatchingScreenViewModel
+import app.revanced.manager.compose.ui.viewmodel.InstallerScreenViewModel
 import org.koin.androidx.compose.getViewModel
 import org.koin.core.parameter.parametersOf
 
 @Composable
-fun PatchingScreen(input: Uri, selectedPatches: List<String>, vm: PatchingScreenViewModel = getViewModel { parametersOf(input, selectedPatches) }) {
+fun InstallerScreen(input: Uri, selectedPatches: List<String>, vm: InstallerScreenViewModel = getViewModel { parametersOf(input, selectedPatches) }) {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text(
             text = vm.status.toString(),

@@ -23,7 +23,7 @@ import kotlinx.serialization.json.Json
 import java.io.File
 import java.nio.file.Files
 
-class PatchingScreenViewModel(
+class InstallerScreenViewModel(
     input: Uri,
     selectedPatches: List<String>,
     val app: Application

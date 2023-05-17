@@ -10,7 +10,7 @@ val viewModelModule = module {
     viewModelOf(::SettingsViewModel)
     viewModel {
         try {
-            PatchingScreenViewModel(
+            InstallerScreenViewModel(
                 input = it.get(),
                 selectedPatches = it.get(),
                 app = get()

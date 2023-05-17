@@ -12,7 +12,7 @@ import app.revanced.manager.compose.ui.screen.AppSelectorScreen
 import app.revanced.manager.compose.ui.screen.DashboardScreen
 import app.revanced.manager.compose.ui.screen.PatchesSelectorScreen
 import app.revanced.manager.compose.ui.screen.SettingsScreen
-import app.revanced.manager.compose.ui.screen.PatchingScreen
+import app.revanced.manager.compose.ui.screen.InstallerScreen
 import app.revanced.manager.compose.ui.theme.ReVancedManagerTheme
 import app.revanced.manager.compose.ui.theme.Theme
 import app.revanced.manager.compose.util.PM
@@ -54,13 +54,12 @@ class MainActivity : ComponentActivity() {
                     controller = navController
                 ) { destination ->
                     when (destination) {
-
                         is Destination.Dashboard -> DashboardScreen(
                             onSettingsClick = { navController.navigate(Destination.Settings) },
                             onAppSelectorClick = { navController.navigate(Destination.AppSelector) },
                             onPatcherClick = {
                                 navController.navigate(
-                                    Destination.Patching(
+                                    Destination.Installer(
                                         it,
                                         listOf("export-all-activities", "predictive-back-gesture")
                                     )
@@ -81,7 +80,7 @@ class MainActivity : ComponentActivity() {
                             onBackClick = { navController.pop() }
                         )
 
-                        is Destination.Patching -> PatchingScreen(destination.input, destination.selectedPatches)
+                        is Destination.Installer -> InstallerScreen(destination.input, destination.selectedPatches)
                     }
                 }
             }
