@@ -6,8 +6,14 @@ import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 val viewModelModule = module {
-    viewModelOf(::PatchesSelectorViewModel)
+    viewModel {
+        PatchesSelectorViewModel(
+            packageInfo = it.get(),
+            patchesRepository = get()
+        )
+    }
     viewModelOf(::SettingsViewModel)
+    viewModelOf(::AppSelectorViewModel)
     viewModel {
         InstallerScreenViewModel(
             input = it.get(),

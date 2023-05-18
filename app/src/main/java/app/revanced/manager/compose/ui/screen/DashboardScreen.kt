@@ -1,8 +1,5 @@
 package app.revanced.manager.compose.ui.screen
 
-import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -18,7 +15,6 @@ import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Source
 import androidx.compose.material.icons.outlined.Topic
-import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -52,16 +48,12 @@ enum class DashboardPage(
 @Composable
 fun DashboardScreen(
     onAppSelectorClick: () -> Unit,
-    onSettingsClick: () -> Unit,
-    onPatcherClick: (Uri) ->  Unit
+    onSettingsClick: () -> Unit
 ) {
     val pages: Array<DashboardPage> = DashboardPage.values()
 
     val pagerState = rememberPagerState()
     val coroutineScope = rememberCoroutineScope()
-    val pickApkLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { apkUri ->
-        apkUri?.let(onPatcherClick)
-    }
 
     Scaffold(
         topBar = {
@@ -73,9 +65,6 @@ fun DashboardScreen(
                     }
                     IconButton(onClick = onSettingsClick) {
                         Icon(Icons.Outlined.Settings, stringResource(R.string.settings))
-                    }
-                    IconButton(onClick = { pickApkLauncher.launch("*/*") }) {
-                        Icon(imageVector = Icons.Outlined.Warning, contentDescription = null)
                     }
                 }
             )

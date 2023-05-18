@@ -46,16 +46,18 @@ import app.revanced.manager.compose.R
 import app.revanced.manager.compose.ui.component.AppTopBar
 import app.revanced.manager.compose.ui.component.GroupHeader
 import app.revanced.manager.compose.ui.viewmodel.PatchesSelectorViewModel
+import app.revanced.manager.compose.util.PackageInfo
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.getViewModel
-import java.io.File
+import org.koin.core.parameter.parametersOf
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun PatchesSelectorScreen(
-    selectedApp: List<File>? = null,
+    packageInfo: PackageInfo,
+    startPatching: (PackageInfo, List<String>) -> Unit,
     onBackClick: () -> Unit,
-    viewModel: PatchesSelectorViewModel = getViewModel()
+    vm: PatchesSelectorViewModel = getViewModel { parametersOf(packageInfo) }
 ) {
     val pagerState = rememberPagerState()
     val coroutineScope = rememberCoroutineScope()
@@ -78,10 +80,10 @@ fun PatchesSelectorScreen(
                 title = stringResource(R.string.select_patches),
                 onBackClick = onBackClick,
                 actions = {
-                    IconButton(onClick = {  }) {
+                    IconButton(onClick = { }) {
                         Icon(Icons.Outlined.HelpOutline, stringResource(R.string.help))
                     }
-                    IconButton(onClick = {  }) {
+                    IconButton(onClick = { }) {
                         Icon(Icons.Outlined.Search, stringResource(R.string.search))
                     }
                 }
@@ -91,7 +93,7 @@ fun PatchesSelectorScreen(
             ExtendedFloatingActionButton(
                 text = { Text(stringResource(R.string.patch)) },
                 icon = { Icon(Icons.Default.Build, null) },
-                onClick = { /*TODO*/ })
+                onClick = { startPatching(packageInfo, vm.selectedPatches.map { it.name }) })
         }
     ) { paddingValues ->
         Column(Modifier.fillMaxSize().padding(paddingValues)) {
@@ -99,7 +101,7 @@ fun PatchesSelectorScreen(
                 selectedTabIndex = pagerState.currentPage,
                 containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.0.dp)
             ) {
-                viewModel.bundles.forEachIndexed { index, bundle ->
+                vm.bundles.forEachIndexed { index, bundle ->
                     Tab(
                         selected = pagerState.currentPage == index,
                         onClick = { coroutineScope.launch { pagerState.animateScrollToPage(index) } },
@@ -111,12 +113,12 @@ fun PatchesSelectorScreen(
             }
 
             HorizontalPager(
-                pageCount = viewModel.bundles.size,
+                pageCount = vm.bundles.size,
                 state = pagerState,
                 userScrollEnabled = true,
                 pageContent = { index ->
 
-                    val patches = rememberSaveable { viewModel.bundles[index].patches }
+                    val patches = vm.bundles[index].patches
 
                     LazyColumn(
                         modifier = Modifier
@@ -127,19 +129,19 @@ fun PatchesSelectorScreen(
                         ) { patch ->
                             ListItem(
                                 modifier = Modifier.clickable {
-                                    if (viewModel.selectedPatches.contains(patch))
-                                        viewModel.selectedPatches.remove(patch)
+                                    if (vm.selectedPatches.contains(patch))
+                                        vm.selectedPatches.remove(patch)
                                     else
-                                        viewModel.selectedPatches.add(patch)
+                                        vm.selectedPatches.add(patch)
                                 },
                                 leadingContent = {
                                     Checkbox(
-                                        checked = viewModel.selectedPatches.contains(patch),
+                                        checked = vm.selectedPatches.contains(patch),
                                         onCheckedChange = {
-                                            if (viewModel.selectedPatches.contains(patch))
-                                                viewModel.selectedPatches.remove(patch)
+                                            if (vm.selectedPatches.contains(patch))
+                                                vm.selectedPatches.remove(patch)
                                             else
-                                                viewModel.selectedPatches.add(patch)
+                                                vm.selectedPatches.add(patch)
                                         }
                                     )
                                 },
@@ -147,10 +149,10 @@ fun PatchesSelectorScreen(
                                     Text(patch.name)
                                 },
                                 supportingContent = {
-                                    Text(patch.description)
+                                    Text(patch.description ?: "")
                                 },
                                 trailingContent = {
-                                    if (patch.options.isNotEmpty()) {
+                                    if (patch.options?.isNotEmpty() == true) {
                                         IconButton(onClick = { showOptionsDialog = true }) {
                                             Icon(Icons.Outlined.Settings, null)
                                         }
@@ -188,19 +190,19 @@ fun PatchesSelectorScreen(
                                 modifier = Modifier
                                     .alpha(0.5f)
                                     .clickable(enabled = false) {
-                                        if (viewModel.selectedPatches.contains(patch))
-                                            viewModel.selectedPatches.remove(patch)
+                                        if (vm.selectedPatches.contains(patch))
+                                            vm.selectedPatches.remove(patch)
                                         else
-                                            viewModel.selectedPatches.add(patch)
+                                            vm.selectedPatches.add(patch)
                                     },
                                 leadingContent = {
                                     Checkbox(
-                                        checked = viewModel.selectedPatches.contains(patch),
+                                        checked = vm.selectedPatches.contains(patch),
                                         onCheckedChange = {
-                                            if (viewModel.selectedPatches.contains(patch))
-                                                viewModel.selectedPatches.remove(patch)
+                                            if (vm.selectedPatches.contains(patch))
+                                                vm.selectedPatches.remove(patch)
                                             else
-                                                viewModel.selectedPatches.add(patch)
+                                                vm.selectedPatches.add(patch)
                                         },
                                         enabled = false
                                     )
@@ -209,10 +211,10 @@ fun PatchesSelectorScreen(
                                     Text(patch.name)
                                 },
                                 supportingContent = {
-                                    Text(patch.description)
+                                    Text(patch.description ?: "")
                                 },
                                 trailingContent = {
-                                    if (patch.options.isNotEmpty()) {
+                                    if (patch.options?.isNotEmpty() == true) {
                                         IconButton(onClick = { showOptionsDialog = true }, enabled = false) {
                                             Icon(Icons.Outlined.Settings, null)
                                         }
@@ -221,8 +223,6 @@ fun PatchesSelectorScreen(
                             )
                         }
                     }
-
-
 
 
                 }
@@ -236,7 +236,8 @@ fun UnsupportedDialog(
     onDismissRequest: () -> Unit
 ) {
     val appVersion = "1.1.0"
-    val supportedVersions = listOf("1.1.1", "1.2.0", "1.1.1", "1.2.0", "1.1.1", "1.2.0", "1.1.1", "1.2.0", "1.1.1", "1.2.0")
+    val supportedVersions =
+        listOf("1.1.1", "1.2.0", "1.1.1", "1.2.0", "1.1.1", "1.2.0", "1.1.1", "1.2.0", "1.1.1", "1.2.0")
 
     AlertDialog(
         modifier = Modifier.padding(vertical = 45.dp),

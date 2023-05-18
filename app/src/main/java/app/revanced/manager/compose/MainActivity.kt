@@ -56,15 +56,7 @@ class MainActivity : ComponentActivity() {
                     when (destination) {
                         is Destination.Dashboard -> DashboardScreen(
                             onSettingsClick = { navController.navigate(Destination.Settings) },
-                            onAppSelectorClick = { navController.navigate(Destination.AppSelector) },
-                            onPatcherClick = {
-                                navController.navigate(
-                                    Destination.Installer(
-                                        it,
-                                        listOf("export-all-activities", "predictive-back-gesture")
-                                    )
-                                )
-                            }
+                            onAppSelectorClick = { navController.navigate(Destination.AppSelector) }
                         )
 
                         is Destination.Settings -> SettingsScreen(
@@ -72,12 +64,21 @@ class MainActivity : ComponentActivity() {
                         )
 
                         is Destination.AppSelector -> AppSelectorScreen(
-                            onAppClick = { navController.navigate(Destination.PatchesSelector) },
+                            onAppClick = { navController.navigate(Destination.PatchesSelector(it)) },
                             onBackClick = { navController.pop() }
                         )
 
                         is Destination.PatchesSelector -> PatchesSelectorScreen(
-                            onBackClick = { navController.pop() }
+                            onBackClick = { navController.pop() },
+                            startPatching = { pkg, selected ->
+                                navController.navigate(
+                                    Destination.Installer(
+                                        pkg,
+                                        selected
+                                    )
+                                )
+                            },
+                            packageInfo = destination.input
                         )
 
                         is Destination.Installer -> InstallerScreen(destination.input, destination.selectedPatches)

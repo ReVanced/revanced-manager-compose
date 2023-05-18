@@ -1,8 +1,9 @@
 package app.revanced.manager.compose.ui.destination
 
-import android.net.Uri
 import android.os.Parcelable
+import app.revanced.manager.compose.util.PackageInfo
 import kotlinx.parcelize.Parcelize
+import java.io.File
 
 sealed interface Destination: Parcelable {
 
@@ -16,8 +17,8 @@ sealed interface Destination: Parcelable {
     object Settings: Destination
 
     @Parcelize
-    object PatchesSelector: Destination
+    data class PatchesSelector(val input: PackageInfo): Destination
 
     @Parcelize
-    data class Installer(val input: Uri, val selectedPatches: List<String>) : Destination
+    data class Installer(val input: PackageInfo, val selectedPatches: List<String>) : Destination
 }

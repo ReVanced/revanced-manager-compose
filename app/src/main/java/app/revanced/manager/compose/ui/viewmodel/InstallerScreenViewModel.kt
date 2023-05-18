@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageInstaller
-import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -20,13 +19,13 @@ import app.revanced.manager.compose.patcher.worker.ProgressUtil
 import app.revanced.manager.compose.service.InstallService
 import app.revanced.manager.compose.service.UninstallService
 import app.revanced.manager.compose.util.PM
+import app.revanced.manager.compose.util.PackageInfo
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
-import java.nio.file.Files
 
 class InstallerScreenViewModel(
-    input: Uri,
+    input: PackageInfo,
     selectedPatches: List<String>,
     val app: Application
 ) : ViewModel() {
@@ -88,7 +87,7 @@ class InstallerScreenViewModel(
             }, newGroupStatus)
         }
 
-        val isFinalStep = isLastStepOfGroup && key.groupIndex == stepGroups.size -1
+        val isFinalStep = isLastStepOfGroup && key.groupIndex == stepGroups.size - 1
 
         if (newStatus == StepStatus.COMPLETED) {
             // Move the cursor to the next step.
@@ -110,12 +109,6 @@ class InstallerScreenViewModel(
     var extra by mutableStateOf("")
 
     private val outputFile = File(app.cacheDir, "output.apk")
-    private val inputFile = app.contentResolver.openInputStream(input)!!.use { stream ->
-        File(app.cacheDir, "input.apk").also {
-            if (it.exists()) it.delete()
-            Files.copy(stream, it.toPath())
-        }
-    }
 
     private val patcherWorker =
         OneTimeWorkRequest.Builder(PatcherWorker::class.java) // create Worker
@@ -124,11 +117,11 @@ class InstallerScreenViewModel(
                     "args",
                     Json.Default.encodeToString(
                         PatcherWorker.Args(
-                            inputFile.path,
+                            input.apk.path,
                             outputFile.path,
                             selectedPatches,
-                            "amog.us",
-                            "0.69.420"
+                            input.packageName,
+                            input.packageName,
                         )
                     )
                 ).build()
@@ -142,7 +135,9 @@ class InstallerScreenViewModel(
                 val progress = ProgressUtil.fromWorkData(workInfo.progress)
 
                 if (progress is Session.Progress.PatchSuccess) {
-                    val patchStepKey = StepKey(PATCHING_GROUP_INDEX, stepGroups[PATCHING_GROUP_INDEX].steps.indexOfFirst { it.name == progress.patchName })
+                    val patchStepKey = StepKey(
+                        PATCHING_GROUP_INDEX,
+                        stepGroups[PATCHING_GROUP_INDEX].steps.indexOfFirst { it.name == progress.patchName })
 
                     updateStepStatus(patchStepKey, StepStatus.COMPLETED)
                 } else {
@@ -151,10 +146,12 @@ class InstallerScreenViewModel(
                     currentStep = stepKeyMap[progress.kind]!!
                 }
             }
+
             WorkInfo.State.FAILED -> {
                 // TODO: retrieve the error and "associate it" with the step that just failed.
                 currentStep?.let { updateStepStatus(it, StepStatus.FAILURE) }
             }
+
             WorkInfo.State.SUCCEEDED -> {
                 currentStep?.let { updateStepStatus(it, StepStatus.COMPLETED) }
             }
@@ -187,7 +184,7 @@ class InstallerScreenViewModel(
         })
     }
 
-    fun installApk(apk: File) {
+    fun installApk(apk: List<File>) {
         PM.installApp(apk, app)
     }
 

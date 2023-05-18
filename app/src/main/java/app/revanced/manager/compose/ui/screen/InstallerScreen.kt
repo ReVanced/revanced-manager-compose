@@ -1,6 +1,5 @@
 package app.revanced.manager.compose.ui.screen
 
-import android.net.Uri
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -10,13 +9,14 @@ import androidx.compose.ui.Modifier
 import app.revanced.manager.compose.ui.component.AppScaffold
 import app.revanced.manager.compose.ui.component.AppTopBar
 import app.revanced.manager.compose.ui.viewmodel.InstallerScreenViewModel
+import app.revanced.manager.compose.util.PackageInfo
 import org.koin.androidx.compose.getViewModel
 import org.koin.core.parameter.parametersOf
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InstallerScreen(
-    input: Uri,
+    input: PackageInfo,
     selectedPatches: List<String>,
     vm: InstallerScreenViewModel = getViewModel { parametersOf(input, selectedPatches) }
 ) {
