@@ -5,7 +5,6 @@ import app.revanced.patcher.PatcherOptions
 import app.revanced.patcher.logging.Logger
 import android.util.Log
 import app.revanced.patcher.data.Context
-import app.revanced.patcher.extensions.PatchExtensions.compatiblePackages
 import app.revanced.patcher.patch.Patch
 import java.io.Closeable
 import java.io.File
@@ -23,10 +22,10 @@ class Session(
     private val onProgress: suspend (Progress) -> Unit = { }
 ) : Closeable {
     enum class Progress {
-        PREPARING,
+        UNPACKING,
+        MERGING,
         PATCHING,
         SAVING,
-        FINISHED,
     }
 
     private val logger = LogcatLogger
@@ -57,7 +56,7 @@ class Session(
     }
 
     suspend fun run(output: File, selectedPatches: PatchList, integrations: List<File>) {
-        onProgress(Progress.PREPARING)
+        onProgress(Progress.MERGING)
 
         with(patcher) {
             logger.info("Merging integrations")
@@ -81,7 +80,6 @@ class Session(
         logger.info("Patched apk saved to $patched")
 
         Files.move(patched.toPath(), output.toPath(), StandardCopyOption.REPLACE_EXISTING)
-        onProgress(Progress.FINISHED)
     }
 
     private fun sign(aligned: File): File = TODO()

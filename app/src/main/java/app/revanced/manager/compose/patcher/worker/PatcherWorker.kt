@@ -17,7 +17,8 @@ import org.koin.core.component.inject
 import java.io.File
 import java.io.FileNotFoundException
 
-class PatcherWorker(context: Context, parameters: WorkerParameters) : CoroutineWorker(context, parameters), KoinComponent {
+class PatcherWorker(context: Context, parameters: WorkerParameters) : CoroutineWorker(context, parameters),
+    KoinComponent {
     private val patchesRepository: PatchesRepository by inject()
 
     companion object {
@@ -50,12 +51,15 @@ class PatcherWorker(context: Context, parameters: WorkerParameters) : CoroutineW
         val patchList = patchesRepository.patchClassesFor(args.packageName, args.packageVersion)
             .filter { selected.contains(it.patchName) }
 
-        val session = Session(applicationContext.cacheDir.path, frameworkPath, aaptPath, File(args.input)) {
-            setProgress(workDataOf(Progress to it.toString()))
-        }
+        setProgress(workDataOf(Progress to Session.Progress.UNPACKING.toString()))
 
         return try {
-            session.run(File(args.output), patchList, patchesRepository.getIntegrations())
+            Session(applicationContext.cacheDir.path, frameworkPath, aaptPath, File(args.input)) {
+                setProgress(workDataOf(Progress to it.toString()))
+            }.use { session ->
+                session.run(File(args.output), patchList, patchesRepository.getIntegrations())
+            }
+
             Log.i("revanced-worker", "Patching succeeded")
             Result.success()
         } catch (e: Throwable) {
