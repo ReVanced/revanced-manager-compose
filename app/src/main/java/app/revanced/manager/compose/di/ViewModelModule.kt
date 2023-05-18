@@ -9,15 +9,10 @@ val viewModelModule = module {
     viewModelOf(::PatchesSelectorViewModel)
     viewModelOf(::SettingsViewModel)
     viewModel {
-        try {
-            InstallerScreenViewModel(
-                input = it.get(),
-                selectedPatches = it.get(),
-                app = get()
-            )
-        } catch (e: Throwable) {
-            Log.e("revanced-manager", "koin really sucks", e)
-            throw e
-        }
+        InstallerScreenViewModel(
+            input = it.get(),
+            selectedPatches = it.get(),
+            app = get()
+        )
     }
 }
