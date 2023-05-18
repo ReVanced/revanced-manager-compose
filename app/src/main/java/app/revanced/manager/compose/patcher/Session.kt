@@ -21,11 +21,26 @@ class Session(
     private val input: File,
     private val onProgress: suspend (Progress) -> Unit = { }
 ) : Closeable {
-    enum class Progress {
+    enum class ProgressKind {
         UNPACKING,
         MERGING,
-        PATCHING,
+        PATCHING_START,
+        PATCH_SUCCESS,
         SAVING,
+    }
+
+    class PatchFailedException(val patchName: String, cause: Throwable?) : Exception("Got exception while executing $patchName", cause)
+
+    sealed class Progress(val kind: ProgressKind) {
+        override fun toString() = kind.toString()
+
+        object Unpacking : Progress(ProgressKind.UNPACKING)
+        object Merging : Progress(ProgressKind.MERGING)
+        object PatchingStart : Progress(ProgressKind.PATCHING_START)
+
+        class PatchSuccess(val patchName: String) : Progress(ProgressKind.PATCH_SUCCESS)
+
+        object Saving : Progress(ProgressKind.SAVING)
     }
 
     private val logger = LogcatLogger
@@ -40,23 +55,22 @@ class Session(
         )
     )
 
-    private companion object {
-        const val shouldSign = false
-    }
-
-    private fun Patcher.applyPatchesVerbose() {
-        this.executePatches().forEach { (patch, result) ->
+    private suspend fun Patcher.applyPatchesVerbose() {
+        this.executePatches(true).forEach { (patch, result) ->
             if (result.isSuccess) {
                 logger.info("$patch succeeded")
+                onProgress(Progress.PatchSuccess(patch))
                 return@forEach
             }
             logger.error("$patch failed:")
             result.exceptionOrNull()!!.printStackTrace()
+
+            throw PatchFailedException(patch, result.exceptionOrNull())
         }
     }
 
     suspend fun run(output: File, selectedPatches: PatchList, integrations: List<File>) {
-        onProgress(Progress.MERGING)
+        onProgress(Progress.Merging)
 
         with(patcher) {
             logger.info("Merging integrations")
@@ -64,25 +78,21 @@ class Session(
             addPatches(selectedPatches)
 
             logger.info("Applying patches...")
-            onProgress(Progress.PATCHING)
+            onProgress(Progress.PatchingStart)
 
             applyPatchesVerbose()
         }
 
-        onProgress(Progress.SAVING)
+        onProgress(Progress.Saving)
         logger.info("Writing patched files...")
         val result = patcher.save()
 
         val aligned = temporary.resolve("aligned.apk").also { Aligning.align(result, input, it) }
 
-        val patched = if (shouldSign) sign(aligned) else aligned
+        logger.info("Patched apk saved to $aligned")
 
-        logger.info("Patched apk saved to $patched")
-
-        Files.move(patched.toPath(), output.toPath(), StandardCopyOption.REPLACE_EXISTING)
+        Files.move(aligned.toPath(), output.toPath(), StandardCopyOption.REPLACE_EXISTING)
     }
-
-    private fun sign(aligned: File): File = TODO()
 
     override fun close() {
         temporary.delete()

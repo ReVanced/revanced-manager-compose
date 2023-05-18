@@ -16,6 +16,7 @@ import androidx.lifecycle.ViewModel
 import androidx.work.*
 import app.revanced.manager.compose.patcher.worker.PatcherWorker
 import app.revanced.manager.compose.patcher.Session
+import app.revanced.manager.compose.patcher.worker.ProgressUtil
 import app.revanced.manager.compose.service.InstallService
 import app.revanced.manager.compose.service.UninstallService
 import app.revanced.manager.compose.util.PM
@@ -44,9 +45,23 @@ class InstallerScreenViewModel(
         StepGroup("Preparation", listOf(Step("Unpack apk"), Step("Merge integrations"))),
         StepGroup(
             "Patching",
-            listOf(Step("Apply all selected patches"))
-        ), // TODO: there should be one for each patch instead.
+            selectedPatches.map { Step(it) }
+        ),
         StepGroup("Saving", listOf(Step("Write patched apk")))
+    )
+
+    private companion object {
+        const val PATCHING_GROUP_INDEX = 1
+    }
+
+    /**
+     * A map of [Session.ProgressKind] to the corresponding position in [stepGroups]
+     */
+    private val stepKeyMap = mapOf(
+        Session.ProgressKind.UNPACKING to StepKey(0, 0),
+        Session.ProgressKind.MERGING to StepKey(0, 1),
+        Session.ProgressKind.PATCHING_START to StepKey(PATCHING_GROUP_INDEX, 0),
+        Session.ProgressKind.SAVING to StepKey(2, 0),
     )
 
     private var currentStep: StepKey? = null
@@ -87,18 +102,9 @@ class InstallerScreenViewModel(
 
     private data class StepKey(val groupIndex: Int, val stepIndex: Int)
 
-    /**
-     * A map of Session.Progress to the corresponding position in [stepGroups]
-     */
-    private val stepKeyMap = mapOf(
-        Session.Progress.UNPACKING to StepKey(0, 0),
-        Session.Progress.MERGING to StepKey(0, 1),
-        Session.Progress.PATCHING to StepKey(1, 0),
-        Session.Progress.SAVING to StepKey(2, 0),
-    )
-
     private val workManager = WorkManager.getInstance(app)
 
+    // TODO: handle app installation as a step.
     var installStatus by mutableStateOf<Boolean?>(null)
     var pmStatus by mutableStateOf(-999)
     var extra by mutableStateOf("")
@@ -132,12 +138,21 @@ class InstallerScreenViewModel(
 
     private val observer = Observer { workInfo: WorkInfo -> // observer for observing patch status
         when (workInfo.state) {
-            WorkInfo.State.RUNNING -> workInfo.progress.getString(PatcherWorker.Progress)?.let { nextStep ->
-                currentStep?.let { updateStepStatus(it, StepStatus.COMPLETED) }
+            WorkInfo.State.RUNNING -> workInfo.progress.getString("kind")?.let {
+                val progress = ProgressUtil.fromWorkData(workInfo.progress)
 
-                currentStep = stepKeyMap[Session.Progress.valueOf(nextStep)]!!
+                if (progress is Session.Progress.PatchSuccess) {
+                    val patchStepKey = StepKey(PATCHING_GROUP_INDEX, stepGroups[PATCHING_GROUP_INDEX].steps.indexOfFirst { it.name == progress.patchName })
+
+                    updateStepStatus(patchStepKey, StepStatus.COMPLETED)
+                } else {
+                    currentStep?.let { updateStepStatus(it, StepStatus.COMPLETED) }
+
+                    currentStep = stepKeyMap[progress.kind]!!
+                }
             }
             WorkInfo.State.FAILED -> {
+                // TODO: retrieve the error and "associate it" with the step that just failed.
                 currentStep?.let { updateStepStatus(it, StepStatus.FAILURE) }
             }
             WorkInfo.State.SUCCEEDED -> {

@@ -21,10 +21,6 @@ class PatcherWorker(context: Context, parameters: WorkerParameters) : CoroutineW
     KoinComponent {
     private val patchesRepository: PatchesRepository by inject()
 
-    companion object {
-        const val Progress = "progress"
-    }
-
     @Serializable
     data class Args(
         val input: String,
@@ -51,11 +47,11 @@ class PatcherWorker(context: Context, parameters: WorkerParameters) : CoroutineW
         val patchList = patchesRepository.patchClassesFor(args.packageName, args.packageVersion)
             .filter { selected.contains(it.patchName) }
 
-        setProgress(workDataOf(Progress to Session.Progress.UNPACKING.toString()))
+        setProgress(ProgressUtil.toWorkData(Session.Progress.Unpacking))
 
         return try {
             Session(applicationContext.cacheDir.path, frameworkPath, aaptPath, File(args.input)) {
-                setProgress(workDataOf(Progress to it.toString()))
+                setProgress(ProgressUtil.toWorkData(it))
             }.use { session ->
                 session.run(File(args.output), patchList, patchesRepository.getIntegrations())
             }
