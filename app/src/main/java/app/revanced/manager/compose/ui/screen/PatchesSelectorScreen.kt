@@ -47,46 +47,31 @@ const val allowUnsupported = false
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun PatchesSelectorScreen(
-    startPatching: (List<String>) -> Unit,
-    onBackClick: () -> Unit,
-    vm: PatchesSelectorViewModel
+    startPatching: (List<String>) -> Unit, onBackClick: () -> Unit, vm: PatchesSelectorViewModel
 ) {
     val pagerState = rememberPagerState()
     val coroutineScope = rememberCoroutineScope()
 
     val bundles by vm.bundlesFlow.collectAsStateWithLifecycle(initialValue = emptyList())
 
-    if (vm.showUnsupportedDialog)
-        UnsupportedDialog(onDismissRequest = vm::dismissDialogs)
+    if (vm.showUnsupportedDialog) UnsupportedDialog(onDismissRequest = vm::dismissDialogs)
 
-    if (vm.showOptionsDialog)
-        OptionsDialog(
-            onDismissRequest = vm::dismissDialogs,
-            onConfirm = {}
-        )
+    if (vm.showOptionsDialog) OptionsDialog(onDismissRequest = vm::dismissDialogs, onConfirm = {})
 
-    Scaffold(
-        topBar = {
-            AppTopBar(
-                title = stringResource(R.string.select_patches),
-                onBackClick = onBackClick,
-                actions = {
-                    IconButton(onClick = { }) {
-                        Icon(Icons.Outlined.HelpOutline, stringResource(R.string.help))
-                    }
-                    IconButton(onClick = { }) {
-                        Icon(Icons.Outlined.Search, stringResource(R.string.search))
-                    }
-                }
-            )
-        },
-        floatingActionButton = {
-            ExtendedFloatingActionButton(
-                text = { Text(stringResource(R.string.patch)) },
-                icon = { Icon(Icons.Default.Build, null) },
-                onClick = { startPatching(vm.selectedPatches) })
-        }
-    ) { paddingValues ->
+    Scaffold(topBar = {
+        AppTopBar(title = stringResource(R.string.select_patches), onBackClick = onBackClick, actions = {
+            IconButton(onClick = { }) {
+                Icon(Icons.Outlined.HelpOutline, stringResource(R.string.help))
+            }
+            IconButton(onClick = { }) {
+                Icon(Icons.Outlined.Search, stringResource(R.string.search))
+            }
+        })
+    }, floatingActionButton = {
+        ExtendedFloatingActionButton(text = { Text(stringResource(R.string.patch)) },
+            icon = { Icon(Icons.Default.Build, null) },
+            onClick = { startPatching(vm.selectedPatches) })
+    }) { paddingValues ->
         Column(Modifier.fillMaxSize().padding(paddingValues)) {
             TabRow(
                 selectedTabIndex = pagerState.currentPage,
@@ -112,31 +97,32 @@ fun PatchesSelectorScreen(
                     val bundle = bundles[index]
 
                     LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
+                        modifier = Modifier.fillMaxSize()
                     ) {
                         items(
                             items = bundle.supported
                         ) { patch ->
-                            PatchItem(patch, onOptionsDialog = vm::openOptionsDialog, onToggle = {
-                                vm.togglePatch(patch)
-                            }, selected = vm.isSelected(patch), supported = true)
+                            PatchItem(
+                                patch = patch,
+                                onOptionsDialog = vm::openOptionsDialog,
+                                onToggle = {
+                                    vm.togglePatch(patch)
+                                },
+                                selected = vm.isSelected(patch),
+                                supported = true
+                            )
                         }
 
                         if (bundle.unsupported.isNotEmpty()) {
                             item {
                                 Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 14.dp)
-                                        .padding(end = 10.dp),
+                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp).padding(end = 10.dp),
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
                                     GroupHeader(stringResource(R.string.unsupported_patches), Modifier.padding(0.dp))
                                     IconButton(onClick = vm::openUnsupportedDialog) {
                                         Icon(
-                                            Icons.Outlined.HelpOutline,
-                                            stringResource(R.string.help)
+                                            Icons.Outlined.HelpOutline, stringResource(R.string.help)
                                         )
                                     }
                                 }
@@ -147,15 +133,20 @@ fun PatchesSelectorScreen(
                             items = bundle.unsupported,
                             // key = { it.name }
                         ) { patch ->
-                            PatchItem(patch, onOptionsDialog = vm::openOptionsDialog, onToggle = {
-                                vm.togglePatch(patch)
-                            }, selected = vm.isSelected(patch), supported = allowUnsupported)
+                            PatchItem(
+                                patch = patch,
+                                onOptionsDialog = vm::openOptionsDialog,
+                                onToggle = {
+                                    vm.togglePatch(patch)
+                                },
+                                selected = vm.isSelected(patch),
+                                supported = allowUnsupported
+                            )
                         }
                     }
 
 
-                }
-            )
+                })
         }
     }
 }
@@ -168,8 +159,7 @@ fun UnsupportedDialog(
     val supportedVersions =
         listOf("1.1.1", "1.2.0", "1.1.1", "1.2.0", "1.1.1", "1.2.0", "1.1.1", "1.2.0", "1.1.1", "1.2.0")
 
-    AlertDialog(
-        modifier = Modifier.padding(vertical = 45.dp),
+    AlertDialog(modifier = Modifier.padding(vertical = 45.dp),
         onDismissRequest = onDismissRequest,
         confirmButton = {
             TextButton(onClick = onDismissRequest) {
@@ -177,29 +167,21 @@ fun UnsupportedDialog(
             }
         },
         title = { Text(stringResource(R.string.unsupported_app)) },
-        text = { Text(stringResource(R.string.app_not_supported, appVersion, supportedVersions.joinToString(", "))) }
-    )
+        text = { Text(stringResource(R.string.app_not_supported, appVersion, supportedVersions.joinToString(", "))) })
 }
 
 @Composable
 fun OptionsDialog(
-    onDismissRequest: () -> Unit,
-    onConfirm: () -> Unit
+    onDismissRequest: () -> Unit, onConfirm: () -> Unit
 ) {
-    AlertDialog(
-        onDismissRequest = onDismissRequest,
-        confirmButton = {
-            Button(onClick = {
-                onConfirm()
-                onDismissRequest()
-            }
-            ) {
-                Text(stringResource(R.string.apply))
-            }
-        },
-        title = { Text(stringResource(R.string.options)) },
-        text = {
-            Text("You really thought these would exist?")
+    AlertDialog(onDismissRequest = onDismissRequest, confirmButton = {
+        Button(onClick = {
+            onConfirm()
+            onDismissRequest()
+        }) {
+            Text(stringResource(R.string.apply))
         }
-    )
+    }, title = { Text(stringResource(R.string.options)) }, text = {
+        Text("You really thought these would exist?")
+    })
 }
