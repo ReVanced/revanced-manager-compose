@@ -16,6 +16,7 @@ import org.koin.core.component.inject
 import java.io.File
 import java.io.FileNotFoundException
 
+// TODO: setup wakelock + notification so android doesn't murder us.
 class PatcherWorker(context: Context, parameters: WorkerParameters) : CoroutineWorker(context, parameters),
     KoinComponent {
     private val patchesRepository: PatchesRepository by inject()
@@ -29,6 +30,10 @@ class PatcherWorker(context: Context, parameters: WorkerParameters) : CoroutineW
         val packageVersion: String
     )
 
+    companion object {
+        const val ARGS_KEY = "args"
+    }
+
     override suspend fun doWork(): Result {
         if (runAttemptCount > 0) {
             Log.d("revanced-worker", "Android requested retrying but retrying is disabled.")
@@ -40,26 +45,39 @@ class PatcherWorker(context: Context, parameters: WorkerParameters) : CoroutineW
         val frameworkPath =
             applicationContext.cacheDir.resolve("framework").also { it.mkdirs() }.absolutePath
 
-        val args = Json.decodeFromString<Args>(inputData.getString("args")!!)
+        val args = Json.decodeFromString<Args>(inputData.getString(ARGS_KEY)!!)
         val selected = args.selectedPatches.toSet()
 
         val patchList = patchesRepository.loadPatchClassesFiltered(args.packageName)
             .filter { selected.contains(it.patchName) }
 
-        setProgress(ProgressUtil.toWorkData(Session.Progress.Unpacking))
+        val progressManager = PatcherProgressManager(args.selectedPatches)
+
+        suspend fun updateProgress() {
+            setProgress(progressManager.groupsToWorkData())
+        }
+
+        suspend fun updateProgress(progress: Progress) {
+            progressManager.handle(progress)
+            updateProgress()
+        }
+
+        updateProgress(Progress.Unpacking)
 
         return try {
             Session(applicationContext.cacheDir.path, frameworkPath, aaptPath, File(args.input)) {
-                setProgress(ProgressUtil.toWorkData(it))
+                updateProgress(it)
             }.use { session ->
                 session.run(File(args.output), patchList, patchesRepository.getIntegrations())
             }
 
             Log.i("revanced-worker", "Patching succeeded")
-            Result.success()
+            progressManager.success().also { updateProgress() }
+            Result.success(progressManager.groupsToWorkData())
         } catch (e: Throwable) {
             Log.e("revanced-worker", "Got exception while patching", e)
-            Result.failure()
+            progressManager.failure().also { updateProgress() }
+            Result.failure(progressManager.groupsToWorkData())
         }
     }
 }
