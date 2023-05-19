@@ -40,20 +40,16 @@ import app.revanced.manager.compose.ui.component.AppTopBar
 import app.revanced.manager.compose.ui.component.GroupHeader
 import app.revanced.manager.compose.ui.component.PatchItem
 import app.revanced.manager.compose.ui.viewmodel.PatchesSelectorViewModel
-import app.revanced.manager.compose.util.PackageInfo
 import kotlinx.coroutines.launch
-import org.koin.androidx.compose.getViewModel
-import org.koin.core.parameter.parametersOf
 
 const val allowUnsupported = false
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun PatchesSelectorScreen(
-    packageInfo: PackageInfo,
-    startPatching: (PackageInfo, List<String>) -> Unit,
+    startPatching: (List<String>) -> Unit,
     onBackClick: () -> Unit,
-    vm: PatchesSelectorViewModel = getViewModel { parametersOf(packageInfo) }
+    vm: PatchesSelectorViewModel
 ) {
     val pagerState = rememberPagerState()
     val coroutineScope = rememberCoroutineScope()
@@ -88,7 +84,7 @@ fun PatchesSelectorScreen(
             ExtendedFloatingActionButton(
                 text = { Text(stringResource(R.string.patch)) },
                 icon = { Icon(Icons.Default.Build, null) },
-                onClick = { startPatching(packageInfo, vm.selectedPatches) })
+                onClick = { startPatching(vm.selectedPatches) })
         }
     ) { paddingValues ->
         Column(Modifier.fillMaxSize().padding(paddingValues)) {

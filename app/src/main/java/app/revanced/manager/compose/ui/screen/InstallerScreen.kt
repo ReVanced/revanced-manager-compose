@@ -9,16 +9,11 @@ import androidx.compose.ui.Modifier
 import app.revanced.manager.compose.ui.component.AppScaffold
 import app.revanced.manager.compose.ui.component.AppTopBar
 import app.revanced.manager.compose.ui.viewmodel.InstallerScreenViewModel
-import app.revanced.manager.compose.util.PackageInfo
-import org.koin.androidx.compose.getViewModel
-import org.koin.core.parameter.parametersOf
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InstallerScreen(
-    input: PackageInfo,
-    selectedPatches: List<String>,
-    vm: InstallerScreenViewModel = getViewModel { parametersOf(input, selectedPatches) }
+    vm: InstallerScreenViewModel
 ) {
     AppScaffold(
         topBar = {

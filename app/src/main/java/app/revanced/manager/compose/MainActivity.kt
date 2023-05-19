@@ -25,6 +25,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
+import org.koin.androidx.compose.getViewModel
+import org.koin.core.parameter.parametersOf
 
 class MainActivity : ComponentActivity() {
     private val prefs: PreferencesManager by inject()
@@ -70,18 +72,23 @@ class MainActivity : ComponentActivity() {
 
                         is Destination.PatchesSelector -> PatchesSelectorScreen(
                             onBackClick = { navController.pop() },
-                            startPatching = { pkg, selected ->
+                            startPatching = {
                                 navController.navigate(
                                     Destination.Installer(
-                                        pkg,
-                                        selected
+                                        destination.input,
+                                        it
                                     )
                                 )
                             },
-                            packageInfo = destination.input
+                            vm = getViewModel { parametersOf(destination.input) }
                         )
 
-                        is Destination.Installer -> InstallerScreen(destination.input, destination.selectedPatches)
+                        is Destination.Installer -> InstallerScreen(getViewModel {
+                            parametersOf(
+                                destination.input,
+                                destination.selectedPatches
+                            )
+                        })
                     }
                 }
             }

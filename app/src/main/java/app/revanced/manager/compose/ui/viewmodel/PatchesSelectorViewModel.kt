@@ -2,15 +2,12 @@ package app.revanced.manager.compose.ui.viewmodel
 
 import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import app.revanced.manager.compose.patcher.data.repository.PatchesRepository
-import app.revanced.manager.compose.patcher.patch.Option
 import app.revanced.manager.compose.patcher.patch.PatchInfo
 import app.revanced.manager.compose.util.PackageInfo
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 
-class PatchesSelectorViewModel(val packageInfo: PackageInfo, patchesRepository: PatchesRepository) :
+class PatchesSelectorViewModel(packageInfo: PackageInfo, patchesRepository: PatchesRepository) :
     ViewModel() {
     val bundlesFlow = patchesRepository.getPatchInformation().map { patches ->
         val supported = mutableListOf<PatchInfo>()
