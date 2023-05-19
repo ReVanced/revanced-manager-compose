@@ -88,7 +88,7 @@ fun PatchesSelectorScreen(
             ExtendedFloatingActionButton(
                 text = { Text(stringResource(R.string.patch)) },
                 icon = { Icon(Icons.Default.Build, null) },
-                onClick = { startPatching(packageInfo, vm.selectedPatches.map { it.name }) })
+                onClick = { startPatching(packageInfo, vm.selectedPatches) })
         }
     ) { paddingValues ->
         Column(Modifier.fillMaxSize().padding(paddingValues)) {
@@ -123,11 +123,8 @@ fun PatchesSelectorScreen(
                             items = bundle.supported
                         ) { patch ->
                             PatchItem(patch, onOptionsDialog = vm::openOptionsDialog, onToggle = {
-                                if (vm.selectedPatches.contains(patch))
-                                    vm.selectedPatches.remove(patch)
-                                else
-                                    vm.selectedPatches.add(patch)
-                            }, selected = vm.selectedPatches.contains(patch), supported = true)
+                                vm.togglePatch(patch)
+                            }, selected = vm.isSelected(patch), supported = true)
                         }
 
                         if (bundle.unsupported.isNotEmpty()) {
@@ -155,11 +152,8 @@ fun PatchesSelectorScreen(
                             // key = { it.name }
                         ) { patch ->
                             PatchItem(patch, onOptionsDialog = vm::openOptionsDialog, onToggle = {
-                                if (vm.selectedPatches.contains(patch))
-                                    vm.selectedPatches.remove(patch)
-                                else
-                                    vm.selectedPatches.add(patch)
-                            }, selected = vm.selectedPatches.contains(patch), supported = allowUnsupported)
+                                vm.togglePatch(patch)
+                            }, selected = vm.isSelected(patch), supported = allowUnsupported)
                         }
                     }
 

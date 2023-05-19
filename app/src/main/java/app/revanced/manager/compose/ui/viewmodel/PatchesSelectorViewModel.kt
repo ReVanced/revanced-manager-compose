@@ -30,7 +30,13 @@ class PatchesSelectorViewModel(val packageInfo: PackageInfo, patchesRepository: 
         )
     }
 
-    val selectedPatches = mutableStateListOf<PatchInfo>()
+    val selectedPatches = mutableStateListOf<String>()
+
+    fun isSelected(patch: PatchInfo) = selectedPatches.contains(patch.name)
+    fun togglePatch(patch: PatchInfo) {
+        val name = patch.name
+        if (isSelected(patch)) selectedPatches.remove(name) else selectedPatches.add(patch.name)
+    }
 
     data class Bundle(
         val name: String,
