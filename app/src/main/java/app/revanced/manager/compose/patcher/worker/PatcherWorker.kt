@@ -51,7 +51,7 @@ class PatcherWorker(context: Context, parameters: WorkerParameters) : CoroutineW
         val patchList = patchesRepository.loadPatchClassesFiltered(args.packageName)
             .filter { selected.contains(it.patchName) }
 
-        val progressManager = PatcherProgressManager(args.selectedPatches)
+        val progressManager = PatcherProgressManager(applicationContext, args.selectedPatches)
 
         suspend fun updateProgress() {
             setProgress(progressManager.groupsToWorkData())

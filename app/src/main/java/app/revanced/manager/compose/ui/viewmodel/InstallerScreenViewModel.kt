@@ -26,9 +26,9 @@ import java.io.File
 class InstallerScreenViewModel(
     input: PackageInfo,
     selectedPatches: List<String>,
-    val app: Application
+    private val app: Application
 ) : ViewModel() {
-    var stepGroups by mutableStateOf<List<StepGroup>>(PatcherProgressManager.generateGroupsList(selectedPatches))
+    var stepGroups by mutableStateOf<List<StepGroup>>(PatcherProgressManager.generateGroupsList(app, selectedPatches))
         private set
 
     private val workManager = WorkManager.getInstance(app)

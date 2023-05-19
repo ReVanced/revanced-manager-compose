@@ -132,7 +132,7 @@ fun PatchesSelectorScreen(
                                         .padding(end = 10.dp),
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    GroupHeader("Unsupported patches", Modifier.padding(0.dp))
+                                    GroupHeader(stringResource(R.string.unsupported_patches), Modifier.padding(0.dp))
                                     IconButton(onClick = vm::openUnsupportedDialog) {
                                         Icon(
                                             Icons.Outlined.HelpOutline,

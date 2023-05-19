@@ -1,7 +1,10 @@
 package app.revanced.manager.compose.patcher.worker
 
+import android.content.Context
+import androidx.annotation.StringRes
 import androidx.work.Data
 import androidx.work.workDataOf
+import app.revanced.manager.compose.R
 import app.revanced.manager.compose.patcher.Session
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -29,10 +32,10 @@ enum class StepStatus {
 class Step(val name: String, val status: StepStatus = StepStatus.WAITING)
 
 @Serializable
-class StepGroup(val name: String, val steps: List<Step>, val status: StepStatus = StepStatus.WAITING)
+class StepGroup(@StringRes val name: Int, val steps: List<Step>, val status: StepStatus = StepStatus.WAITING)
 
-class PatcherProgressManager(selectedPatches: List<String>) {
-    val stepGroups = generateGroupsList(selectedPatches)
+class PatcherProgressManager(context: Context, selectedPatches: List<String>) {
+    val stepGroups = generateGroupsList(context, selectedPatches)
 
     companion object {
         private const val PATCHES = 1
@@ -48,13 +51,22 @@ class PatcherProgressManager(selectedPatches: List<String>) {
             Progress.Saving to StepKey(2, 0),
         )
 
-        fun generateGroupsList(selectedPatches: List<String>) = mutableListOf(
-            StepGroup("Preparation", listOf(Step("Unpack apk"), Step("Merge integrations"))),
+        fun generateGroupsList(context: Context, selectedPatches: List<String>) = mutableListOf(
             StepGroup(
-                "Patching",
+                R.string.patcher_step_group_prepare,
+                listOf(
+                    Step(context.getString(R.string.patcher_step_unpack)),
+                    Step(context.getString(R.string.patcher_step_integrations))
+                )
+            ),
+            StepGroup(
+                R.string.patcher_step_group_patching,
                 selectedPatches.map { Step(it) }
             ),
-            StepGroup("Saving", listOf(Step("Write patched apk")))
+            StepGroup(
+                R.string.patcher_step_group_saving,
+                listOf(Step(context.getString(R.string.patcher_step_write_patched)))
+            )
         )
 
         fun groupsFromWorkData(workData: Data) = workData.getString(WORK_DATA_KEY)
