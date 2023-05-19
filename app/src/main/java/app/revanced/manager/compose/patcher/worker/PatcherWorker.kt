@@ -53,13 +53,9 @@ class PatcherWorker(context: Context, parameters: WorkerParameters) : CoroutineW
 
         val progressManager = PatcherProgressManager(applicationContext, args.selectedPatches)
 
-        suspend fun updateProgress() {
-            setProgress(progressManager.groupsToWorkData())
-        }
-
         suspend fun updateProgress(progress: Progress) {
             progressManager.handle(progress)
-            updateProgress()
+            setProgress(progressManager.groupsToWorkData())
         }
 
         updateProgress(Progress.Unpacking)
@@ -72,11 +68,11 @@ class PatcherWorker(context: Context, parameters: WorkerParameters) : CoroutineW
             }
 
             Log.i("revanced-worker", "Patching succeeded")
-            progressManager.success().also { updateProgress() }
+            progressManager.success()
             Result.success(progressManager.groupsToWorkData())
         } catch (e: Throwable) {
             Log.e("revanced-worker", "Got exception while patching", e)
-            progressManager.failure().also { updateProgress() }
+            progressManager.failure()
             Result.failure(progressManager.groupsToWorkData())
         }
     }
