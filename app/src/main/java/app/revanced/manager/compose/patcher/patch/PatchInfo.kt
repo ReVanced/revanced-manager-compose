@@ -28,6 +28,11 @@ data class PatchInfo(
         patch.include,
         patch.compatiblePackages?.map { CompatiblePackage(it) },
         patch.options?.map { Option(it) })
+
+    fun compatibleWith(packageName: String) = compatiblePackages?.any { it.name == packageName } ?: true
+
+    fun supportsVersion(versionName: String) =
+        compatiblePackages?.any { compatiblePackages.any { it.versions.isEmpty() || it.versions.any { version -> version == versionName } } } ?: true
 }
 
 @Parcelize

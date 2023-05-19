@@ -1,20 +1,43 @@
 package app.revanced.manager.compose.patcher.data.repository
 
 import app.revanced.manager.compose.network.api.ManagerAPI
-import app.revanced.manager.compose.patcher.data.PatchBundleDataSource
+import app.revanced.manager.compose.patcher.data.PatchBundle
+import app.revanced.manager.compose.patcher.patch.PatchInfo
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 
-// TODO: this might make more sense in the "domain" layer.
 class PatchesRepository(private val managerAPI: ManagerAPI) {
-    private var bundle: PatchBundleDataSource? = null
+    private val patchInformation = MutableSharedFlow<List<PatchInfo>>(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    private var bundle: PatchBundle? = null
 
-    private suspend fun getBundle() = bundle ?: PatchBundleDataSource(
+    private val scope = CoroutineScope(Job() + Dispatchers.IO)
+
+    /**
+     * Load a new bundle and update state associated with it.
+     */
+    private suspend fun loadNewBundle(new: PatchBundle) {
+        bundle = new
+        withContext(Dispatchers.Main) {
+            patchInformation.emit(new.loadAllPatches().map { PatchInfo(it) })
+        }
+    }
+
+    /**
+     * Get the [PatchBundle], loading it if needed.
+     */
+    private suspend fun getBundle() = bundle ?: PatchBundle(
         managerAPI.downloadPatchBundle()!!.absolutePath,
         managerAPI.downloadIntegrations()
-    ).also { bundle = it }
+    ).also {
+        loadNewBundle(it)
+    }
 
-    suspend fun patchClassesFor(packageName: String, packageVersion: String) =
-        getBundle().getPatchesFiltered(packageName, packageVersion)
+    suspend fun loadPatchClassesFiltered(packageName: String) =
+        getBundle().loadPatchesFiltered(packageName)
 
-    // TODO: move this out of here.
+    fun getPatchInformation() = patchInformation.asSharedFlow().also { scope.launch { getBundle() } }
+
     suspend fun getIntegrations() = listOfNotNull(getBundle().integrations)
 }

@@ -1,131 +1,58 @@
 package app.revanced.manager.compose.ui.viewmodel
 
-import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.revanced.manager.compose.patcher.data.repository.PatchesRepository
 import app.revanced.manager.compose.patcher.patch.Option
 import app.revanced.manager.compose.patcher.patch.PatchInfo
 import app.revanced.manager.compose.util.PackageInfo
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
-class PatchesSelectorViewModel(val packageInfo: PackageInfo, private val patchesRepository: PatchesRepository) :
+class PatchesSelectorViewModel(val packageInfo: PackageInfo, patchesRepository: PatchesRepository) :
     ViewModel() {
-    private val patchesList = listOf(
-        FakePatch(
-            "amogus-patch",
-            "adds amogus to all apps, mogus mogus mogus mogus mogus mogus mogus mogus mogus mogus mogus mogus mogus mogus mogus mogus mogus ",
-            options = listOf(
-                Option(
-                    "amogus"
-                )
-            ),
-            isSupported = true
-        ),
-        FakePatch(
-            "microg-support", "makes microg work",
-            options = listOf(),
-            isSupported = false
-        ),
-        FakePatch(
-            "microg-support", "makes microg work",
-            options = listOf(),
-            isSupported = false
-        ),
-        FakePatch(
-            "microg-support", "makes microg work",
-            options = listOf(),
-            isSupported = true
-        ),
-        FakePatch(
-            "microg-support", "makes microg work",
-            options = listOf(),
-            isSupported = false
-        ),
-        FakePatch(
-            "microg-support", "makes microg work",
-            options = listOf(),
-            isSupported = false
-        ),
-        FakePatch(
-            "microg-support", "makes microg work",
-            options = listOf(),
-            isSupported = false
-        ),
-        FakePatch(
-            "microg-support", "makes microg work",
-            options = listOf(
-                Option(
-                    "amogus"
-                )
-            ),
-            isSupported = false
-        ),
-        FakePatch(
-            "microg-support", "makes microg work",
-            options = listOf(),
-            isSupported = false
-        ),
-        FakePatch(
-            "microg-support", "makes microg work",
-            options = listOf(),
-            isSupported = false
-        ),
+    val bundlesFlow = patchesRepository.getPatchInformation().map { patches ->
+        val supported = mutableListOf<PatchInfo>()
+        val unsupported = mutableListOf<PatchInfo>()
 
-        ).let { it + it + it + it + it }
+        patches.filter { it.compatibleWith(packageInfo.packageName) }.forEach {
+            val targetList = if (it.supportsVersion(packageInfo.packageName)) supported else unsupported
 
-    private val testingList = patchesList.groupBy { if (it.isSupported) "supported" else "unsupported" }
-        .mapValues { it.value.map { it.getReal() } }
-
-    val bundles = mutableStateListOf(
-        Bundle(
-            name = "offical",
-            patches = mapOf("supported" to emptyList(), "unsupported" to emptyList())
-        ),
-        Bundle(
-            name = "extended",
-            patches = testingList
-        ),
-        Bundle(
-            name = "balls",
-            patches = testingList
-        ),
-    )
-
-    init {
-        viewModelScope.launch {
-            val realPatches =
-                patchesRepository.patchClassesFor(packageInfo.packageName, packageInfo.version).map { PatchInfo(it) }
-            bundles[0] = Bundle(
-                name = "official",
-                patches = mapOf("supported" to realPatches, "unsupported" to emptyList())
-            )
+            targetList.add(it)
         }
+
+        listOf(
+            Bundle(
+                name = "official",
+                supported, unsupported
+            )
+        )
     }
 
     val selectedPatches = mutableStateListOf<PatchInfo>()
 
     data class Bundle(
         val name: String,
-        val patches: Map<String, List<PatchInfo>>
+        val supported: List<PatchInfo>,
+        val unsupported: List<PatchInfo>
     )
 
-    data class FakePatch(
-        val name: String,
-        val description: String,
-        val options: List<Option>,
-        val isSupported: Boolean
-    ) {
-        fun getReal() = PatchInfo(
-            name,
-            description,
-            null,
-            false,
-            null,
-            options.takeIf { !it.isEmpty() }?.map { Option(name, name, "a", false) })
+    var showOptionsDialog by mutableStateOf(false)
+        private set
+    var showUnsupportedDialog by mutableStateOf(false)
+        private set
+
+    fun dismissDialogs() {
+        showOptionsDialog = false
+        showUnsupportedDialog = false
     }
 
-    data class Option(
-        val name: String
-    )
+    fun openOptionsDialog() {
+        showOptionsDialog = true
+    }
+
+    fun openUnsupportedDialog() {
+        showUnsupportedDialog = true
+    }
 }

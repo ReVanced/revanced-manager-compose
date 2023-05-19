@@ -1,7 +1,6 @@
 package app.revanced.manager.compose.ui.screen
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,15 +15,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
@@ -34,22 +30,22 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.revanced.manager.compose.R
 import app.revanced.manager.compose.ui.component.AppTopBar
 import app.revanced.manager.compose.ui.component.GroupHeader
+import app.revanced.manager.compose.ui.component.PatchItem
 import app.revanced.manager.compose.ui.viewmodel.PatchesSelectorViewModel
 import app.revanced.manager.compose.util.PackageInfo
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.getViewModel
 import org.koin.core.parameter.parametersOf
+
+const val allowUnsupported = false
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -62,15 +58,14 @@ fun PatchesSelectorScreen(
     val pagerState = rememberPagerState()
     val coroutineScope = rememberCoroutineScope()
 
-    var showOptionsDialog by rememberSaveable { mutableStateOf(false) }
-    var showUnsupportedDialog by rememberSaveable { mutableStateOf(false) }
+    val bundles by vm.bundlesFlow.collectAsStateWithLifecycle(initialValue = emptyList())
 
-    if (showUnsupportedDialog)
-        UnsupportedDialog(onDismissRequest = { showUnsupportedDialog = false })
+    if (vm.showUnsupportedDialog)
+        UnsupportedDialog(onDismissRequest = vm::dismissDialogs)
 
-    if (showOptionsDialog)
+    if (vm.showOptionsDialog)
         OptionsDialog(
-            onDismissRequest = { showOptionsDialog = false },
+            onDismissRequest = vm::dismissDialogs,
             onConfirm = {}
         )
 
@@ -101,7 +96,7 @@ fun PatchesSelectorScreen(
                 selectedTabIndex = pagerState.currentPage,
                 containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.0.dp)
             ) {
-                vm.bundles.forEachIndexed { index, bundle ->
+                bundles.forEachIndexed { index, bundle ->
                     Tab(
                         selected = pagerState.currentPage == index,
                         onClick = { coroutineScope.launch { pagerState.animateScrollToPage(index) } },
@@ -113,55 +108,29 @@ fun PatchesSelectorScreen(
             }
 
             HorizontalPager(
-                pageCount = vm.bundles.size,
+                pageCount = bundles.size,
                 state = pagerState,
                 userScrollEnabled = true,
                 pageContent = { index ->
 
-                    val patches = vm.bundles[index].patches
+                    val bundle = bundles[index]
 
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
                     ) {
                         items(
-                            items = patches["supported"]!!
+                            items = bundle.supported
                         ) { patch ->
-                            ListItem(
-                                modifier = Modifier.clickable {
-                                    if (vm.selectedPatches.contains(patch))
-                                        vm.selectedPatches.remove(patch)
-                                    else
-                                        vm.selectedPatches.add(patch)
-                                },
-                                leadingContent = {
-                                    Checkbox(
-                                        checked = vm.selectedPatches.contains(patch),
-                                        onCheckedChange = {
-                                            if (vm.selectedPatches.contains(patch))
-                                                vm.selectedPatches.remove(patch)
-                                            else
-                                                vm.selectedPatches.add(patch)
-                                        }
-                                    )
-                                },
-                                headlineContent = {
-                                    Text(patch.name)
-                                },
-                                supportingContent = {
-                                    Text(patch.description ?: "")
-                                },
-                                trailingContent = {
-                                    if (patch.options?.isNotEmpty() == true) {
-                                        IconButton(onClick = { showOptionsDialog = true }) {
-                                            Icon(Icons.Outlined.Settings, null)
-                                        }
-                                    }
-                                }
-                            )
+                            PatchItem(patch, onOptionsDialog = vm::openOptionsDialog, onToggle = {
+                                if (vm.selectedPatches.contains(patch))
+                                    vm.selectedPatches.remove(patch)
+                                else
+                                    vm.selectedPatches.add(patch)
+                            }, selected = vm.selectedPatches.contains(patch), supported = true)
                         }
 
-                        if (patches["unsupported"]!!.isNotEmpty()) {
+                        if (bundle.unsupported.isNotEmpty()) {
                             item {
                                 Row(
                                     modifier = Modifier
@@ -171,7 +140,7 @@ fun PatchesSelectorScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
                                     GroupHeader("Unsupported patches", Modifier.padding(0.dp))
-                                    IconButton(onClick = { showUnsupportedDialog = true }) {
+                                    IconButton(onClick = vm::openUnsupportedDialog) {
                                         Icon(
                                             Icons.Outlined.HelpOutline,
                                             stringResource(R.string.help)
@@ -182,45 +151,15 @@ fun PatchesSelectorScreen(
                         }
 
                         items(
-                            items = patches["unsupported"]!!,
+                            items = bundle.unsupported,
                             // key = { it.name }
                         ) { patch ->
-
-                            ListItem(
-                                modifier = Modifier
-                                    .alpha(0.5f)
-                                    .clickable(enabled = false) {
-                                        if (vm.selectedPatches.contains(patch))
-                                            vm.selectedPatches.remove(patch)
-                                        else
-                                            vm.selectedPatches.add(patch)
-                                    },
-                                leadingContent = {
-                                    Checkbox(
-                                        checked = vm.selectedPatches.contains(patch),
-                                        onCheckedChange = {
-                                            if (vm.selectedPatches.contains(patch))
-                                                vm.selectedPatches.remove(patch)
-                                            else
-                                                vm.selectedPatches.add(patch)
-                                        },
-                                        enabled = false
-                                    )
-                                },
-                                headlineContent = {
-                                    Text(patch.name)
-                                },
-                                supportingContent = {
-                                    Text(patch.description ?: "")
-                                },
-                                trailingContent = {
-                                    if (patch.options?.isNotEmpty() == true) {
-                                        IconButton(onClick = { showOptionsDialog = true }, enabled = false) {
-                                            Icon(Icons.Outlined.Settings, null)
-                                        }
-                                    }
-                                }
-                            )
+                            PatchItem(patch, onOptionsDialog = vm::openOptionsDialog, onToggle = {
+                                if (vm.selectedPatches.contains(patch))
+                                    vm.selectedPatches.remove(patch)
+                                else
+                                    vm.selectedPatches.add(patch)
+                            }, selected = vm.selectedPatches.contains(patch), supported = allowUnsupported)
                         }
                     }
 

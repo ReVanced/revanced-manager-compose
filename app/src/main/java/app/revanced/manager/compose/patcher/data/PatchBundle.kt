@@ -7,7 +7,7 @@ import app.revanced.patcher.util.patch.PatchBundle
 import dalvik.system.PathClassLoader
 import java.io.File
 
-class PatchBundleDataSource(private val loader: Iterable<PatchClass>, val integrations: File?) {
+class PatchBundle(private val loader: Iterable<PatchClass>, val integrations: File?) {
     constructor(bundleJar: String, integrations: File?) : this(
         object : Iterable<PatchClass> {
             private val bundle = PatchBundle.Dex(
@@ -20,14 +20,10 @@ class PatchBundleDataSource(private val loader: Iterable<PatchClass>, val integr
         integrations
     )
 
-    private companion object {
-        const val allowExperimental = false
-    }
-
     /**
      * @return A list of patches that are compatible with this Apk.
      */
-    fun getPatchesFiltered(packageName: String, packageVersion: String) = loader.filter { patch ->
+    fun loadPatchesFiltered(packageName: String) = loader.filter { patch ->
         val compatiblePackages = patch.compatiblePackages
             ?: // The patch has no compatibility constraints, which means it is universal.
             return@filter true
@@ -37,13 +33,8 @@ class PatchBundleDataSource(private val loader: Iterable<PatchClass>, val integr
             return@filter false
         }
 
-        if (!(allowExperimental || compatiblePackages.any { it.versions.isEmpty() || it.versions.any { version -> version == packageVersion } })) {
-            // Patch is not compatible with this version.
-            return@filter false
-        }
-
         true
     }
 
-    fun getRecommendedVersion(packageName: String) = "0.69.420"
+    fun loadAllPatches() = loader.toList()
 }

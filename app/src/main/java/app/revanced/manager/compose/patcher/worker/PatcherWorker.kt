@@ -4,7 +4,6 @@ import android.content.Context
 import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import androidx.work.workDataOf
 import app.revanced.manager.compose.patcher.data.repository.PatchesRepository
 import app.revanced.manager.compose.patcher.Session
 import app.revanced.manager.compose.patcher.aapt.Aapt
@@ -44,7 +43,7 @@ class PatcherWorker(context: Context, parameters: WorkerParameters) : CoroutineW
         val args = Json.decodeFromString<Args>(inputData.getString("args")!!)
         val selected = args.selectedPatches.toSet()
 
-        val patchList = patchesRepository.patchClassesFor(args.packageName, args.packageVersion)
+        val patchList = patchesRepository.loadPatchClassesFiltered(args.packageName)
             .filter { selected.contains(it.patchName) }
 
         setProgress(ProgressUtil.toWorkData(Session.Progress.Unpacking))
