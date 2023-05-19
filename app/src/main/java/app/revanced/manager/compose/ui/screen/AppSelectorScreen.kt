@@ -75,7 +75,7 @@ fun AppSelectorScreen(
                                 leadingContent = { AppIcon(app.icon, null, 36) },
                                 headlineContent = { Text(app.label) },
                                 supportingContent = { Text(app.packageName) },
-                                trailingContent = { Text("robert should have used android quantity strings for this.") }
+                                trailingContent = { Text("420 Patches") }
                             )
 
                         }
@@ -141,7 +141,7 @@ fun AppSelectorScreen(
                                 headlineContent = { Text(app.label) },
                                 supportingContent = { Text(app.packageName) },
                                 trailingContent = {
-                                    Text("robert should have used android quantity strings for the patch count.")
+                                    Text("420 Patches")
                                 }
                             )
 
