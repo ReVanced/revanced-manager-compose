@@ -11,6 +11,8 @@ import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.outlined.HelpOutline
+import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -20,7 +22,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -49,6 +50,14 @@ fun InstallerScreen(
             AppTopBar(
                 title = stringResource(R.string.installer),
                 onBackClick = onBackClick,
+                actions = {
+                    IconButton(onClick = {}) {
+                        Icon(Icons.Outlined.HelpOutline, stringResource(R.string.help))
+                    }
+                    IconButton(onClick = {}) {
+                        Icon(Icons.Outlined.MoreVert, stringResource(R.string.more))
+                    }
+                }
             )
         }
     ) { paddingValues ->
@@ -60,19 +69,27 @@ fun InstallerScreen(
             vm.stepGroups.forEach {
                 InstallGroup(it)
             }
-
-            Button(
-                onClick = vm::installApk,
-                enabled = vm.canInstall
+            Spacer(modifier = Modifier.weight(1f))
+            Row(
+                verticalAlignment = Alignment.Bottom,
+                horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
             ) {
-                Text(stringResource(R.string.install_app))
-            }
+                Button(
+                    onClick = { exportApkLauncher.launch("${vm.packageName}.apk") },
+                    enabled = vm.canInstall
+                ) {
+                    Text(stringResource(R.string.export_app))
+                }
 
-            Button(
-                onClick = { exportApkLauncher.launch("${vm.packageName}.apk") },
-                enabled = vm.canInstall
-            ) {
-                Text(stringResource(R.string.export_app))
+                Button(
+                    onClick = vm::installApk,
+                    enabled = vm.canInstall
+                ) {
+                    Text(stringResource(R.string.install_app))
+                }
             }
         }
     }
@@ -83,25 +100,32 @@ fun InstallerScreen(
 @Composable
 fun InstallGroup(group: StepGroup) {
     var expanded by rememberSaveable { mutableStateOf(true) }
-
     Column(
         modifier = Modifier
+            .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 8.dp)
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
+            .run {
+                if (expanded) {
+                    background(MaterialTheme.colorScheme.secondaryContainer)
+                } else this
+            }
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(start = 16.dp, end = 16.dp)
                 .run { if (expanded) {
+                    background(MaterialTheme.colorScheme.secondaryContainer)
+                } else
                     background(MaterialTheme.colorScheme.surface)
-                } else this }
+                }
         ) {
             StepIcon(group.status, 24.dp)
 
-            Text(text = stringResource(group.name))
+            Text(text = stringResource(group.name), style = MaterialTheme.typography.titleMedium)
 
             Spacer(modifier = Modifier.weight(1f))
 
@@ -138,7 +162,7 @@ fun InstallGroup(group: StepGroup) {
 
                         Text(
                             text = it.name,
-                            style = MaterialTheme.typography.labelLarge,
+                            style = MaterialTheme.typography.titleSmall,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.weight(1f, true),
@@ -158,7 +182,7 @@ fun StepIcon(status: StepStatus, size: Dp) {
         StepStatus.COMPLETED -> Icon(
             Icons.Filled.CheckCircle,
             contentDescription = "success",
-            tint = Color(0xFF59B463),
+            tint = MaterialTheme.colorScheme.surfaceTint,
             modifier = Modifier.size(size)
         )
 
