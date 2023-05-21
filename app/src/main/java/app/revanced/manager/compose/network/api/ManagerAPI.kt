@@ -34,41 +34,30 @@ class ManagerAPI(
         downloadProgress = null
     }
 
-    suspend fun downloadPatchBundle(): File? {
-        try {
-            val downloadUrl = revancedRepository.findAsset(ghPatches, ".jar").downloadUrl
-            val patchesFile = app.filesDir.resolve("patch-bundles").also { it.mkdirs() }
-                .resolve("patchbundle.jar")
-            downloadAsset(downloadUrl, patchesFile)
+    private suspend fun patchesAsset() = revancedRepository.findAsset(ghPatches, ".jar")
+    private suspend fun integrationsAsset() = revancedRepository.findAsset(ghIntegrations, ".apk")
 
-            return patchesFile
+    suspend fun getLatestVersion() = patchesAsset().version to integrationsAsset().version
+
+    suspend fun download(patchBundle: File, integrations: File): Pair<String, String> {
+        try {
+            val patchBundleAsset = patchesAsset()
+            val integrationsAsset = integrationsAsset()
+
+            downloadAsset(patchBundleAsset.downloadUrl, patchBundle)
+            downloadAsset(integrationsAsset.downloadUrl, integrations)
+
+            return patchBundleAsset.version to integrationsAsset.version
         } catch (e: Exception) {
             Log.e(tag, "Failed to download patch bundle", e)
             app.toast("Failed to download patch bundle")
+            throw e
         }
-
-        return null
-    }
-
-    suspend fun downloadIntegrations(): File? {
-        try {
-            val downloadUrl = revancedRepository.findAsset(ghIntegrations, ".apk").downloadUrl
-            val integrationsFile = app.filesDir.resolve("integrations").also { it.mkdirs() }
-                .resolve("integrations.apk")
-            downloadAsset(downloadUrl, integrationsFile)
-
-            return integrationsFile
-        } catch (e: Exception) {
-            Log.e(tag, "Failed to download integrations", e)
-            app.toast("Failed to download integrations")
-        }
-
-        return null
     }
 }
 
 data class PatchesAsset(
-    val downloadUrl: String, val name: String
+    val downloadUrl: String, val name: String, val version: String
 )
 
 class MissingAssetException : Exception()

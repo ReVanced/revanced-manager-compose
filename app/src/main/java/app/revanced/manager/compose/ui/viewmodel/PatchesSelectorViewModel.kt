@@ -5,29 +5,25 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import app.revanced.manager.compose.patcher.data.repository.PatchesRepository
+import app.revanced.manager.compose.domain.repository.PatchesRepository
 import app.revanced.manager.compose.patcher.patch.PatchInfo
 import app.revanced.manager.compose.util.PackageInfo
 import kotlinx.coroutines.flow.map
 
-class PatchesSelectorViewModel(packageInfo: PackageInfo, patchesRepository: PatchesRepository) :
-    ViewModel() {
-    val bundlesFlow = patchesRepository.getPatchInformation().map { patches ->
-        val supported = mutableListOf<PatchInfo>()
-        val unsupported = mutableListOf<PatchInfo>()
+class PatchesSelectorViewModel(packageInfo: PackageInfo, patchesRepository: PatchesRepository) : ViewModel() {
+    val bundlesFlow = patchesRepository.bundles.map { bundles ->
+        bundles.mapValues { (_, bundle) -> bundle.patches }.map { (name, patches) ->
+            val supported = mutableListOf<PatchInfo>()
+            val unsupported = mutableListOf<PatchInfo>()
 
-        patches.filter { it.compatibleWith(packageInfo.packageName) }.forEach {
-            val targetList = if (it.supportsVersion(packageInfo.packageName)) supported else unsupported
+            patches.filter { it.compatibleWith(packageInfo.packageName) }.forEach {
+                val targetList = if (it.supportsVersion(packageInfo.packageName)) supported else unsupported
 
-            targetList.add(it)
+                targetList.add(it)
+            }
+
+            Bundle(name, supported, unsupported)
         }
-
-        listOf(
-            Bundle(
-                name = "official",
-                supported, unsupported
-            )
-        )
     }
 
     val selectedPatches = mutableStateListOf<String>()
@@ -39,9 +35,7 @@ class PatchesSelectorViewModel(packageInfo: PackageInfo, patchesRepository: Patc
     }
 
     data class Bundle(
-        val name: String,
-        val supported: List<PatchInfo>,
-        val unsupported: List<PatchInfo>
+        val name: String, val supported: List<PatchInfo>, val unsupported: List<PatchInfo>
     )
 
     var showOptionsDialog by mutableStateOf(false)

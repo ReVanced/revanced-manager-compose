@@ -6,10 +6,9 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import app.revanced.manager.compose.patcher.Session
 import app.revanced.manager.compose.patcher.aapt.Aapt
-import app.revanced.manager.compose.patcher.data.repository.PatchesRepository
+import app.revanced.manager.compose.domain.repository.PatchesRepository
 import app.revanced.patcher.extensions.PatchExtensions.patchName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject

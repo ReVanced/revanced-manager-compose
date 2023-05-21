@@ -1,21 +1,45 @@
 package app.revanced.manager.compose.ui.screen
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import app.revanced.manager.compose.R
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.revanced.manager.compose.domain.manager.sources.NetworkSource
+import app.revanced.manager.compose.ui.viewmodel.SourcesScreenViewModel
+import org.koin.androidx.compose.getViewModel
 
 @Composable
-fun SourcesScreen() {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(
-            text = stringResource(R.string.no_sources_set),
-            style = MaterialTheme.typography.titleLarge
-        )
+fun SourcesScreen(vm: SourcesScreenViewModel = getViewModel()) {
+    val sources by vm.sources.collectAsStateWithLifecycle(initialValue = emptyMap())
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+    ) {
+        sources.forEach { (name, source) ->
+            Row {
+                Text(name)
+
+                Spacer(
+                    modifier = Modifier.weight(1f)
+                )
+
+                if (source is NetworkSource) {
+                    Button(onClick = { }) {
+                        Text("Reload this source")
+                    }
+                }
+            }
+        }
+
+        Button(onClick = vm::update) {
+            Text("Update all sources")
+        }
     }
 }

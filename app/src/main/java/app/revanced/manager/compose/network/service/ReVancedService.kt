@@ -35,7 +35,7 @@ class ReVancedService(
         val asset = releases.tools.find { asset ->
             (asset.name.contains(file) && asset.repository.contains(repo))
         } ?: throw MissingAssetException()
-        return PatchesAsset(asset.downloadUrl, asset.name)
+        return PatchesAsset(asset.downloadUrl, asset.name, asset.version)
     }
 
     private companion object {
