@@ -32,8 +32,8 @@ class MainActivity : ComponentActivity() {
 
         installSplashScreen()
 
-        mainScope.launch(Dispatchers.Main) {
-            bundleRepository.collectFlow()
+        mainScope.launch {
+            bundleRepository.onAppStart(this@MainActivity)
         }
 
         val context = this

@@ -1,6 +1,8 @@
 package app.revanced.manager.compose.domain.repository
 
+import androidx.lifecycle.LifecycleOwner
 import app.revanced.manager.compose.domain.manager.patch.PatchBundle
+import app.revanced.manager.compose.util.launchAndRepeatWithViewLifecycle
 import kotlinx.coroutines.flow.*
 
 class BundleRepository(sourcesProvider: SourcesProvider) {
@@ -21,7 +23,7 @@ class BundleRepository(sourcesProvider: SourcesProvider) {
     private val _bundles = MutableStateFlow<Map<String, PatchBundle>>(emptyMap())
     val bundles = _bundles.asStateFlow()
 
-    suspend fun collectFlow() {
+    suspend fun onAppStart(lifecycleOwner: LifecycleOwner) = lifecycleOwner.launchAndRepeatWithViewLifecycle {
         sourceUpdates.collect { events ->
             val map = HashMap<String, PatchBundle>()
             _bundles.emit(map)
