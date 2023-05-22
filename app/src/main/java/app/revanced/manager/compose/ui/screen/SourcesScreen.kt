@@ -7,7 +7,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
@@ -17,12 +16,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.revanced.manager.compose.R
 import app.revanced.manager.compose.domain.manager.sources.NetworkSource
 import app.revanced.manager.compose.ui.viewmodel.SourcesScreenViewModel
-import kotlinx.coroutines.launch
 import org.koin.androidx.compose.getViewModel
 
 @Composable
 fun SourcesScreen(vm: SourcesScreenViewModel = getViewModel()) {
-    val coroutineScope = rememberCoroutineScope()
     val sources by vm.sources.collectAsStateWithLifecycle()
 
     Column(
@@ -36,7 +33,7 @@ fun SourcesScreen(vm: SourcesScreenViewModel = getViewModel()) {
                     .height(64.dp)
                     .clickable {
                         if (source is NetworkSource) {
-                            coroutineScope.launch {
+                            vm.doUpdate {
                                 source.update()
                             }
                         }

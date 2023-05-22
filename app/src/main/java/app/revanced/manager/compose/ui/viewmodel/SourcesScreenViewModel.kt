@@ -12,12 +12,14 @@ import kotlinx.coroutines.launch
 class SourcesScreenViewModel(private val app: Application, private val sourcesProvider: SourcesProvider) : ViewModel() {
     val sources = sourcesProvider.sources
 
-    fun update() = viewModelScope.launch {
+    fun doUpdate(block: suspend () -> Unit) = viewModelScope.launch {
         try {
-            sourcesProvider.reloadSources()
+            block()
         } catch (err: Throwable) {
-            app.toast(app.getString(R.string.source_download_fail))
+            app.toast(app.getString(R.string.source_download_fail, err.message))
             Log.e("revanced-manager", "Failed to update patch bundles", err)
         }
     }
+
+    fun update() = doUpdate { sourcesProvider.reloadSources() }
 }
