@@ -26,6 +26,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,10 +41,9 @@ import app.revanced.manager.compose.R
 import app.revanced.manager.compose.ui.component.AppTopBar
 import app.revanced.manager.compose.ui.destination.SettingsDestination
 import app.revanced.manager.compose.ui.viewmodel.UpdateSettingsViewModel
-import dev.olshevski.navigation.reimagined.AnimatedNavHost
 import dev.olshevski.navigation.reimagined.NavController
 import dev.olshevski.navigation.reimagined.navigate
-import org.koin.compose.koinInject
+import org.koin.androidx.compose.getViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
@@ -67,61 +67,48 @@ fun UpdatesSettingsScreen(
     )
 
 
-    AnimatedNavHost(controller = navController) { destination ->
-        when(destination) {
-            is SettingsDestination.UpdateProgress -> {
-                UpdateProgressScreen(
-                    onBackClick = { navController.navigate(SettingsDestination.Updates) },
-                    vm = UpdateSettingsViewModel(koinInject())
+    Scaffold(
+        topBar = {
+            AppTopBar(
+                title = stringResource(R.string.updates),
+                onBackClick = onBackClick
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
+        ) {
+            UpdateNotification(
+                onClick = {
+                    navController.navigate(SettingsDestination.UpdateProgress)
+                }
+            )
+
+            listItems.forEach { (title, description, onClick) ->
+                ListItem(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                        .clickable { onClick() },
+                    headlineContent = {
+                        Text(
+                            title,
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                    },
+                    supportingContent = {
+                        Text(
+                            description,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.outline
+                        )
+                    }
                 )
             }
-            else -> {
-                Scaffold(
-                    topBar = {
-                        AppTopBar(
-                            title = stringResource(R.string.updates),
-                            onBackClick = onBackClick
-                        )
-                    }
-                ) { paddingValues ->
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(paddingValues)
-                            .verticalScroll(rememberScrollState())
-                    ) {
-                        UpdateNotification(
-                            onClick = {
-                                navController.navigate(SettingsDestination.UpdateProgress)
-                            }
-                        )
-
-                        listItems.forEach { (title, description, onClick) ->
-                            ListItem(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(8.dp)
-                                    .clickable { onClick() },
-                                headlineContent = {
-                                    Text(
-                                        title,
-                                        style = MaterialTheme.typography.titleLarge
-                                    )
-                                },
-                                supportingContent = {
-                                    Text(
-                                        description,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.outline
-                                    )
-                                }
-                            )
-                        }
-                    }
-                }
-            }
         }
-
     }
 }
 
@@ -155,13 +142,11 @@ fun UpdateNotification(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+@Stable
 fun UpdateProgressScreen(
     onBackClick: () -> Unit,
-    vm: UpdateSettingsViewModel = UpdateSettingsViewModel(
-        managerAPI = koinInject(),
-    )
+    vm: UpdateSettingsViewModel = getViewModel()
 ) {
-    vm.downloadLatestManager()
     Scaffold(
         topBar = {
             AppTopBar(
@@ -191,7 +176,7 @@ fun UpdateProgressScreen(
                     .fillMaxWidth()
             )
             Text(
-                text = if (!isInstalling) "${vm.downloadProgress.toInt()}%" else stringResource(R.string.installing_message),
+                text = if (!isInstalling) "${vm.downloadedSize.div(1000000)} MB /  ${vm.totalSize.div(1000000)} MB (${vm.downloadProgress.toInt()}%)" else stringResource(R.string.installing_message),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.outline,
                 modifier = Modifier.align(Alignment.CenterHorizontally),
@@ -214,7 +199,9 @@ fun UpdateProgressScreen(
                 ) {
                     Text(text = stringResource(R.string.cancel))
                 }
-                Button(onClick = { /*TODO*/ }) {
+                Button(onClick = {
+                    vm.installUpdate()
+                }) {
                     Text(text = stringResource(R.string.update))
                 }
             }

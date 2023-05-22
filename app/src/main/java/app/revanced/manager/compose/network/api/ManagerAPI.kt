@@ -1,6 +1,7 @@
 package app.revanced.manager.compose.network.api
 
 import android.app.Application
+import android.os.Environment
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -25,11 +26,15 @@ class ManagerAPI(
     private val revancedRepository: ReVancedRepository
 ) {
     var downloadProgress: Float? by mutableStateOf(null)
+    var downloadedSize: Long? by mutableStateOf(null)
+    var totalSize: Long? by mutableStateOf(null)
 
     private suspend fun downloadAsset(downloadUrl: String, saveLocation: File) {
         client.get(downloadUrl) {
-            onDownload { bytesSentTotal, contentLength ->
+            onDownload { bytesSentTotal, contentLength, ->
                 downloadProgress = (bytesSentTotal.toFloat() / contentLength.toFloat())
+                downloadedSize = bytesSentTotal
+                totalSize = contentLength
             }
         }.bodyAsChannel().copyAndClose(saveLocation.writeChannel())
         downloadProgress = null
@@ -70,16 +75,15 @@ class ManagerAPI(
     suspend fun downloadManager(): File? {
         try {
             val managerAsset = revancedRepository.findAsset(ghManager, ".apk")
-            val managerFile = app.filesDir.resolve("manager").also { it.mkdirs() }
-                .resolve(managerAsset.name)
+            val managerFile = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).also { it.mkdirs() }
+                .resolve("revanced-manager.apk")
             downloadAsset(managerAsset.downloadUrl, managerFile)
-
+            println("Downloaded manager at ${managerFile.absolutePath}")
             return managerFile
         } catch (e: Exception) {
             Log.e(tag, "Failed to download manager", e)
             app.toast("Failed to download manager")
         }
-
         return null
     }
 }
