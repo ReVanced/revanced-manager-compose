@@ -23,7 +23,7 @@ class BundleRepository(sourcesProvider: SourcesProvider) {
     private val _bundles = MutableStateFlow<Map<String, PatchBundle>>(emptyMap())
     val bundles = _bundles.asStateFlow()
 
-    suspend fun onAppStart(lifecycleOwner: LifecycleOwner) = lifecycleOwner.launchAndRepeatWithViewLifecycle {
+    fun onAppStart(lifecycleOwner: LifecycleOwner) = lifecycleOwner.launchAndRepeatWithViewLifecycle {
         sourceUpdates.collect { events ->
             val map = HashMap<String, PatchBundle>()
             _bundles.emit(map)

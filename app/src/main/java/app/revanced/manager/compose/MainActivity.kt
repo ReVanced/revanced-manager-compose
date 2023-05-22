@@ -32,9 +32,7 @@ class MainActivity : ComponentActivity() {
 
         installSplashScreen()
 
-        mainScope.launch {
-            bundleRepository.onAppStart(this@MainActivity)
-        }
+        bundleRepository.onAppStart(this@MainActivity)
 
         val context = this
         mainScope.launch(Dispatchers.IO) {
