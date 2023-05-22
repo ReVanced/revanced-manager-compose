@@ -41,8 +41,10 @@ import app.revanced.manager.compose.ui.component.AppTopBar
 import app.revanced.manager.compose.ui.destination.SettingsDestination
 import app.revanced.manager.compose.ui.screen.settings.*
 import app.revanced.manager.compose.ui.viewmodel.SettingsViewModel
+import app.revanced.manager.compose.ui.viewmodel.UpdateSettingsViewModel
 import dev.olshevski.navigation.reimagined.*
 import org.koin.androidx.compose.getViewModel
+import org.koin.compose.koinInject
 
 @SuppressLint("BatteryLife")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
@@ -99,7 +101,8 @@ fun SettingsScreen(
             )
 
             is SettingsDestination.Updates -> UpdatesSettingsScreen(
-                onBackClick = { navController.pop() }
+                onBackClick = { navController.pop() },
+                navController = navController
             )
 
             is SettingsDestination.Downloads -> DownloadsSettingsScreen(
@@ -112,6 +115,13 @@ fun SettingsScreen(
 
             is SettingsDestination.About -> AboutSettingsScreen(
                 onBackClick = { navController.pop() }
+            )
+
+            is SettingsDestination.UpdateProgress -> UpdateProgressScreen(
+                onBackClick = { navController.pop() },
+                vm = UpdateSettingsViewModel(
+                    managerAPI = koinInject(),
+            )
             )
 
             is SettingsDestination.Settings -> {

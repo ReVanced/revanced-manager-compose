@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import app.revanced.manager.compose.domain.repository.ReVancedRepository
 import app.revanced.manager.compose.util.ghIntegrations
+import app.revanced.manager.compose.util.ghManager
 import app.revanced.manager.compose.util.ghPatches
 import app.revanced.manager.compose.util.tag
 import app.revanced.manager.compose.util.toast
@@ -65,10 +66,21 @@ class ManagerAPI(
 
         return null
     }
+
+    suspend fun downloadManager(): File? {
+        try {
+            val managerAsset = revancedRepository.findAsset(ghManager, ".apk")
+            val managerFile = app.filesDir.resolve("manager").also { it.mkdirs() }
+                .resolve(managerAsset.name)
+            downloadAsset(managerAsset.downloadUrl, managerFile)
+
+            return managerFile
+        } catch (e: Exception) {
+            Log.e(tag, "Failed to download manager", e)
+            app.toast("Failed to download manager")
+        }
+
+        return null
+    }
 }
-
-data class PatchesAsset(
-    val downloadUrl: String, val name: String
-)
-
 class MissingAssetException : Exception()
