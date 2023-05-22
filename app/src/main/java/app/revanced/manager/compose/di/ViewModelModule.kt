@@ -9,7 +9,7 @@ val viewModelModule = module {
     viewModel {
         PatchesSelectorViewModel(
             packageInfo = it.get(),
-            patchesRepository = get()
+            bundleRepository = get()
         )
     }
     viewModelOf(::SettingsViewModel)

@@ -1,15 +1,15 @@
 package app.revanced.manager.compose.domain.repository
 
 import app.revanced.manager.compose.domain.manager.patch.PatchBundle
-import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import java.util.concurrent.atomic.AtomicInteger
 
-class PatchesRepository(private val sourcesProvider: SourcesProvider) {
+class BundleRepository(private val sourcesProvider: SourcesProvider) {
     /**
      * @param name The name of the source that changed.
      * @param bundle The new [PatchBundle].
-     * @param counter Incremented once for each event. Used by the [bundles] flow to track state.
+     * @param counter Incremented once for each event. Used by [createBundlesFlow] flow to track state.
      */
     private data class SourceUpdateEvent(val name: String, val bundle: PatchBundle, val counter: Number)
 
@@ -39,8 +39,11 @@ class PatchesRepository(private val sourcesProvider: SourcesProvider) {
         }.merge().buffer()
     }
 
+    private val _bundles = MutableStateFlow<Map<String, PatchBundle>>(emptyMap())
+    val bundles = _bundles.asStateFlow()
+
     @OptIn(FlowPreview::class)
-    val bundles: Flow<Map<String, PatchBundle>> = sourceUpdates.map { updatesFlow ->
+    private val coldBundles: Flow<Map<String, PatchBundle>> = sourceUpdates.map { updatesFlow ->
         val stateFlow = MutableStateFlow(BundlesFlowState(emptyMap(), -1))
 
         stateFlow.combineTransform(updatesFlow) { flowState, updateEvent ->
@@ -57,9 +60,9 @@ class PatchesRepository(private val sourcesProvider: SourcesProvider) {
         }
     }.flattenConcat()
 
-    suspend fun loadPatchClassesFiltered(packageName: String) =
-        bundles.first()["official"]!!.loadPatchesFiltered(packageName)
-
-    suspend fun getIntegrations() = bundles.first().values.mapNotNull { it.integrations }
-
+    /**
+     * Collect the [bundles] flow while the app is running.
+     * Should be called on the activity coroutine scope.
+     */
+    suspend fun collectFlow() = coldBundles.collect(_bundles::emit)
 }

@@ -24,4 +24,3 @@ abstract class Source(directory: File) {
     protected val patchesJar = directory.resolve("patches.jar")
     protected val integrations = directory.resolve("integrations.apk")
 }
-

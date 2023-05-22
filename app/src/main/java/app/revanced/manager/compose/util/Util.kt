@@ -9,6 +9,8 @@ import androidx.core.net.toUri
 
 const val APK_MIMETYPE = "application/vnd.android.package-archive"
 
+typealias PatchesSelection = Map<String, List<String>>
+
 fun Context.openUrl(url: String) {
     startActivity(Intent(Intent.ACTION_VIEW, url.toUri()).apply {
         flags = Intent.FLAG_ACTIVITY_NEW_TASK

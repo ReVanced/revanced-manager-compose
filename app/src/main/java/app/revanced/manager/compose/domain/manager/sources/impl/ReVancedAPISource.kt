@@ -1,5 +1,6 @@
 package app.revanced.manager.compose.domain.manager.sources.impl
 
+import app.revanced.manager.compose.domain.manager.sources.NetworkSource
 import app.revanced.manager.compose.network.api.ManagerAPI
 import java.io.File
 
