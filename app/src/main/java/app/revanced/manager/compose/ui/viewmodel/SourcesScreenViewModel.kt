@@ -13,7 +13,7 @@ class SourcesScreenViewModel(private val app: Application, private val sourcesPr
 
     fun update() = viewModelScope.launch {
         try {
-            sourcesProvider.updateSources()
+            sourcesProvider.reloadSources()
         } catch (err: Throwable) {
             app.toast("Failed to update patch bundles")
             Log.e("revanced-manager", "Failed to update patch bundles", err)
