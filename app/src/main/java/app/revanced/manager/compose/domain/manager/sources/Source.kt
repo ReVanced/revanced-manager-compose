@@ -11,12 +11,12 @@ import java.io.File
 abstract class Source(directory: File) {
     abstract val bundle: StateFlow<PatchBundle>
 
-    companion object {
+    protected companion object {
         /**
          * A placeholder [PatchBundle].
          */
         val emptyPatchBundle = PatchBundle(emptyList(), null)
-        fun onFailDefault(err: Throwable) {
+        fun logError(err: Throwable) {
             Log.e("revanced-manager-custom-sources", "Failed to load bundle", err)
         }
     }

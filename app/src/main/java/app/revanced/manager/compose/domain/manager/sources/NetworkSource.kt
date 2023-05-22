@@ -18,7 +18,7 @@ abstract class NetworkSource(directory: File) : Source(directory) {
     fun hasDownloaded() = patchesJar.exists() && integrations.exists()
 
     private fun loadBundle(
-        onFail: (Throwable) -> Unit = ::onFailDefault
+        onFail: (Throwable) -> Unit = ::logError
     ): PatchBundle {
         var bundle: PatchBundle = emptyPatchBundle
         if (hasDownloaded()) {

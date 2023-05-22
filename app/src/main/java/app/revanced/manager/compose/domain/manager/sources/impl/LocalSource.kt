@@ -11,7 +11,7 @@ import java.nio.file.Files
 class LocalSource(directory: File) : Source(directory) {
     override val bundle = MutableStateFlow(loadBundle())
 
-    private fun loadBundle(onFail: (Throwable) -> Unit = ::onFailDefault) = try {
+    private fun loadBundle(onFail: (Throwable) -> Unit = ::logError) = try {
         PatchBundle(patchesJar, integrations)
     } catch (err: Throwable) {
         onFail(err)
