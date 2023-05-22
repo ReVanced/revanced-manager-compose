@@ -23,7 +23,7 @@ abstract class NetworkSource(directory: File) : Source(directory) {
         var bundle: PatchBundle = emptyPatchBundle
         if (hasDownloaded()) {
             try {
-                bundle = PatchBundle(patchesJar.absolutePath, integrations)
+                bundle = PatchBundle(patchesJar, integrations)
             } catch (e: Throwable) {
                 onFail(e)
             }
@@ -32,9 +32,7 @@ abstract class NetworkSource(directory: File) : Source(directory) {
     }
 
     private val mutableBundle = MutableStateFlow(loadBundle())
-
-    override val bundle: StateFlow<PatchBundle>
-        get() = mutableBundle.asStateFlow()
+    override val bundle: StateFlow<PatchBundle> = mutableBundle.asStateFlow()
 
     private suspend fun saveVersion(version: BundleVersion) {
         // TODO: actually save it somewhere.

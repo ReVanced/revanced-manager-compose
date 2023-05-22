@@ -9,7 +9,7 @@ class LocalSource(directory: File) : Source(directory) {
     override val bundle = MutableStateFlow(loadBundle())
 
     private fun loadBundle(onFail: (Throwable) -> Unit = ::onFailDefault) = try {
-        PatchBundle(patchesJar.absolutePath, integrations)
+        PatchBundle(patchesJar, integrations)
     } catch (err: Throwable) {
         onFail(err)
         emptyPatchBundle

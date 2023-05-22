@@ -10,11 +10,11 @@ import dalvik.system.PathClassLoader
 import java.io.File
 
 class PatchBundle(private val loader: Iterable<PatchClass>, val integrations: File?) {
-    constructor(bundleJar: String, integrations: File?) : this(
+    constructor(bundleJar: File, integrations: File?) : this(
         object : Iterable<PatchClass> {
             private val bundle = PatchBundle.Dex(
-                bundleJar,
-                PathClassLoader(bundleJar, Patcher::class.java.classLoader)
+                bundleJar.absolutePath,
+                PathClassLoader(bundleJar.absolutePath, Patcher::class.java.classLoader)
             )
 
             override fun iterator() = bundle.loadPatches().iterator()
