@@ -10,7 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import app.revanced.manager.compose.domain.manager.sources.NetworkSource
+import app.revanced.manager.compose.domain.manager.sources.impl.NetworkSource
 import app.revanced.manager.compose.ui.viewmodel.SourcesScreenViewModel
 import org.koin.androidx.compose.getViewModel
 
