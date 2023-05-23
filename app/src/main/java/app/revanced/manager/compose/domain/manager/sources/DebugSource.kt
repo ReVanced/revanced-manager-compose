@@ -1,7 +1,6 @@
-package app.revanced.manager.compose.domain.manager.sources.impl
+package app.revanced.manager.compose.domain.manager.sources
 
 import app.revanced.manager.compose.domain.manager.patch.PatchBundle
-import app.revanced.manager.compose.domain.manager.sources.Source
 import app.revanced.patcher.annotation.Name
 import app.revanced.patcher.data.BytecodeContext
 import app.revanced.patcher.patch.BytecodePatch
@@ -31,5 +30,5 @@ class DebugSource : Source(File("/dev/null")) {
         val fakeBundle = PatchBundle(listOf(SuccessfulPatch::class.java, FailingPatch::class.java), null)
     }
 
-    override val bundle = MutableStateFlow(fakeBundle)
+    override val mutableBundle = MutableStateFlow(fakeBundle)
 }

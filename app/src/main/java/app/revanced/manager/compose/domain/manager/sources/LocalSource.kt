@@ -1,7 +1,5 @@
-package app.revanced.manager.compose.domain.manager.sources.impl
+package app.revanced.manager.compose.domain.manager.sources
 
-import app.revanced.manager.compose.domain.manager.patch.PatchBundle
-import app.revanced.manager.compose.domain.manager.sources.Source
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.withContext
@@ -9,14 +7,7 @@ import java.io.File
 import java.nio.file.Files
 
 class LocalSource(directory: File) : Source(directory) {
-    override val bundle = MutableStateFlow(loadBundle())
-
-    private fun loadBundle(onFail: (Throwable) -> Unit = ::logError) = try {
-        PatchBundle(patchesJar, integrations)
-    } catch (err: Throwable) {
-        onFail(err)
-        emptyPatchBundle
-    }
+    override val mutableBundle = MutableStateFlow(loadBundle())
 
     suspend fun replace(patches: File? = null, integrations: File? = null) {
         withContext(Dispatchers.IO) {
@@ -29,7 +20,7 @@ class LocalSource(directory: File) : Source(directory) {
         }
 
         withContext(Dispatchers.Main) {
-            bundle.emit(loadBundle { throw it })
+            mutableBundle.emit(loadBundle { throw it })
         }
     }
 }

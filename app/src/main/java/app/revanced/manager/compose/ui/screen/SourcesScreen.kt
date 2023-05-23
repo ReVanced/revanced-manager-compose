@@ -14,7 +14,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.revanced.manager.compose.R
-import app.revanced.manager.compose.domain.manager.sources.NetworkSource
+import app.revanced.manager.compose.domain.manager.sources.RemoteSource
 import app.revanced.manager.compose.ui.viewmodel.SourcesScreenViewModel
 import org.koin.androidx.compose.getViewModel
 
@@ -32,7 +32,7 @@ fun SourcesScreen(vm: SourcesScreenViewModel = getViewModel()) {
                 modifier = Modifier
                     .height(64.dp)
                     .clickable {
-                        if (source is NetworkSource) {
+                        if (source is RemoteSource) {
                             vm.doUpdate {
                                 source.update()
                             }
