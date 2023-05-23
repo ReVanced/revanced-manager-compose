@@ -118,7 +118,6 @@ fun SettingsScreen(
 
             is SettingsDestination.UpdateProgress -> UpdateProgressScreen(
                { navController.pop() },
-                getViewModel<UpdateSettingsViewModel>()
             )
 
             is SettingsDestination.Settings -> {
