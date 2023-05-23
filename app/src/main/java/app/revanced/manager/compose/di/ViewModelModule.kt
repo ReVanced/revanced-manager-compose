@@ -23,4 +23,5 @@ val viewModelModule = module {
             signerService = get(),
         )
     }
+    viewModelOf(::UpdateSettingsViewModel)
 }

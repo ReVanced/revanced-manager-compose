@@ -10,7 +10,7 @@ class ReVancedAPISource(directory: File, private val api: ManagerAPI) : NetworkS
         let { (patches, integrations) -> BundleVersion(patches, integrations) }
 
     override suspend fun downloadLatest(patches: File, integrations: File) =
-        api.download(patches, integrations).toBundleVersion()
+        api.downloadBundle(patches, integrations).toBundleVersion()
 
-    override suspend fun getLatestVersion() = api.getLatestVersion().toBundleVersion()
+    override suspend fun getLatestVersion() = api.getLatestBundleVersion().toBundleVersion()
 }
