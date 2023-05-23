@@ -21,5 +21,5 @@ class SourcesScreenViewModel(private val app: Application, private val sourcesPr
         }
     }
 
-    fun update() = doUpdate { sourcesProvider.reloadSources() }
+    fun redownloadAllSources() = doUpdate { sourcesProvider.reloadSources() }
 }

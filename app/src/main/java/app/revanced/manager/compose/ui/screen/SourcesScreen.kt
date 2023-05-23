@@ -63,7 +63,7 @@ fun SourcesScreen(vm: SourcesScreenViewModel = getViewModel()) {
             }
         }
 
-        Button(onClick = vm::update) {
+        Button(onClick = vm::redownloadAllSources) {
             Text(stringResource(R.string.reload_sources))
         }
     }
