@@ -10,6 +10,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.revanced.manager.compose.R
+import app.revanced.manager.compose.domain.manager.sources.Source
 import app.revanced.manager.compose.domain.repository.SourcesProvider
 import app.revanced.manager.compose.util.toast
 import io.ktor.http.*
@@ -43,6 +44,8 @@ class SourcesScreenViewModel(private val app: Application, private val sourcesPr
     }
 
     suspend fun addRemote(name: String, apiUrl: Url) = sourcesProvider.createRemoteSource(name, apiUrl)
+
+    fun deleteSource(source: Source) = viewModelScope.launch { sourcesProvider.remove(source) }
 
     fun deleteAllSources() = viewModelScope.launch {
         sourcesProvider.resetConfig()

@@ -1,6 +1,7 @@
 package app.revanced.manager.compose.ui.screen
 
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -10,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -17,7 +19,9 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.revanced.manager.compose.R
+import app.revanced.manager.compose.domain.manager.sources.LocalSource
 import app.revanced.manager.compose.domain.manager.sources.RemoteSource
+import app.revanced.manager.compose.domain.manager.sources.Source
 import app.revanced.manager.compose.ui.component.FileSelector
 import app.revanced.manager.compose.ui.viewmodel.SourcesScreenViewModel
 import app.revanced.manager.compose.util.APK_MIMETYPE
@@ -26,6 +30,7 @@ import app.revanced.manager.compose.util.parseUrlOrNull
 import io.ktor.http.*
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.getViewModel
+import java.io.InputStream
 
 // TODO: use two separate callbacks instead of doing this.
 sealed class NewSourceResult(val name: String) {
@@ -56,40 +61,13 @@ fun SourcesScreen(vm: SourcesScreenViewModel = getViewModel()) {
             .fillMaxWidth(),
     ) {
         sources.forEach { (name, source) ->
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .height(64.dp)
-                    .clickable {
-                        if (source is RemoteSource) {
-                            vm.doUpdate {
-                                source.update()
-                            }
-                        }
-                    }
-            ) {
-                val bundle by source.bundle.collectAsStateWithLifecycle()
-                val patchCount = bundle.patches.size
-                val padding = PaddingValues(16.dp, 0.dp)
-
-                Text(
-                    text = name,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(padding)
-                )
-
-                Spacer(
-                    modifier = Modifier.weight(1f)
-                )
-
-                Text(
-                    text = pluralStringResource(R.plurals.patches_count, patchCount, patchCount),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(padding)
-                )
-            }
+            SourceWidget(
+                name = name,
+                source = source,
+                onDelete = {
+                    vm.deleteSource(source)
+                }
+            )
         }
 
         Button(onClick = vm::redownloadAllSources) {
@@ -103,6 +81,136 @@ fun SourcesScreen(vm: SourcesScreenViewModel = getViewModel()) {
         Button(onClick = vm::deleteAllSources) {
             Text("Reset everything.")
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SourceWidget(name: String, source: Source, onDelete: () -> Unit) {
+    val coroutineScope = rememberCoroutineScope()
+    var sheetActive by rememberSaveable { mutableStateOf(false) }
+
+    val bundle by source.bundle.collectAsStateWithLifecycle()
+    val resolver = LocalContext.current.contentResolver!!
+    val patchCount = bundle.patches.size
+    val padding = PaddingValues(16.dp, 0.dp)
+
+    if (sheetActive) {
+        val modalSheetState = rememberModalBottomSheetState(
+            confirmValueChange = { it != SheetValue.PartiallyExpanded },
+            skipPartiallyExpanded = true
+        )
+
+        ModalBottomSheet(
+            sheetState = modalSheetState,
+            onDismissRequest = { sheetActive = false }
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Text(
+                    text = name,
+                    style = MaterialTheme.typography.titleLarge
+                )
+
+                fun loadInput(uri: Uri, callback: suspend (InputStream) -> Unit) = coroutineScope.launch {
+                    resolver.openInputStream(uri)!!.use {
+                        callback(it)
+                    }
+                }
+
+                when (source) {
+                    is RemoteSource -> {
+                        val (apiUrl, setApiUrl) = rememberSaveable { mutableStateOf("") }
+
+                        TextField(
+                            value = apiUrl,
+                            onValueChange = setApiUrl,
+                            label = {
+                                Text("API Url (does not do anything yet)")
+                            }
+                        )
+
+                        Button(onClick = {
+                            coroutineScope.launch {
+                                source.update()
+                            }
+                        }) {
+                            Text(text = "Check for updates")
+                        }
+                    }
+
+                    is LocalSource -> {
+
+                        Row {
+                            FileSelector(
+                                mime = JAR_MIMETYPE,
+                                onSelect = { uri ->
+                                    loadInput(uri) {
+                                        // TODO: deal with exceptions.
+                                        source.replace(it, null)
+                                    }
+                                }
+                            ) {
+                                Text("Patches")
+                            }
+
+                            FileSelector(
+                                mime = APK_MIMETYPE,
+                                onSelect = { uri ->
+                                    loadInput(uri) {
+                                        source.replace(it, null)
+                                    }
+                                }
+                            ) {
+                                Text("Integrations")
+                            }
+                        }
+                    }
+                }
+
+                Button(
+                    onClick = {
+                        coroutineScope.launch {
+                            modalSheetState.hide()
+                            onDelete()
+                        }
+                    }
+                ) {
+                    Text("Delete this source")
+                }
+            }
+        }
+    }
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .height(64.dp)
+            .fillMaxWidth()
+            .clickable {
+                sheetActive = true
+            }
+    ) {
+        Text(
+            text = name,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(padding)
+        )
+
+        Spacer(
+            modifier = Modifier.weight(1f)
+        )
+
+        Text(
+            text = pluralStringResource(R.plurals.patches_count, patchCount, patchCount),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(padding)
+        )
     }
 }
 
@@ -138,8 +246,8 @@ fun NewSourceDialog(onDismissRequest: () -> Unit, onSubmit: (NewSourceResult) ->
                 }
 
                 LaunchedEffect(isLocal) {
-                    patchBundle = null
                     integrations = null
+                    patchBundle = null
                     remoteUrl = ""
                 }
 
@@ -158,19 +266,19 @@ fun NewSourceDialog(onDismissRequest: () -> Unit, onSubmit: (NewSourceResult) ->
                     Row {
                         FileSelector(
                             mime = JAR_MIMETYPE,
-                            onSelect = { patchBundle = it }
-                        ) { launch ->
-                            Button(onClick = launch) {
-                                Text("Patch bundle")
+                            onSelect = {
+                                patchBundle = it
                             }
+                        ) {
+                            Text("Patch bundle")
                         }
                         FileSelector(
                             mime = APK_MIMETYPE,
-                            onSelect = { integrations = it }
-                        ) { launch ->
-                            Button(onClick = launch) {
-                                Text("Integrations")
+                            onSelect = {
+                                integrations = it
                             }
+                        ) {
+                            Text("Integrations")
                         }
                     }
                 } else {
