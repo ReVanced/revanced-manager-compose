@@ -41,7 +41,6 @@ import app.revanced.manager.compose.ui.component.AppTopBar
 import app.revanced.manager.compose.ui.destination.SettingsDestination
 import app.revanced.manager.compose.ui.screen.settings.*
 import app.revanced.manager.compose.ui.viewmodel.SettingsViewModel
-import app.revanced.manager.compose.ui.viewmodel.UpdateSettingsViewModel
 import dev.olshevski.navigation.reimagined.*
 import org.koin.androidx.compose.getViewModel
 
@@ -117,8 +116,11 @@ fun SettingsScreen(
             )
 
             is SettingsDestination.UpdateProgress -> UpdateProgressScreen(
-               { navController.pop() },
-                getViewModel<UpdateSettingsViewModel>()
+                onBackClick = { navController.pop() },
+            )
+
+            is SettingsDestination.UpdateChangelog -> ManagerUpdateChangelog(
+                onBackClick = { navController.pop() },
             )
 
             is SettingsDestination.Settings -> {

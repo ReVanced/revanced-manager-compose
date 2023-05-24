@@ -11,11 +11,15 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Update
+import androidx.compose.material.icons.outlined.Campaign
+import androidx.compose.material.icons.outlined.FileDownload
+import androidx.compose.material.icons.outlined.Sell
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -26,6 +30,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,10 +44,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.revanced.manager.compose.R
 import app.revanced.manager.compose.ui.component.AppTopBar
+import app.revanced.manager.compose.ui.component.Markdown
 import app.revanced.manager.compose.ui.destination.SettingsDestination
 import app.revanced.manager.compose.ui.viewmodel.UpdateSettingsViewModel
 import dev.olshevski.navigation.reimagined.NavController
 import dev.olshevski.navigation.reimagined.navigate
+import org.intellij.markdown.flavours.gfm.GFMFlavourDescriptor
+import org.intellij.markdown.html.HtmlGenerator
+import org.intellij.markdown.parser.MarkdownParser
 import org.koin.androidx.compose.getViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
@@ -63,7 +72,7 @@ fun UpdatesSettingsScreen(
         Triple(
             stringResource(R.string.changelog),
             stringResource(R.string.changelog_description),
-            third = { /*TODO*/ }),
+            third = { navController.navigate(SettingsDestination.UpdateChangelog) }),
     )
 
 
@@ -147,6 +156,9 @@ fun UpdateProgressScreen(
     onBackClick: () -> Unit,
     vm: UpdateSettingsViewModel = getViewModel()
 ) {
+    LaunchedEffect(Unit) {
+        vm.downloadLatestManager()
+    }
     Scaffold(
         topBar = {
             AppTopBar(
@@ -159,7 +171,8 @@ fun UpdateProgressScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(vertical = 16.dp, horizontal = 24.dp),
+                .padding(vertical = 16.dp, horizontal = 24.dp)
+                .verticalScroll(rememberScrollState()),
         ) {
             var isInstalling by remember { mutableStateOf(false) }
             isInstalling = vm.downloadProgress >= 100
@@ -176,7 +189,11 @@ fun UpdateProgressScreen(
                     .fillMaxWidth()
             )
             Text(
-                text = if (!isInstalling) "${vm.downloadedSize.div(1000000)} MB /  ${vm.totalSize.div(1000000)} MB (${vm.downloadProgress.toInt()}%)" else stringResource(R.string.installing_message),
+                text = if (!isInstalling) "${vm.downloadedSize.div(1000000)} MB /  ${
+                    vm.totalSize.div(
+                        1000000
+                    )
+                } MB (${vm.downloadProgress.toInt()}%)" else stringResource(R.string.installing_message),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.outline,
                 modifier = Modifier.align(Alignment.CenterHorizontally),
@@ -208,3 +225,106 @@ fun UpdateProgressScreen(
         }
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ManagerUpdateChangelog(
+    onBackClick: () -> Unit,
+    vm: UpdateSettingsViewModel = getViewModel()
+) {
+    LaunchedEffect(Unit) {
+        vm.getChangelog()
+    }
+    val downloadCount = vm.changelog.downloadCount.toDouble()
+    val formattedText = if (downloadCount > 1000) {
+        val roundedValue =
+            (downloadCount / 100).toInt() / 10.0 // Divide by 100 and round to one decimal place
+        "${roundedValue}k"
+    } else {
+        vm.changelog.downloadCount.toString()
+    }
+
+    val markdownSource = vm.changelog.body
+    val flavour = GFMFlavourDescriptor()
+    val parsedTree = MarkdownParser(flavour).buildMarkdownTreeFromString(markdownSource)
+    val html = HtmlGenerator(markdownSource, parsedTree, flavour).generateHtml()
+
+    Scaffold(
+        topBar = {
+            AppTopBar(
+                title = stringResource(R.string.changelog),
+                onBackClick = { onBackClick() }
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(start = 16.dp, end = 16.dp, top = 16.dp)
+                .verticalScroll(rememberScrollState())
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.Start),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Campaign,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .size(32.dp)
+                )
+                Text(
+                    (vm.changelog.version).removePrefix("v"),
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Sell,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Text(
+                        vm.changelog.version,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.outline,
+                    )
+                }
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.FileDownload,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Text(
+                        formattedText,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.outline,
+                    )
+                }
+            }
+            Markdown(
+                html,
+            )
+        }
+    }
+}
+
