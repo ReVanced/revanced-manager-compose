@@ -2,6 +2,9 @@ package app.revanced.manager.compose.ui.viewmodel
 
 import android.app.Application
 import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.revanced.manager.compose.R
@@ -11,6 +14,7 @@ import kotlinx.coroutines.launch
 
 class SourcesScreenViewModel(private val app: Application, private val sourcesProvider: SourcesProvider) : ViewModel() {
     val sources = sourcesProvider.sources
+    var showNewSourceDialog by mutableStateOf(false)
 
     fun doUpdate(block: suspend () -> Unit) = viewModelScope.launch {
         try {
@@ -21,5 +25,5 @@ class SourcesScreenViewModel(private val app: Application, private val sourcesPr
         }
     }
 
-    fun redownloadAllSources() = doUpdate { sourcesProvider.reloadSources() }
+    fun redownloadAllSources() = doUpdate { sourcesProvider.redownloadRemoteSources() }
 }

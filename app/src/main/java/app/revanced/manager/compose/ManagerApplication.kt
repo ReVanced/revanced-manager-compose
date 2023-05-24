@@ -21,6 +21,7 @@ class ManagerApplication : Application() {
                 managerModule,
                 workerModule,
                 viewModelModule,
+                databaseModule,
             )
         }
     }

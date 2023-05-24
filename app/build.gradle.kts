@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("com.google.devtools.ksp")
     id("kotlin-parcelize")
     kotlin("plugin.serialization") version "1.8.21"
 }
@@ -77,6 +78,14 @@ dependencies {
 
     // KotlinX
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
+
+    // Room
+    val roomVersion = "2.5.1"
+    implementation("androidx.room:room-runtime:$roomVersion")
+    implementation("androidx.room:room-ktx:$roomVersion")
+    annotationProcessor("androidx.room:room-compiler:$roomVersion")
+    ksp("androidx.room:room-compiler:$roomVersion")
+
 
     // ReVanced
     implementation("app.revanced:revanced-patcher:7.1.0")

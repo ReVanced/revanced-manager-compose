@@ -1,11 +1,13 @@
 package app.revanced.manager.compose.domain.repository
 
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import app.revanced.manager.compose.domain.manager.patch.PatchBundle
 import app.revanced.manager.compose.util.launchAndRepeatWithViewLifecycle
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 
-class BundleRepository(sourcesProvider: SourcesProvider) {
+class BundleRepository(private val sourcesProvider: SourcesProvider) {
     /**
      * A [Flow] that emits whenever the sources change.
      *
@@ -23,14 +25,20 @@ class BundleRepository(sourcesProvider: SourcesProvider) {
     private val _bundles = MutableStateFlow<Map<String, PatchBundle>>(emptyMap())
     val bundles = _bundles.asStateFlow()
 
-    fun onAppStart(lifecycleOwner: LifecycleOwner) = lifecycleOwner.launchAndRepeatWithViewLifecycle {
-        sourceUpdates.collect { events ->
-            val map = HashMap<String, PatchBundle>()
-            _bundles.emit(map)
+    fun onAppStart(lifecycleOwner: LifecycleOwner) {
+        lifecycleOwner.lifecycleScope.launch {
+            sourcesProvider.loadSources()
+        }
 
-            events.collect { (name, new) ->
-                map[name] = new
+        lifecycleOwner.launchAndRepeatWithViewLifecycle {
+            sourceUpdates.collect { events ->
+                val map = HashMap<String, PatchBundle>()
                 _bundles.emit(map)
+
+                events.collect { (name, new) ->
+                    map[name] = new
+                    _bundles.emit(map)
+                }
             }
         }
     }
