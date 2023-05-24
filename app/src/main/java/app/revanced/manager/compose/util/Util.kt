@@ -10,10 +10,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import io.ktor.http.Url
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-
-const val APK_MIMETYPE = "application/vnd.android.package-archive"
 
 typealias PatchesSelection = Map<String, List<String>>
 
@@ -33,6 +32,12 @@ fun Context.loadIcon(string: String): Drawable? {
 
 fun Context.toast(string: String, duration: Int = Toast.LENGTH_SHORT) {
     Toast.makeText(this, string, duration).show()
+}
+
+fun String.parseUrlOrNull() = try {
+    Url(this)
+} catch (_: Throwable) {
+    null
 }
 
 inline fun LifecycleOwner.launchAndRepeatWithViewLifecycle(
