@@ -20,13 +20,11 @@ import java.io.InputStream
 class SourceRepository(app: Application, private val persistenceRepo: SourcePersistenceRepository) {
     private val sourcesDir = app.dataDir.resolve("sources").also { it.mkdirs() }
 
-    private fun directoryOf(uid: Int) = sourcesDir.resolve(uid.toString())
-
     /**
-     * A chainable version of [File.mkdirs].
+     * Get the directory of the [Source] with the specified [uid], creating it if needed.
      */
-    private fun File.getOrCreate() = also { mkdirs() }
-    private fun SourceEntity.directory() = directoryOf(uid)
+    private fun directoryOf(uid: Int) = sourcesDir.resolve(uid.toString()).also { it.mkdirs() }
+
     private fun SourceEntity.load(dir: File) = when (location) {
         is SourceLocation.Local -> LocalSource(uid, dir)
         is SourceLocation.Remote -> RemoteSource(uid, dir)
@@ -38,7 +36,7 @@ class SourceRepository(app: Application, private val persistenceRepo: SourcePers
         }
 
         val sources = sourcesConfig.associate {
-            val dir = it.directory().getOrCreate()
+            val dir = directoryOf(it.uid)
             val source = it.load(dir)
 
             it.name to source
@@ -74,7 +72,7 @@ class SourceRepository(app: Application, private val persistenceRepo: SourcePers
 
     suspend fun createLocalSource(name: String, patches: InputStream, integrations: InputStream?) {
         val id = persistenceRepo.create(name, SourceLocation.Local)
-        val source = LocalSource(id, directoryOf(id).getOrCreate())
+        val source = LocalSource(id, directoryOf(id))
 
         addSource(name, source)
 
@@ -83,7 +81,7 @@ class SourceRepository(app: Application, private val persistenceRepo: SourcePers
 
     suspend fun createRemoteSource(name: String, apiUrl: Url) {
         val id = persistenceRepo.create(name, SourceLocation.Remote(apiUrl))
-        addSource(name, RemoteSource(id, directoryOf(id).getOrCreate()))
+        addSource(name, RemoteSource(id, directoryOf(id)))
     }
 
     private val _sources: MutableStateFlow<Map<String, Source>> = MutableStateFlow(emptyMap())
