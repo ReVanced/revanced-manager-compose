@@ -24,7 +24,7 @@ class RemoteSource(id: Int, directory: File) : Source(id, directory) {
 
     suspend fun update() = withContext(Dispatchers.IO) {
         val currentVersion = getVersion()
-        if (!hasDownloaded() || currentVersion != api.getLatestBundleVersion()) {
+        if (!hasInstalled() || currentVersion != api.getLatestBundleVersion()) {
             downloadLatest()
         }
     }

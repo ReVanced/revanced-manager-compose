@@ -3,6 +3,7 @@ package app.revanced.manager.compose.domain.sources
 import android.util.Log
 import app.revanced.manager.compose.patcher.patch.PatchBundle
 import app.revanced.manager.compose.domain.repository.SourcePersistenceRepository
+import app.revanced.manager.compose.util.tag
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.koin.core.component.KoinComponent
@@ -20,21 +21,24 @@ sealed class Source(val id: Int, directory: File) : KoinComponent {
          */
         val emptyPatchBundle = PatchBundle(emptyList(), null)
         fun logError(err: Throwable) {
-            Log.e("revanced-manager-custom-sources", "Failed to load bundle", err)
+            Log.e(tag, "Failed to load bundle", err)
         }
     }
 
     protected val patchesJar = directory.resolve("patches.jar")
     protected val integrations = directory.resolve("integrations.apk")
 
-    // TODO: this really needs a better name
-    fun hasDownloaded() = patchesJar.exists()
+    /**
+     * Returns true if the bundle has been downloaded to local storage.
+     */
+    fun hasInstalled() = patchesJar.exists()
 
     protected suspend fun getVersion() = configRepository.getVersion(id)
     protected suspend fun saveVersion(patches: String, integrations: String) =
         configRepository.updateVersion(id, patches, integrations)
 
-    protected fun loadBundle(onFail: (Throwable) -> Unit = ::logError) = if (!hasDownloaded()) emptyPatchBundle
+    // TODO: Communicate failure states better.
+    protected fun loadBundle(onFail: (Throwable) -> Unit = ::logError) = if (!hasInstalled()) emptyPatchBundle
     else try {
         PatchBundle(patchesJar, integrations.takeIf { it.exists() })
     } catch (err: Throwable) {
