@@ -23,9 +23,9 @@ class SourceRepository(app: Application, private val persistenceRepo: SourcePers
     private fun directoryOf(uid: Int) = sourcesDir.resolve(uid.toString())
 
     /**
-     * Create the directory if it does not exist.
+     * A chainable version of [File.mkdirs].
      */
-    private fun File.create() = also { mkdirs() }
+    private fun File.getOrCreate() = also { mkdirs() }
     private fun SourceEntity.directory() = directoryOf(uid)
     private fun SourceEntity.load(dir: File) = when (location) {
         is SourceLocation.Local -> LocalSource(uid, dir)
@@ -38,7 +38,7 @@ class SourceRepository(app: Application, private val persistenceRepo: SourcePers
         }
 
         val sources = sourcesConfig.associate {
-            val dir = it.directory().create()
+            val dir = it.directory().getOrCreate()
             val source = it.load(dir)
 
             it.name to source
@@ -74,7 +74,7 @@ class SourceRepository(app: Application, private val persistenceRepo: SourcePers
 
     suspend fun createLocalSource(name: String, patches: InputStream, integrations: InputStream?) {
         val id = persistenceRepo.create(name, SourceLocation.Local)
-        val source = LocalSource(id, directoryOf(id).create())
+        val source = LocalSource(id, directoryOf(id).getOrCreate())
 
         addSource(name, source)
 
@@ -83,7 +83,7 @@ class SourceRepository(app: Application, private val persistenceRepo: SourcePers
 
     suspend fun createRemoteSource(name: String, apiUrl: Url) {
         val id = persistenceRepo.create(name, SourceLocation.Remote(apiUrl))
-        addSource(name, RemoteSource(id, directoryOf(id).create()))
+        addSource(name, RemoteSource(id, directoryOf(id).getOrCreate()))
     }
 
     private val _sources: MutableStateFlow<Map<String, Source>> = MutableStateFlow(emptyMap())
