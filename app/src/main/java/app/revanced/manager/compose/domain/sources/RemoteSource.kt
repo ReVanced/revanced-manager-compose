@@ -1,4 +1,4 @@
-package app.revanced.manager.compose.domain.manager.sources
+package app.revanced.manager.compose.domain.sources
 
 import app.revanced.manager.compose.network.api.ManagerAPI
 import kotlinx.coroutines.Dispatchers

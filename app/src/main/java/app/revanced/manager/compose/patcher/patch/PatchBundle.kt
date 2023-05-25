@@ -1,8 +1,7 @@
-package app.revanced.manager.compose.domain.manager.patch
+package app.revanced.manager.compose.patcher.patch
 
 import android.util.Log
 import app.revanced.manager.compose.patcher.PatchClass
-import app.revanced.manager.compose.patcher.patch.PatchInfo
 import app.revanced.patcher.Patcher
 import app.revanced.patcher.extensions.PatchExtensions.compatiblePackages
 import app.revanced.patcher.util.patch.PatchBundle

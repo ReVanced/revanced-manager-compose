@@ -8,7 +8,7 @@ import app.revanced.manager.compose.util.apiURL
 import kotlin.random.Random
 import io.ktor.http.*
 
-class SourceConfigRepository(db: AppDatabase) {
+class SourcePersistenceRepository(db: AppDatabase) {
     private val dao = db.sourceDao()
 
     private companion object {

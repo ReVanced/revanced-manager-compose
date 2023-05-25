@@ -10,14 +10,14 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.revanced.manager.compose.R
-import app.revanced.manager.compose.domain.manager.sources.Source
-import app.revanced.manager.compose.domain.repository.SourcesProvider
+import app.revanced.manager.compose.domain.sources.Source
+import app.revanced.manager.compose.domain.repository.SourceRepository
 import app.revanced.manager.compose.util.toast
 import io.ktor.http.*
 import kotlinx.coroutines.launch
 
-class SourcesScreenViewModel(private val app: Application, private val sourcesProvider: SourcesProvider) : ViewModel() {
-    val sources = sourcesProvider.sources
+class SourcesScreenViewModel(private val app: Application, private val sourceRepository: SourceRepository) : ViewModel() {
+    val sources = sourceRepository.sources
     var showNewSourceDialog by mutableStateOf(false)
     private val contentResolver: ContentResolver = app.contentResolver
 
@@ -30,24 +30,24 @@ class SourcesScreenViewModel(private val app: Application, private val sourcesPr
         }
     }
 
-    fun redownloadAllSources() = doUpdate { sourcesProvider.redownloadRemoteSources() }
+    fun redownloadAllSources() = doUpdate { sourceRepository.redownloadRemoteSources() }
 
     suspend fun addLocal(name: String, patchBundle: Uri, integrations: Uri?) {
         contentResolver.openInputStream(patchBundle)!!.use { patchesStream ->
             val integrationsStream = integrations?.let { contentResolver.openInputStream(it) }
             try {
-                sourcesProvider.createLocalSource(name, patchesStream, integrationsStream)
+                sourceRepository.createLocalSource(name, patchesStream, integrationsStream)
             } finally {
                 integrationsStream?.close()
             }
         }
     }
 
-    suspend fun addRemote(name: String, apiUrl: Url) = sourcesProvider.createRemoteSource(name, apiUrl)
+    suspend fun addRemote(name: String, apiUrl: Url) = sourceRepository.createRemoteSource(name, apiUrl)
 
-    fun deleteSource(source: Source) = viewModelScope.launch { sourcesProvider.remove(source) }
+    fun deleteSource(source: Source) = viewModelScope.launch { sourceRepository.remove(source) }
 
     fun deleteAllSources() = viewModelScope.launch {
-        sourcesProvider.resetConfig()
+        sourceRepository.resetConfig()
     }
 }

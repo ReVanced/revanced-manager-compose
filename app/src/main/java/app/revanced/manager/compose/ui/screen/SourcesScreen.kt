@@ -1,7 +1,6 @@
 package app.revanced.manager.compose.ui.screen
 
 import android.net.Uri
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -19,9 +18,9 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.revanced.manager.compose.R
-import app.revanced.manager.compose.domain.manager.sources.LocalSource
-import app.revanced.manager.compose.domain.manager.sources.RemoteSource
-import app.revanced.manager.compose.domain.manager.sources.Source
+import app.revanced.manager.compose.domain.sources.LocalSource
+import app.revanced.manager.compose.domain.sources.RemoteSource
+import app.revanced.manager.compose.domain.sources.Source
 import app.revanced.manager.compose.ui.component.FileSelector
 import app.revanced.manager.compose.ui.viewmodel.SourcesScreenViewModel
 import app.revanced.manager.compose.util.APK_MIMETYPE

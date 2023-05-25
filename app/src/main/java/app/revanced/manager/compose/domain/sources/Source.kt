@@ -1,8 +1,8 @@
-package app.revanced.manager.compose.domain.manager.sources
+package app.revanced.manager.compose.domain.sources
 
 import android.util.Log
-import app.revanced.manager.compose.domain.manager.patch.PatchBundle
-import app.revanced.manager.compose.domain.repository.SourceConfigRepository
+import app.revanced.manager.compose.patcher.patch.PatchBundle
+import app.revanced.manager.compose.domain.repository.SourcePersistenceRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.koin.core.component.KoinComponent
@@ -13,7 +13,7 @@ import java.io.File
  * A [PatchBundle] source.
  */
 sealed class Source(val id: Int, directory: File) : KoinComponent {
-    private val configRepository: SourceConfigRepository by inject()
+    private val configRepository: SourcePersistenceRepository by inject()
     protected companion object {
         /**
          * A placeholder [PatchBundle].
