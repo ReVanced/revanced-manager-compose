@@ -39,7 +39,7 @@ class SourcePersistenceRepository(db: AppDatabase) {
         dao.add(
             SourceEntity(
                 uid = uid,
-                name = name, // TODO: assert that this is unique
+                name = name,
                 versionInfo = VersionInfo("", ""),
                 location = location,
             )

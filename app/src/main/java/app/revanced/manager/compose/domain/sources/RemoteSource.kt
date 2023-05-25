@@ -9,11 +9,8 @@ import java.io.File
 class RemoteSource(id: Int, directory: File) : Source(id, directory) {
     private val api: ManagerAPI by inject()
     suspend fun downloadLatest() = withContext(Dispatchers.IO) {
-        // TODO: use a cache directory for this and then move them to the correct location
-
         api.downloadBundle(patchesJar, integrations).also { (patchesVer, integrationsVer) ->
             saveVersion(patchesVer, integrationsVer)
-
             withContext(Dispatchers.Main) {
                 _bundle.emit(loadBundle { err -> throw err })
             }
