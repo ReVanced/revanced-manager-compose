@@ -4,7 +4,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager.NameNotFoundException
 import android.graphics.drawable.Drawable
+import android.util.Log
 import android.widget.Toast
+import androidx.annotation.StringRes
 import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
@@ -38,6 +40,24 @@ fun String.parseUrlOrNull() = try {
     Url(this)
 } catch (_: Throwable) {
     null
+}
+
+/**
+ * Safely perform an operation that may fail to avoid crashing the app.
+ * If [block] fails, the error will be logged and a toast will be shown to the user to inform them that the action failed.
+ *
+ * @param context The android [Context].
+ * @param toastMsg The toast message to show if [block] throws.
+ * @param logMsg The log message.
+ * @param block The code to execute.
+ */
+inline fun uiSafe(context: Context, @StringRes toastMsg: Int, logMsg: String, block: () -> Unit) {
+    try {
+        block()
+    } catch (error: Exception) {
+        context.toast(context.getString(toastMsg, error.message ?: error.cause?.message ?: error::class.simpleName))
+        Log.e(tag, logMsg, error)
+    }
 }
 
 inline fun LifecycleOwner.launchAndRepeatWithViewLifecycle(

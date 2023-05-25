@@ -26,6 +26,7 @@ import app.revanced.manager.compose.ui.viewmodel.SourcesScreenViewModel
 import app.revanced.manager.compose.util.APK_MIMETYPE
 import app.revanced.manager.compose.util.JAR_MIMETYPE
 import app.revanced.manager.compose.util.parseUrlOrNull
+import app.revanced.manager.compose.util.uiSafe
 import io.ktor.http.*
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.getViewModel
@@ -74,7 +75,7 @@ fun SourcesScreen(vm: SourcesScreenViewModel = getViewModel()) {
         }
 
         Button(onClick = { vm.showNewSourceDialog = true }) {
-            Text("cossal will explod")
+            Text("Create new source")
         }
 
         Button(onClick = vm::deleteAllSources) {
@@ -134,7 +135,9 @@ fun SourceWidget(name: String, source: Source, onDelete: () -> Unit) {
 
                         Button(onClick = {
                             coroutineScope.launch {
-                                source.update()
+                                uiSafe(LocalContext.current, R.string.source_download_fail, SourcesScreenViewModel.failLogMsg) {
+                                    source.update()
+                                }
                             }
                         }) {
                             Text(text = "Check for updates")
