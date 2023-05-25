@@ -1,9 +1,9 @@
 package app.revanced.manager.compose.ui.screen
 
-import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -11,30 +11,28 @@ import app.revanced.manager.compose.R
 import app.revanced.manager.compose.ui.component.sources.NewSourceDialog
 import app.revanced.manager.compose.ui.component.sources.SourceItem
 import app.revanced.manager.compose.ui.viewmodel.SourcesScreenViewModel
-import io.ktor.http.*
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.getViewModel
 
-// TODO: use two separate callbacks instead of doing this.
-sealed class NewSourceResult(val name: String) {
-    class Local(name: String, val patches: Uri, val integrations: Uri?) : NewSourceResult(name)
-    class Remote(name: String, val apiUrl: Url) : NewSourceResult(name)
-}
-
 @Composable
 fun SourcesScreen(vm: SourcesScreenViewModel = getViewModel()) {
-    val sources by vm.sources.collectAsStateWithLifecycle()
+    var showNewSourceDialog by rememberSaveable { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
-    if (vm.showNewSourceDialog) NewSourceDialog(
-        onDismissRequest = { vm.showNewSourceDialog = false },
-        onSubmit = {
-            vm.showNewSourceDialog = false
+    val sources by vm.sources.collectAsStateWithLifecycle()
+
+    if (showNewSourceDialog) NewSourceDialog(
+        onDismissRequest = { showNewSourceDialog = false },
+        onLocalSubmit = { name, patches, integrations ->
+            showNewSourceDialog = false
             scope.launch {
-                when (it) {
-                    is NewSourceResult.Local -> vm.addLocal(it.name, it.patches, it.integrations)
-                    is NewSourceResult.Remote -> vm.addRemote(it.name, it.apiUrl)
-                }
+                vm.addLocal(name, patches, integrations)
+            }
+        },
+        onRemoteSubmit = { name, url ->
+            showNewSourceDialog = false
+            scope.launch {
+                vm.addRemote(name, url)
             }
         }
     )
@@ -57,7 +55,7 @@ fun SourcesScreen(vm: SourcesScreenViewModel = getViewModel()) {
             Text(stringResource(R.string.reload_sources))
         }
 
-        Button(onClick = { vm.showNewSourceDialog = true }) {
+        Button(onClick = { showNewSourceDialog = true }) {
             Text("Create new source")
         }
 

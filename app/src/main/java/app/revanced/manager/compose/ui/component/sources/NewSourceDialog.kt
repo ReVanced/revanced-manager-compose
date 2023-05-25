@@ -13,11 +13,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import app.revanced.manager.compose.R
-import app.revanced.manager.compose.ui.screen.NewSourceResult
 import app.revanced.manager.compose.util.parseUrlOrNull
+import io.ktor.http.*
 
 @Composable
-fun NewSourceDialog(onDismissRequest: () -> Unit, onSubmit: (NewSourceResult) -> Unit) {
+fun NewSourceDialog(
+    onDismissRequest: () -> Unit,
+    onRemoteSubmit: (String, Url) -> Unit,
+    onLocalSubmit: (String, Uri, Uri?) -> Unit
+) {
     Dialog(
         onDismissRequest = onDismissRequest,
         properties = DialogProperties(
@@ -81,16 +85,11 @@ fun NewSourceDialog(onDismissRequest: () -> Unit, onSubmit: (NewSourceResult) ->
 
                 Button(
                     onClick = {
-                        val result =
-                            if (isLocal) NewSourceResult.Local(
-                                name,
-                                patchBundle!!,
-                                integrations
-                            ) else NewSourceResult.Remote(
-                                name,
-                                remoteUrl.parseUrlOrNull()!!
-                            )
-                        onSubmit(result)
+                        if (isLocal) {
+                            onLocalSubmit(name, patchBundle!!, integrations)
+                        } else {
+                            onRemoteSubmit(name, remoteUrl.parseUrlOrNull()!!)
+                        }
                     },
                     enabled = inputsAreValid
                 ) {

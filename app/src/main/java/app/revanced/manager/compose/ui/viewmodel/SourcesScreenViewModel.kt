@@ -17,7 +17,6 @@ import kotlinx.coroutines.launch
 
 class SourcesScreenViewModel(private val app: Application, private val sourceRepository: SourceRepository) : ViewModel() {
     val sources = sourceRepository.sources
-    var showNewSourceDialog by mutableStateOf(false)
     private val contentResolver: ContentResolver = app.contentResolver
 
     companion object {
