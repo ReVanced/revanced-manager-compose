@@ -1,9 +1,6 @@
 package app.revanced.manager.compose.data.room.sources
 
-import androidx.room.ColumnInfo
-import androidx.room.Embedded
-import androidx.room.Entity
-import androidx.room.PrimaryKey
+import androidx.room.*
 import io.ktor.http.*
 
 const val sourcesTableName = "sources"
@@ -25,7 +22,7 @@ data class VersionInfo(
     @ColumnInfo(name = "integrations_version") val integrations: String,
 )
 
-@Entity(tableName = sourcesTableName)
+@Entity(tableName = sourcesTableName, indices = [Index(value = ["name"], unique = true)])
 data class SourceEntity(
     @PrimaryKey val uid: Int,
     @ColumnInfo(name = "name") val name: String,

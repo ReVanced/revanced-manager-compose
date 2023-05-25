@@ -91,7 +91,8 @@ fun SourceWidget(name: String, source: Source, onDelete: () -> Unit) {
     var sheetActive by rememberSaveable { mutableStateOf(false) }
 
     val bundle by source.bundle.collectAsStateWithLifecycle()
-    val resolver = LocalContext.current.contentResolver!!
+    val androidContext = LocalContext.current
+    val resolver = remember { androidContext.contentResolver!! }
     val patchCount = bundle.patches.size
     val padding = PaddingValues(16.dp, 0.dp)
 
@@ -135,7 +136,7 @@ fun SourceWidget(name: String, source: Source, onDelete: () -> Unit) {
 
                         Button(onClick = {
                             coroutineScope.launch {
-                                uiSafe(LocalContext.current, R.string.source_download_fail, SourcesScreenViewModel.failLogMsg) {
+                                uiSafe(androidContext, R.string.source_download_fail, SourcesScreenViewModel.failLogMsg) {
                                     source.update()
                                 }
                             }
