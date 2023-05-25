@@ -58,7 +58,7 @@ class SourceRepository(app: Application, private val persistenceRepo: SourcePers
 
     suspend fun remove(source: Source) = withContext(Dispatchers.Default) {
         persistenceRepo.delete(source.id)
-        sourcesDir.resolve(source.id.toString()).delete()
+        directoryOf(source.id).delete()
 
         _sources.update {
             it.filterValues { value ->
