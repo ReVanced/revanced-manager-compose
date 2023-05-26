@@ -64,6 +64,8 @@
     <string name="unsupported_patches">Unsupported patches</string>
     <string name="app_not_supported">Some of the patches do not support this app version (%s). The patches only support the following versions: %s.</string>
 
+    <string name="select_file">Select file</string>
+
     <string name="installer">Installer</string>
     <string name="install_app">Install</string>
     <string name="export_app">Export</string>

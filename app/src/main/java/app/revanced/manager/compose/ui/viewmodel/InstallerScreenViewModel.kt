@@ -15,7 +15,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.work.*
 import app.revanced.manager.compose.R
-import app.revanced.manager.compose.patcher.SignerService
+import app.revanced.manager.compose.domain.manager.KeystoreManager
 import app.revanced.manager.compose.patcher.worker.PatcherProgressManager
 import app.revanced.manager.compose.patcher.worker.PatcherWorker
 import app.revanced.manager.compose.patcher.worker.StepGroup
@@ -36,7 +36,7 @@ class InstallerScreenViewModel(
     input: PackageInfo,
     selectedPatches: PatchesSelection
 ) : ViewModel(), KoinComponent {
-    private val signerService: SignerService by inject()
+    private val keystoreManager: KeystoreManager by inject()
     private val app: Application by inject()
     var stepGroups by mutableStateOf<List<StepGroup>>(
         PatcherProgressManager.generateGroupsList(
@@ -119,7 +119,7 @@ class InstallerScreenViewModel(
     private fun signApk(): Boolean {
         if (!hasSigned) {
             try {
-                signerService.createSigner().signApk(outputFile, signedFile)
+                keystoreManager.createSigner().signApk(outputFile, signedFile)
             } catch (e: Throwable) {
                 e.printStackTrace()
                 app.toast(app.getString(R.string.sign_fail, e::class.simpleName))
