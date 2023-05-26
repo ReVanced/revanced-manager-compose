@@ -1,15 +1,13 @@
 package app.revanced.manager.compose.network.api
 
 import android.app.Application
+import android.os.Environment
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import app.revanced.manager.compose.domain.repository.ReVancedRepository
-import app.revanced.manager.compose.util.ghIntegrations
-import app.revanced.manager.compose.util.ghPatches
-import app.revanced.manager.compose.util.tag
-import app.revanced.manager.compose.util.toast
+import app.revanced.manager.compose.util.*
 import io.ktor.client.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
@@ -24,51 +22,49 @@ class ManagerAPI(
     private val revancedRepository: ReVancedRepository
 ) {
     var downloadProgress: Float? by mutableStateOf(null)
+    var downloadedSize: Long? by mutableStateOf(null)
+    var totalSize: Long? by mutableStateOf(null)
 
     private suspend fun downloadAsset(downloadUrl: String, saveLocation: File) {
         client.get(downloadUrl) {
-            onDownload { bytesSentTotal, contentLength ->
+            onDownload { bytesSentTotal, contentLength, ->
                 downloadProgress = (bytesSentTotal.toFloat() / contentLength.toFloat())
+                downloadedSize = bytesSentTotal
+                totalSize = contentLength
             }
         }.bodyAsChannel().copyAndClose(saveLocation.writeChannel())
         downloadProgress = null
     }
 
-    suspend fun downloadPatchBundle(): File? {
-        try {
-            val downloadUrl = revancedRepository.findAsset(ghPatches, ".jar").downloadUrl
-            val patchesFile = app.filesDir.resolve("patch-bundles").also { it.mkdirs() }
-                .resolve("patchbundle.jar")
-            downloadAsset(downloadUrl, patchesFile)
+    private suspend fun patchesAsset() = revancedRepository.findAsset(ghPatches, ".jar")
+    private suspend fun integrationsAsset() = revancedRepository.findAsset(ghIntegrations, ".apk")
 
-            return patchesFile
-        } catch (e: Exception) {
-            Log.e(tag, "Failed to download patch bundle", e)
-            app.toast("Failed to download patch bundle")
-        }
+    suspend fun getLatestBundleVersion() = patchesAsset().version to integrationsAsset().version
 
-        return null
+    suspend fun downloadBundle(patchBundle: File, integrations: File): Pair<String, String> {
+        val patchBundleAsset = patchesAsset()
+        val integrationsAsset = integrationsAsset()
+
+        downloadAsset(patchBundleAsset.downloadUrl, patchBundle)
+        downloadAsset(integrationsAsset.downloadUrl, integrations)
+
+        return patchBundleAsset.version to integrationsAsset.version
     }
 
-    suspend fun downloadIntegrations(): File? {
+    suspend fun downloadManager(): File? {
         try {
-            val downloadUrl = revancedRepository.findAsset(ghIntegrations, ".apk").downloadUrl
-            val integrationsFile = app.filesDir.resolve("integrations").also { it.mkdirs() }
-                .resolve("integrations.apk")
-            downloadAsset(downloadUrl, integrationsFile)
-
-            return integrationsFile
+            val managerAsset = revancedRepository.findAsset(ghManager, ".apk")
+            val managerFile = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).also { it.mkdirs() }
+                .resolve("revanced-manager.apk")
+            downloadAsset(managerAsset.downloadUrl, managerFile)
+            println("Downloaded manager at ${managerFile.absolutePath}")
+            return managerFile
         } catch (e: Exception) {
-            Log.e(tag, "Failed to download integrations", e)
-            app.toast("Failed to download integrations")
+            Log.e(tag, "Failed to download manager", e)
+            app.toast("Failed to download manager")
         }
-
         return null
     }
 }
-
-data class PatchesAsset(
-    val downloadUrl: String, val name: String
-)
 
 class MissingAssetException : Exception()
