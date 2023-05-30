@@ -12,4 +12,6 @@ class ImportExportViewModel(app: Application, private val keystoreManager: Keyst
     fun import(content: Uri, cn: String, pass: String) = keystoreManager.import(cn, pass, contentResolver.openInputStream(content)!!)
 
     fun export(target: Uri) = keystoreManager.export(contentResolver.openOutputStream(target)!!)
+
+    fun regenerate() = keystoreManager.regenerate()
 }

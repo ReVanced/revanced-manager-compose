@@ -24,9 +24,11 @@ class KeystoreManager(private val app: Application, private val prefs: Preferenc
 
     init {
         if (!keystorePath.exists()) {
-            createSigner().regenerateKeystore()
+            regenerate()
         }
     }
+
+    fun regenerate() = createSigner().regenerateKeystore()
 
     fun import(cn: String, pass: String, keystore: InputStream) {
         val tempPath = app.cacheDir.resolve("keystore.tmp").toPath()

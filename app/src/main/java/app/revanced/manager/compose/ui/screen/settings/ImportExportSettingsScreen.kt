@@ -3,6 +3,7 @@ package app.revanced.manager.compose.ui.screen.settings
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -64,23 +65,35 @@ fun ImportExportSettingsScreen(
                 .verticalScroll(rememberScrollState())
         ) {
             GroupHeader(stringResource(R.string.signing))
-            ListItem(
-                modifier = Modifier.clickable {
+            GroupItem(
+                onClick = {
                     showImportKeystoreDialog = true
                 },
-                headlineContent = { Text(stringResource(R.string.import_keystore)) },
-                supportingContent = { Text(stringResource(R.string.import_keystore_descripion)) }
+                headline = R.string.import_keystore,
+                description = R.string.import_keystore_descripion
             )
-            ListItem(
-                modifier = Modifier.clickable {
+            GroupItem(
+                onClick = {
                     showExportKeystoreDialog = true
                 },
-                headlineContent = { Text(stringResource(R.string.export_keystore)) },
-                supportingContent = { Text(stringResource(R.string.export_keystore_description)) }
+                headline = R.string.export_keystore,
+                description = R.string.export_keystore_description
+            )
+            GroupItem(
+                onClick = vm::regenerate,
+                headline = R.string.regenerate_keystore,
+                description = R.string.regenerate_keystore_description
             )
         }
     }
 }
+
+@Composable
+private fun GroupItem(onClick: () -> Unit, @StringRes headline: Int, @StringRes description: Int) = ListItem(
+    modifier = Modifier.clickable { onClick() },
+    headlineContent = { Text(stringResource(headline)) },
+    supportingContent = { Text(stringResource(description)) }
+)
 
 @Composable
 fun ExportKeystoreDialog(
