@@ -34,6 +34,7 @@
     <string name="export_keystore_description">Export the current keystore</string>
     <string name="regenerate_keystore">Regenerate keystore</string>
     <string name="regenerate_keystore_description">Generate a new keystore</string>
+    <string name="regenerate_keystore_success">The keystore has been successfully replaced</string>
     
     <string name="search_apps">Search apps…</string>
     <string name="loading_body">Loading…</string>
