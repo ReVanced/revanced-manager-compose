@@ -156,6 +156,25 @@ fun ImportKeystoreDialog(
                     onValueChange = { pass = it },
                     label = { Text("Password") }
                 )
+
+                Text("Credential presets")
+
+                Button(
+                    onClick = {
+                        cn = KeystoreManager.defaultKeystoreValue
+                        pass = KeystoreManager.defaultKeystoreValue
+                    }
+                ) {
+                    Text(stringResource(R.string.import_keystore_preset_default))
+                }
+                Button(
+                    onClick = {
+                        cn = KeystoreManager.defaultKeystoreValue
+                        pass = "s3cur3p@ssw0rd"
+                    }
+                ) {
+                    Text(stringResource(R.string.import_keystore_preset_flutter))
+                }
             }
         }
     )
