@@ -41,7 +41,7 @@ fun AppSelectorScreen(
 ) {
     val pickApkLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
-            it?.let { apkUri -> vm.loadSelectedFile(apkUri).let(onAppClick) }
+            it?.let { apkUri -> onAppClick(vm.loadSelectedFile(apkUri)) }
         }
 
     var filterText by rememberSaveable { mutableStateOf("") }
