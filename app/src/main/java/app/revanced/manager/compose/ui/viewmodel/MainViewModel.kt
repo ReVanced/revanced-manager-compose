@@ -12,14 +12,16 @@ class MainViewModel(
     pm: PM
 ) : ViewModel() {
     init {
-        viewModelScope.launch {
-            sourceRepository.loadSources()
-        }
-        viewModelScope.launch {
-            pm.getCompatibleApps()
-        }
-        viewModelScope.launch(Dispatchers.IO) {
-            pm.getInstalledApps()
+        with(viewModelScope) {
+            launch {
+                sourceRepository.loadSources()
+            }
+            launch {
+                pm.getCompatibleApps()
+            }
+            launch(Dispatchers.IO) {
+                pm.getInstalledApps()
+            }
         }
     }
 }
