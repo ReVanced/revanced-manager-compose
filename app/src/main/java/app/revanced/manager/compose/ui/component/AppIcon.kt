@@ -15,11 +15,11 @@ import coil.compose.AsyncImage
 
 @Composable
 fun AppIcon(
-    drawable: AppInfo,
+    app: AppInfo,
     contentDescription: String?,
     modifier: Modifier = Modifier
 ) {
-    if (drawable.packageInfo == null) {
+    if (app.packageInfo == null) {
         val image = rememberVectorPainter(Icons.Default.Android)
         val colorFilter = ColorFilter.tint(LocalContentColor.current)
 
@@ -31,7 +31,7 @@ fun AppIcon(
         )
     } else {
         AsyncImage(
-            drawable.packageInfo,
+            app.packageInfo,
             contentDescription,
             Modifier.size(36.dp).then(modifier)
         )
