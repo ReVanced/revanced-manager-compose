@@ -6,9 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.lifecycle.lifecycleScope
 import app.revanced.manager.compose.domain.manager.PreferencesManager
-import app.revanced.manager.compose.domain.repository.SourceRepository
 import app.revanced.manager.compose.ui.destination.Destination
 import app.revanced.manager.compose.ui.screen.AppSelectorScreen
 import app.revanced.manager.compose.ui.screen.DashboardScreen
@@ -17,7 +15,7 @@ import app.revanced.manager.compose.ui.screen.PatchesSelectorScreen
 import app.revanced.manager.compose.ui.screen.SettingsScreen
 import app.revanced.manager.compose.ui.theme.ReVancedManagerTheme
 import app.revanced.manager.compose.ui.theme.Theme
-import app.revanced.manager.compose.util.PM
+import app.revanced.manager.compose.ui.viewmodel.MainViewModel
 import coil.Coil
 import coil.ImageLoader
 import dev.olshevski.navigation.reimagined.AnimatedNavHost
@@ -26,19 +24,15 @@ import dev.olshevski.navigation.reimagined.navigate
 import dev.olshevski.navigation.reimagined.pop
 import dev.olshevski.navigation.reimagined.popAll
 import dev.olshevski.navigation.reimagined.rememberNavController
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import me.zhanghai.android.appiconloader.coil.AppIconFetcher
 import me.zhanghai.android.appiconloader.coil.AppIconKeyer
 import org.koin.android.ext.android.get
-import org.koin.androidx.compose.getViewModel
+import org.koin.androidx.viewmodel.ext.android.getViewModel
 import org.koin.core.parameter.parametersOf
 import kotlin.math.roundToInt
 
 class MainActivity : ComponentActivity() {
     private val prefs: PreferencesManager = get()
-    private val sourceRepository: SourceRepository = get()
-    private val pm: PM = get()
 
     @ExperimentalAnimationApi
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,15 +40,7 @@ class MainActivity : ComponentActivity() {
 
         installSplashScreen()
 
-        lifecycleScope.launch {
-            sourceRepository.loadSources()
-        }
-        lifecycleScope.launch {
-            pm.getCompatibleApps()
-        }
-        lifecycleScope.launch(Dispatchers.IO) {
-            pm.getInstalledApps()
-        }
+        getViewModel<MainViewModel>()
 
         val scale = this.resources.displayMetrics.density
         val pixels = (36 * scale).roundToInt()
