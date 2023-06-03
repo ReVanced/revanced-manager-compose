@@ -1,6 +1,5 @@
 package app.revanced.manager.compose.ui.screen
 
-import android.content.pm.PackageInfo
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -30,12 +29,13 @@ import app.revanced.manager.compose.ui.component.AppTopBar
 import app.revanced.manager.compose.ui.component.LoadingIndicator
 import app.revanced.manager.compose.ui.viewmodel.AppSelectorViewModel
 import app.revanced.manager.compose.util.APK_MIMETYPE
+import app.revanced.manager.compose.util.AppInfo
 import org.koin.androidx.compose.getViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppSelectorScreen(
-    onAppClick: (PackageInfo) -> Unit,
+    onAppClick: (AppInfo) -> Unit,
     onBackClick: () -> Unit,
     vm: AppSelectorViewModel = getViewModel()
 ) {
@@ -87,7 +87,7 @@ fun AppSelectorScreen(
 
                             ListItem(
                                 modifier = Modifier.clickable {
-                                    app.packageInfo?.let { onAppClick(it) }
+                                    app.packageInfo?.let { onAppClick(app) }
                                 },
                                 leadingContent = { AppIcon(app, null) },
                                 headlineContent = { Text(vm.loadLabel(app.packageInfo)) },
@@ -150,7 +150,7 @@ fun AppSelectorScreen(
 
                     ListItem(
                         modifier = Modifier.clickable {
-                            app.packageInfo?.let { onAppClick(it) }
+                            app.packageInfo?.let { onAppClick(app) }
                         },
                         leadingContent = { AppIcon(app, null) },
                         headlineContent = { Text(vm.loadLabel(app.packageInfo)) },

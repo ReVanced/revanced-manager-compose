@@ -22,6 +22,7 @@ import app.revanced.manager.compose.patcher.worker.PatcherWorker
 import app.revanced.manager.compose.patcher.worker.StepGroup
 import app.revanced.manager.compose.service.InstallService
 import app.revanced.manager.compose.service.UninstallService
+import app.revanced.manager.compose.util.AppInfo
 import app.revanced.manager.compose.util.PM
 import app.revanced.manager.compose.util.PatchesSelection
 import app.revanced.manager.compose.util.toast
@@ -33,7 +34,7 @@ import java.io.File
 import java.nio.file.Files
 
 class InstallerScreenViewModel(
-    input: PackageInfo,
+    input: AppInfo,
     selectedPatches: PatchesSelection
 ) : ViewModel(), KoinComponent {
     private val signerService: SignerService by inject()
@@ -71,11 +72,11 @@ class InstallerScreenViewModel(
                     PatcherWorker.ARGS_KEY to
                             Json.Default.encodeToString(
                                 PatcherWorker.Args(
-                                    input.applicationInfo.sourceDir, // TODO: this doesn't work with apk files from storage
+                                    input.path?.absolutePath ?: input.packageInfo!!.applicationInfo.sourceDir,
                                     outputFile.path,
                                     selectedPatches,
                                     input.packageName,
-                                    input.versionName,
+                                    input.packageInfo!!.versionName,
                                 )
                             )
                 )

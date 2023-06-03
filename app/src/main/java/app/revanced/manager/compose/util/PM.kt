@@ -33,7 +33,8 @@ private const val byteArraySize = 1024 * 1024 // Because 1,048,576 is not readab
 data class AppInfo(
     val packageName: String,
     val patches: Int,
-    val packageInfo: PackageInfo?
+    val packageInfo: PackageInfo?,
+    val path: File? = null
 ) : Parcelable
 
 @SuppressLint("QueryPermissionsNeeded")
@@ -117,7 +118,14 @@ class PM(
         packageInstaller.uninstall(pkg, app.uninstallIntentSender)
     }
 
-    fun getApkInfo(apk: File) = app.packageManager.getPackageArchiveInfo(apk.path, 0)!!
+    fun getApkInfo(apk: File) = app.packageManager.getPackageArchiveInfo(apk.path, 0)!!.let {
+        AppInfo(
+            it.packageName,
+            0,
+            it,
+            apk
+        )
+    }
 }
 
 private fun PackageInstaller.Session.writeApk(apk: File) {

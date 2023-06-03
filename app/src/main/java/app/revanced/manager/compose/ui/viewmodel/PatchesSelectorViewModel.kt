@@ -1,6 +1,5 @@
 package app.revanced.manager.compose.ui.viewmodel
 
-import android.content.pm.PackageInfo
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -8,19 +7,20 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import app.revanced.manager.compose.domain.repository.SourceRepository
 import app.revanced.manager.compose.patcher.patch.PatchInfo
+import app.revanced.manager.compose.util.AppInfo
 import app.revanced.manager.compose.util.PatchesSelection
 import kotlinx.coroutines.flow.map
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 
-class PatchesSelectorViewModel(packageInfo: PackageInfo) : ViewModel(), KoinComponent {
+class PatchesSelectorViewModel(appInfo: AppInfo) : ViewModel(), KoinComponent {
     val bundlesFlow = get<SourceRepository>().bundles.map { bundles ->
         bundles.mapValues { (_, bundle) -> bundle.patches }.map { (name, patches) ->
             val supported = mutableListOf<PatchInfo>()
             val unsupported = mutableListOf<PatchInfo>()
 
-            patches.filter { it.compatibleWith(packageInfo.packageName) }.forEach {
-                val targetList = if (it.supportsVersion(packageInfo.versionName)) supported else unsupported
+            patches.filter { it.compatibleWith(appInfo.packageName) }.forEach {
+                val targetList = if (it.supportsVersion(appInfo.packageInfo!!.versionName)) supported else unsupported
 
                 targetList.add(it)
             }
