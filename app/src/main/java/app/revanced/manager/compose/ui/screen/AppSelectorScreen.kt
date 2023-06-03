@@ -20,6 +20,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -91,7 +92,7 @@ fun AppSelectorScreen(
                                 leadingContent = { AppIcon(app, null) },
                                 headlineContent = { Text(vm.loadLabel(app.packageInfo)) },
                                 supportingContent = { Text(app.packageName) },
-                                trailingContent = { Text(app.patches.toString()) }
+                                trailingContent = if (app.patches > 0) { { Text(pluralStringResource(R.plurals.patches_count, app.patches, app.patches)) } } else null
                             )
 
                         }
@@ -154,7 +155,7 @@ fun AppSelectorScreen(
                         leadingContent = { AppIcon(app, null) },
                         headlineContent = { Text(vm.loadLabel(app.packageInfo)) },
                         supportingContent = { Text(app.packageName) },
-                        trailingContent = { Text(app.patches.toString()) }
+                        trailingContent = if (app.patches > 0) { { Text(pluralStringResource(R.plurals.patches_count, app.patches, app.patches)) } } else null
                     )
 
                 }
