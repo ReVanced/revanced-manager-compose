@@ -72,7 +72,7 @@ class InstallerScreenViewModel(
                     PatcherWorker.ARGS_KEY to
                             Json.Default.encodeToString(
                                 PatcherWorker.Args(
-                                    input.path?.absolutePath ?: input.packageInfo!!.applicationInfo.sourceDir,
+                                    input.path!!.absolutePath,
                                     outputFile.path,
                                     selectedPatches,
                                     input.packageName,

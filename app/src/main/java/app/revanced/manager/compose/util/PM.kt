@@ -80,7 +80,8 @@ class PM(
                             AppInfo(
                                 pkg,
                                 compatiblePackages[pkg] ?: 0,
-                                packageInfo
+                                packageInfo,
+                                File(packageInfo.applicationInfo.sourceDir)
                             )
                         } catch (e: PackageManager.NameNotFoundException) {
                             AppInfo(
@@ -100,7 +101,8 @@ class PM(
             AppInfo(
                 packageInfo.packageName,
                 0,
-                packageInfo
+                packageInfo,
+                File(packageInfo.applicationInfo.sourceDir)
             )
         })
     }
