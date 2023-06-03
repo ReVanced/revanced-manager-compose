@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageInfo
 import android.content.pm.PackageInstaller
 import android.net.Uri
 import androidx.compose.runtime.derivedStateOf
@@ -22,7 +23,6 @@ import app.revanced.manager.compose.patcher.worker.StepGroup
 import app.revanced.manager.compose.service.InstallService
 import app.revanced.manager.compose.service.UninstallService
 import app.revanced.manager.compose.util.PM
-import app.revanced.manager.compose.util.PackageInfo
 import app.revanced.manager.compose.util.PatchesSelection
 import app.revanced.manager.compose.util.toast
 import kotlinx.serialization.encodeToString
@@ -38,6 +38,8 @@ class InstallerScreenViewModel(
 ) : ViewModel(), KoinComponent {
     private val signerService: SignerService by inject()
     private val app: Application by inject()
+    private val pm: PM by inject()
+
     var stepGroups by mutableStateOf<List<StepGroup>>(
         PatcherProgressManager.generateGroupsList(
             app,
@@ -45,7 +47,7 @@ class InstallerScreenViewModel(
     )
         private set
 
-    val packageName = input.packageName
+    val packageName: String = input.packageName
 
     private val workManager = WorkManager.getInstance(app)
 
@@ -69,11 +71,11 @@ class InstallerScreenViewModel(
                     PatcherWorker.ARGS_KEY to
                             Json.Default.encodeToString(
                                 PatcherWorker.Args(
-                                    input.apk.path,
+                                    input.applicationInfo.sourceDir, // TODO: this doesn't work with apk files from storage
                                     outputFile.path,
                                     selectedPatches,
                                     input.packageName,
-                                    input.version,
+                                    input.versionName,
                                 )
                             )
                 )
@@ -141,7 +143,7 @@ class InstallerScreenViewModel(
         isInstalling = true
         try {
             if (!signApk()) return
-            PM.installApp(listOf(signedFile), app)
+            pm.installApp(listOf(signedFile))
         } finally {
             isInstalling = false
         }

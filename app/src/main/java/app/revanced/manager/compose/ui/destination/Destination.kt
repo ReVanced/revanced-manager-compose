@@ -1,7 +1,7 @@
 package app.revanced.manager.compose.ui.destination
 
+import android.content.pm.PackageInfo
 import android.os.Parcelable
-import app.revanced.manager.compose.util.PackageInfo
 import app.revanced.manager.compose.util.PatchesSelection
 import kotlinx.parcelize.Parcelize
 
