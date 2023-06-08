@@ -5,10 +5,7 @@ import androidx.annotation.StringRes
 import androidx.work.Data
 import androidx.work.workDataOf
 import app.revanced.manager.R
-import app.revanced.manager.patcher.Session
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.toImmutableList
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -44,16 +41,15 @@ class PatcherProgressManager(context: Context, selectedPatches: List<String>) {
     val stepGroups = generateGroupsList(context, selectedPatches)
 
     companion object {
-        private const val PATCHES = 1
         private const val WORK_DATA_KEY = "progress"
 
         /**
-         * A map of [Session.Progress] to the corresponding position in [stepGroups]
+         * A map of [Progress] to the corresponding position in [stepGroups]
          */
         private val stepKeyMap = mapOf(
             Progress.Unpacking to StepKey(0, 0),
             Progress.Merging to StepKey(0, 1),
-            Progress.PatchingStart to StepKey(PATCHES, 0),
+            Progress.PatchingStart to StepKey(1, 0),
             Progress.Saving to StepKey(2, 0),
         )
 
@@ -90,7 +86,8 @@ class PatcherProgressManager(context: Context, selectedPatches: List<String>) {
     private fun updateStepStatus(key: StepKey, newStatus: StepStatus) {
         var isLastStepOfGroup = false
         stepGroups.mutateIndex(key.groupIndex) { group ->
-            isLastStepOfGroup = key.stepIndex == group.steps.size - 1
+            isLastStepOfGroup = key.stepIndex == group.steps.lastIndex
+
             val newGroupStatus = when {
                 // This group failed if a step in it failed.
                 newStatus == StepStatus.FAILURE -> StepStatus.FAILURE
@@ -102,7 +99,7 @@ class PatcherProgressManager(context: Context, selectedPatches: List<String>) {
 
             StepGroup(group.name, group.steps.toMutableList().mutateIndex(key.stepIndex) { step ->
                 Step(step.name, newStatus)
-            }.toImmutableList(), newGroupStatus)
+            }, newGroupStatus)
         }
 
         val isFinalStep = isLastStepOfGroup && key.groupIndex == stepGroups.lastIndex
