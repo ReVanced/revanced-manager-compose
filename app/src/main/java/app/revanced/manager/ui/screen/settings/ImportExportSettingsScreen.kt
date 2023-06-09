@@ -21,6 +21,7 @@ import androidx.compose.ui.res.stringResource
 import app.revanced.manager.R
 import app.revanced.manager.ui.viewmodel.ImportExportViewModel
 import app.revanced.manager.domain.manager.KeystoreManager.Companion.DEFAULT
+import app.revanced.manager.domain.manager.KeystoreManager.Companion.FLUTTER_MANAGER_PASSWORD
 import app.revanced.manager.domain.manager.PreferencesManager
 import app.revanced.manager.ui.component.AppTopBar
 import app.revanced.manager.ui.component.FileSelector
@@ -126,8 +127,6 @@ fun ExportKeystoreDialog(
         }
     )
 }
-
-private const val FLUTTER_MANAGER_PASSWORD = "s3cur3p@ssw0rd"
 
 @Composable
 fun ImportKeystoreDialog(

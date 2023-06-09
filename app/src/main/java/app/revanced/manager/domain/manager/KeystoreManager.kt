@@ -15,6 +15,11 @@ class KeystoreManager(private val app: Application, private val prefs: Preferenc
          * Default common name and password for the keystore.
          */
         const val DEFAULT = "ReVanced"
+
+        /**
+         * The default password used by the Flutter version.
+         */
+        const val FLUTTER_MANAGER_PASSWORD = "s3cur3p@ssw0rd"
     }
 
     private val keystorePath = app.dataDir.resolve("manager.keystore").toPath()
