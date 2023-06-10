@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageInstaller
 import android.net.Uri
+import android.util.Log
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -25,6 +26,7 @@ import app.revanced.manager.service.UninstallService
 import app.revanced.manager.util.AppInfo
 import app.revanced.manager.util.PM
 import app.revanced.manager.util.PatchesSelection
+import app.revanced.manager.util.tag
 import app.revanced.manager.util.toast
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -135,9 +137,9 @@ class InstallerViewModel(
     private fun signApk(): Boolean {
         if (!hasSigned) {
             try {
-                keystoreManager.createSigner().signApk(outputFile, signedFile)
-            } catch (e: Throwable) {
-                e.printStackTrace()
+                keystoreManager.sign(outputFile, signedFile)
+            } catch (e: Exception) {
+                Log.e(tag, "Got exception while signing", e)
                 app.toast(app.getString(R.string.sign_fail, e::class.simpleName))
                 return false
             }

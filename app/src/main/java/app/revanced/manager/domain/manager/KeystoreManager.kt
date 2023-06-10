@@ -3,13 +3,14 @@ package app.revanced.manager.domain.manager
 import android.app.Application
 import app.revanced.manager.util.signing.Signer
 import app.revanced.manager.util.signing.SigningOptions
+import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import kotlin.io.path.exists
 
-class KeystoreManager(private val app: Application, private val prefs: PreferencesManager) {
+class KeystoreManager(app: Application, private val prefs: PreferencesManager) {
     companion object {
         /**
          * Default common name and password for the keystore.
@@ -23,9 +24,17 @@ class KeystoreManager(private val app: Application, private val prefs: Preferenc
     }
 
     private val keystorePath = app.dataDir.resolve("manager.keystore").toPath()
-    private fun options(cn: String, pass: String) = SigningOptions(cn, pass, keystorePath)
+    private fun options(
+        cn: String = prefs.keystoreCommonName!!,
+        pass: String = prefs.keystorePass!!
+    ) = SigningOptions(cn, pass, keystorePath)
 
-    fun createSigner() = Signer(options(prefs.keystoreCommonName!!, prefs.keystorePass!!))
+    private fun updatePrefs(cn: String, pass: String) {
+        prefs.keystoreCommonName = cn
+        prefs.keystorePass = pass
+    }
+
+    fun sign(input: File, output: File) = Signer(options()).signApk(input, output)
 
     init {
         if (!keystorePath.exists()) {
@@ -33,21 +42,15 @@ class KeystoreManager(private val app: Application, private val prefs: Preferenc
         }
     }
 
-    fun regenerate() = createSigner().regenerateKeystore()
+    fun regenerate() = Signer(options(DEFAULT, DEFAULT)).regenerateKeystore().also {
+        updatePrefs(DEFAULT, DEFAULT)
+    }
 
     fun import(cn: String, pass: String, keystore: InputStream) {
-        val tempPath = app.cacheDir.resolve("keystore.tmp").toPath()
-        Files.copy(keystore, tempPath)
+        // TODO: check if the user actually provided the correct password
+        Files.copy(keystore, keystorePath, StandardCopyOption.REPLACE_EXISTING)
 
-        try {
-            // TODO: check if the user actually provided the correct password
-            Files.copy(tempPath, keystorePath, StandardCopyOption.REPLACE_EXISTING)
-
-            prefs.keystoreCommonName = cn
-            prefs.keystorePass = pass
-        } finally {
-            Files.delete(tempPath)
-        }
+        updatePrefs(cn, pass)
     }
 
     fun export(target: OutputStream) {

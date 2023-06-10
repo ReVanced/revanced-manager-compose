@@ -30,7 +30,7 @@ class Signer(
         val privateKS = KeyStore.getInstance("BKS", "BC")
         privateKS.load(null, passwordCharArray)
         privateKS.setKeyEntry("alias", privateKey, passwordCharArray, arrayOf(publicKey))
-        privateKS.store(out.outputStream(), passwordCharArray)
+        out.outputStream().use { stream -> privateKS.store(stream, passwordCharArray) }
     }
 
     fun regenerateKeystore() = newKeystore(signingOptions.keyStoreFilePath)
@@ -64,7 +64,7 @@ class Signer(
         }
 
         val keyStore = KeyStore.getInstance("BKS", "BC")
-        ks.inputStream().use { fis -> keyStore.load(fis, null) }
+        ks.inputStream().use { stream -> keyStore.load(stream, null) }
         val alias = keyStore.aliases().nextElement()
 
         val config = ApkSigner.SignerConfig.Builder(
