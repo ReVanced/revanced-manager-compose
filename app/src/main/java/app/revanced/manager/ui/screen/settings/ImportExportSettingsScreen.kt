@@ -90,23 +90,25 @@ fun ImportExportSettingsScreen(
 }
 
 @Composable
-private fun GroupItem(onClick: () -> Unit, @StringRes headline: Int, @StringRes description: Int) = ListItem(
-    modifier = Modifier.clickable { onClick() },
-    headlineContent = { Text(stringResource(headline)) },
-    supportingContent = { Text(stringResource(description)) }
-)
+private fun GroupItem(onClick: () -> Unit, @StringRes headline: Int, @StringRes description: Int) =
+    ListItem(
+        modifier = Modifier.clickable { onClick() },
+        headlineContent = { Text(stringResource(headline)) },
+        supportingContent = { Text(stringResource(description)) }
+    )
 
 @Composable
 fun ExportKeystoreDialog(
     onDismissRequest: () -> Unit,
     onExport: (Uri) -> Unit
 ) {
-    val activityLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("*/*")) { uri ->
-        uri?.let {
-            onExport(it)
-            onDismissRequest()
+    val activityLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("*/*")) { uri ->
+            uri?.let {
+                onExport(it)
+                onDismissRequest()
+            }
         }
-    }
     val prefs: PreferencesManager = rememberKoinInject()
 
     AlertDialog(
@@ -138,10 +140,13 @@ fun ImportKeystoreDialog(
     AlertDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
-            FileSelector("*/*", onSelect = {
-                onImport(it, cn, pass)
-                onDismissRequest()
-            }) {
+            FileSelector(
+                mime = "*/*",
+                onSelect = {
+                    onImport(it, cn, pass)
+                    onDismissRequest()
+                }
+            ) {
                 Text(stringResource(R.string.select_file))
             }
         },
