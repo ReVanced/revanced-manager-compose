@@ -19,11 +19,11 @@ import app.revanced.manager.domain.repository.SourceRepository
 import app.revanced.manager.patcher.Session
 import app.revanced.manager.patcher.aapt.Aapt
 import app.revanced.manager.util.PatchesSelection
+import app.revanced.manager.util.deserialize
 import app.revanced.manager.util.tag
 import app.revanced.patcher.extensions.PatchExtensions.patchName
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.io.File
@@ -44,7 +44,6 @@ class PatcherWorker(context: Context, parameters: WorkerParameters) :
     )
 
     companion object {
-        const val ARGS_KEY = "args"
         private const val logPrefix = "[Worker]:"
         private fun String.logFmt() = "$logPrefix $this"
     }
@@ -76,7 +75,7 @@ class PatcherWorker(context: Context, parameters: WorkerParameters) :
             return Result.failure()
         }
 
-        val args = Json.decodeFromString<Args>(inputData.getString(ARGS_KEY)!!)
+        val args = inputData.deserialize<Args>()!!
 
         try {
             // This does not always show up for some reason.
@@ -116,7 +115,7 @@ class PatcherWorker(context: Context, parameters: WorkerParameters) :
 
         suspend fun updateProgress(progress: Progress) {
             progressManager.handle(progress)
-            setProgress(progressManager.groupsToWorkData())
+            setProgress(progressManager.workData())
         }
 
         return try {
@@ -126,6 +125,7 @@ class PatcherWorker(context: Context, parameters: WorkerParameters) :
                     ?: throw IllegalArgumentException("Patch bundle $bundleName does not exist")
             }
 
+            // Ensure they are in the correct order so we can track progress properly.
             progressManager.replacePatchesList(patchList.map { it.patchName })
 
             updateProgress(Progress.Unpacking)
@@ -143,11 +143,11 @@ class PatcherWorker(context: Context, parameters: WorkerParameters) :
 
             Log.i(tag, "Patching succeeded".logFmt())
             progressManager.success()
-            Result.success(progressManager.groupsToWorkData())
+            Result.success(progressManager.workData())
         } catch (e: Exception) {
             Log.e(tag, "Got exception while patching".logFmt(), e)
             progressManager.failure(e)
-            Result.failure(progressManager.groupsToWorkData())
+            Result.failure(progressManager.workData())
         }
     }
 }

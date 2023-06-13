@@ -34,8 +34,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.revanced.manager.R
-import app.revanced.manager.patcher.worker.StepGroup
-import app.revanced.manager.patcher.worker.StepStatus
+import app.revanced.manager.patcher.worker.Step
+import app.revanced.manager.patcher.worker.State
 import app.revanced.manager.ui.component.AppScaffold
 import app.revanced.manager.ui.component.AppTopBar
 import app.revanced.manager.ui.viewmodel.InstallerViewModel
@@ -50,7 +50,7 @@ fun InstallerScreen(
 ) {
     val exportApkLauncher = rememberLauncherForActivityResult(CreateDocument(APK_MIMETYPE), vm::export)
     val patcherState by vm.patcherState.observeAsState(vm.initialState)
-    val canInstall by remember { derivedStateOf { patcherState.status == true && (vm.installedPackageName != null || !vm.isInstalling) } }
+    val canInstall by remember { derivedStateOf { patcherState.succeeded == true && (vm.installedPackageName != null || !vm.isInstalling) } }
 
     AppScaffold(
         topBar = {
@@ -73,8 +73,8 @@ fun InstallerScreen(
                 .padding(paddingValues)
                 .fillMaxSize()
         ) {
-            patcherState.stepGroups.forEach {
-                InstallGroup(it)
+            patcherState.steps.forEach {
+                InstallStep(it)
             }
             Spacer(modifier = Modifier.weight(1f))
             Row(
@@ -105,7 +105,7 @@ fun InstallerScreen(
 // Credits: https://github.com/Aliucord/AliucordManager/blob/main/app/src/main/kotlin/com/aliucord/manager/ui/component/installer/InstallGroup.kt
 
 @Composable
-fun InstallGroup(group: StepGroup) {
+fun InstallStep(step: Step) {
     var expanded by rememberSaveable { mutableStateOf(true) }
     Column(
         modifier = Modifier
@@ -130,9 +130,9 @@ fun InstallGroup(group: StepGroup) {
                     background(MaterialTheme.colorScheme.surface)
                 }
         ) {
-            StepIcon(group.status, 24.dp)
+            StepIcon(step.state, 24.dp)
 
-            Text(text = stringResource(group.name), style = MaterialTheme.typography.titleMedium)
+            Text(text = stringResource(step.name), style = MaterialTheme.typography.titleMedium)
 
             Spacer(modifier = Modifier.weight(1f))
 
@@ -162,12 +162,12 @@ fun InstallGroup(group: StepGroup) {
                     .padding(16.dp)
                     .padding(start = 4.dp)
             ) {
-                group.steps.forEach {
+                step.substeps.forEach {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                     ) {
-                        StepIcon(it.status, size = 18.dp)
+                        StepIcon(it.state, size = 18.dp)
 
                         Text(
                             text = it.name,
@@ -178,9 +178,9 @@ fun InstallGroup(group: StepGroup) {
                         )
                     }
 
-                    if (it.status is StepStatus.Failure && it.status.cause != null) {
+                    it.message?.let { stacktrace ->
                         Text(
-                            text = it.status.cause.stacktrace,
+                            text = stacktrace,
                             style = MaterialTheme.typography.bodySmall
                         )
                     }
@@ -191,25 +191,25 @@ fun InstallGroup(group: StepGroup) {
 }
 
 @Composable
-fun StepIcon(status: StepStatus, size: Dp) {
+fun StepIcon(status: State, size: Dp) {
     val strokeWidth = Dp(floor(size.value / 10) + 1)
 
     when (status) {
-        is StepStatus.Completed -> Icon(
+        State.COMPLETED -> Icon(
             Icons.Filled.CheckCircle,
             contentDescription = "success",
             tint = MaterialTheme.colorScheme.surfaceTint,
             modifier = Modifier.size(size)
         )
 
-        is StepStatus.Failure -> Icon(
+        State.FAILED -> Icon(
             Icons.Filled.Cancel,
             contentDescription = "failed",
             tint = MaterialTheme.colorScheme.error,
             modifier = Modifier.size(size)
         )
 
-        is StepStatus.Waiting -> CircularProgressIndicator(
+        State.WAITING -> CircularProgressIndicator(
             strokeWidth = strokeWidth,
             modifier = Modifier
                 .size(size)
