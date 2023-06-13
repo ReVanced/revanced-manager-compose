@@ -5,7 +5,9 @@ import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.CheckCircle
@@ -150,11 +152,13 @@ fun InstallGroup(group: StepGroup) {
         }
 
         AnimatedVisibility(visible = expanded) {
+            val scrollState = rememberScrollState()
             Column(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier
                     .background(MaterialTheme.colorScheme.background.copy(0.6f))
                     .fillMaxWidth()
+                    .verticalScroll(scrollState)
                     .padding(16.dp)
                     .padding(start = 4.dp)
             ) {
@@ -173,6 +177,13 @@ fun InstallGroup(group: StepGroup) {
                             modifier = Modifier.weight(1f, true),
                         )
                     }
+
+                    if (it.status is StepStatus.Failure && it.status.cause != null) {
+                        Text(
+                            text = it.status.cause.stacktrace,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
                 }
             }
         }
@@ -184,21 +195,21 @@ fun StepIcon(status: StepStatus, size: Dp) {
     val strokeWidth = Dp(floor(size.value / 10) + 1)
 
     when (status) {
-        StepStatus.COMPLETED -> Icon(
+        is StepStatus.Completed -> Icon(
             Icons.Filled.CheckCircle,
             contentDescription = "success",
             tint = MaterialTheme.colorScheme.surfaceTint,
             modifier = Modifier.size(size)
         )
 
-        StepStatus.FAILURE -> Icon(
+        is StepStatus.Failure -> Icon(
             Icons.Filled.Cancel,
             contentDescription = "failed",
             tint = MaterialTheme.colorScheme.error,
             modifier = Modifier.size(size)
         )
 
-        StepStatus.WAITING -> CircularProgressIndicator(
+        is StepStatus.Waiting -> CircularProgressIndicator(
             strokeWidth = strokeWidth,
             modifier = Modifier
                 .size(size)

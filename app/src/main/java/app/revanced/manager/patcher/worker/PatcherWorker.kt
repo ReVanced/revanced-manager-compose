@@ -105,29 +105,37 @@ class PatcherWorker(context: Context, parameters: WorkerParameters) :
             Aapt.binary(applicationContext)?.absolutePath
                 ?: throw FileNotFoundException("Could not resolve aapt.")
 
-        val frameworkPath = applicationContext.cacheDir.resolve("framework").also { it.mkdirs() }.absolutePath
+        val frameworkPath =
+            applicationContext.cacheDir.resolve("framework").also { it.mkdirs() }.absolutePath
 
         val bundles = sourceRepository.bundles.first()
         val integrations = bundles.mapNotNull { (_, bundle) -> bundle.integrations }
 
-        val patchList = args.selectedPatches.flatMap { (bundleName, selected) ->
-            bundles[bundleName]?.loadPatchesFiltered(args.packageName)
-                ?.filter { selected.contains(it.patchName) }
-                ?: throw IllegalArgumentException("Patch bundle $bundleName does not exist")
-        }
-
         val progressManager =
-            PatcherProgressManager(applicationContext, patchList.map { it.patchName })
+            PatcherProgressManager(applicationContext, args.selectedPatches.flatMap { it.value })
 
         suspend fun updateProgress(progress: Progress) {
             progressManager.handle(progress)
             setProgress(progressManager.groupsToWorkData())
         }
 
-        updateProgress(Progress.Unpacking)
-
         return try {
-            Session(applicationContext.cacheDir.absolutePath, frameworkPath, aaptPath, File(args.input)) {
+            val patchList = args.selectedPatches.flatMap { (bundleName, selected) ->
+                bundles[bundleName]?.loadPatchesFiltered(args.packageName)
+                    ?.filter { selected.contains(it.patchName) }
+                    ?: throw IllegalArgumentException("Patch bundle $bundleName does not exist")
+            }
+
+            progressManager.replacePatchesList(patchList.map { it.patchName })
+
+            updateProgress(Progress.Unpacking)
+
+            Session(
+                applicationContext.cacheDir.absolutePath,
+                frameworkPath,
+                aaptPath,
+                File(args.input)
+            ) {
                 updateProgress(it)
             }.use { session ->
                 session.run(File(args.output), patchList, integrations)
@@ -138,7 +146,7 @@ class PatcherWorker(context: Context, parameters: WorkerParameters) :
             Result.success(progressManager.groupsToWorkData())
         } catch (e: Exception) {
             Log.e(tag, "Got exception while patching".logFmt(), e)
-            progressManager.failure()
+            progressManager.failure(e)
             Result.failure(progressManager.groupsToWorkData())
         }
     }

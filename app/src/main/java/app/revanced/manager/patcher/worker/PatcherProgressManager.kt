@@ -6,9 +6,12 @@ import androidx.work.Data
 import androidx.work.workDataOf
 import app.revanced.manager.R
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonClassDiscriminator
 
 sealed class Progress {
     object Unpacking : Progress()
@@ -21,20 +24,33 @@ sealed class Progress {
 }
 
 @Serializable
-enum class StepStatus {
-    WAITING,
-    COMPLETED,
-    FAILURE,
+data class Cause(val className: String, val stacktrace: String)
+
+@OptIn(ExperimentalSerializationApi::class)
+@Serializable
+@JsonClassDiscriminator("t")
+sealed class StepStatus {
+    @Serializable
+    @SerialName("w")
+    object Waiting : StepStatus()
+
+    @Serializable
+    @SerialName("c")
+    object Completed : StepStatus()
+
+    @Serializable
+    @SerialName("f")
+    data class Failure(val cause: Cause? = null) : StepStatus()
 }
 
 @Serializable
-class Step(val name: String, val status: StepStatus = StepStatus.WAITING)
+class Step(val name: String, val status: StepStatus = StepStatus.Waiting)
 
 @Serializable
 class StepGroup(
     @StringRes val name: Int,
     val steps: List<Step>,
-    val status: StepStatus = StepStatus.WAITING
+    val status: StepStatus = StepStatus.Waiting
 )
 
 class PatcherProgressManager(context: Context, selectedPatches: List<String>) {
@@ -47,24 +63,27 @@ class PatcherProgressManager(context: Context, selectedPatches: List<String>) {
          * A map of [Progress] to the corresponding position in [stepGroups]
          */
         private val stepKeyMap = mapOf(
-            Progress.Unpacking to StepKey(0, 0),
-            Progress.Merging to StepKey(0, 1),
+            Progress.Unpacking to StepKey(0, 1),
+            Progress.Merging to StepKey(0, 2),
             Progress.PatchingStart to StepKey(1, 0),
             Progress.Saving to StepKey(2, 0),
+        )
+
+        private fun generatePatchesGroup(selectedPatches: List<String>) = StepGroup(
+            R.string.patcher_step_group_patching,
+            selectedPatches.map { Step(it) }
         )
 
         fun generateGroupsList(context: Context, selectedPatches: List<String>) = mutableListOf(
             StepGroup(
                 R.string.patcher_step_group_prepare,
                 persistentListOf(
+                    Step(context.getString(R.string.patcher_step_load_patches)),
                     Step(context.getString(R.string.patcher_step_unpack)),
                     Step(context.getString(R.string.patcher_step_integrations))
                 )
             ),
-            StepGroup(
-                R.string.patcher_step_group_patching,
-                selectedPatches.map { Step(it) }
-            ),
+            generatePatchesGroup(selectedPatches),
             StepGroup(
                 R.string.patcher_step_group_saving,
                 persistentListOf(Step(context.getString(R.string.patcher_step_write_patched)))
@@ -90,9 +109,9 @@ class PatcherProgressManager(context: Context, selectedPatches: List<String>) {
 
             val newGroupStatus = when {
                 // This group failed if a step in it failed.
-                newStatus == StepStatus.FAILURE -> StepStatus.FAILURE
+                newStatus is StepStatus.Failure -> StepStatus.Failure()
                 // All steps in the group succeeded.
-                newStatus == StepStatus.COMPLETED && isLastStepOfGroup -> StepStatus.COMPLETED
+                newStatus is StepStatus.Completed && isLastStepOfGroup -> StepStatus.Completed
                 // Keep the old status.
                 else -> group.status
             }
@@ -104,7 +123,7 @@ class PatcherProgressManager(context: Context, selectedPatches: List<String>) {
 
         val isFinalStep = isLastStepOfGroup && key.groupIndex == stepGroups.lastIndex
 
-        if (newStatus == StepStatus.COMPLETED) {
+        if (newStatus is StepStatus.Completed) {
             // Move the cursor to the next step.
             currentStep = when {
                 isFinalStep -> null // Final step has been completed.
@@ -117,6 +136,10 @@ class PatcherProgressManager(context: Context, selectedPatches: List<String>) {
         }
     }
 
+    fun replacePatchesList(newList: List<String>) {
+        stepGroups[stepKeyMap[Progress.PatchingStart]!!.groupIndex] = generatePatchesGroup(newList)
+    }
+
     private fun setCurrentStepStatus(newStatus: StepStatus) =
         currentStep?.let { updateStepStatus(it, newStatus) }
 
@@ -127,11 +150,13 @@ class PatcherProgressManager(context: Context, selectedPatches: List<String>) {
     }
 
     fun failure() {
-        // TODO: associate the exception with the step that just failed.
-        setCurrentStepStatus(StepStatus.FAILURE)
+        setCurrentStepStatus(StepStatus.Failure())
+    }
+    fun failure(error: Throwable) {
+        setCurrentStepStatus(StepStatus.Failure(Cause(error.javaClass.canonicalName ?: "unknown", error.stackTraceToString())))
     }
 
     fun success() {
-        setCurrentStepStatus(StepStatus.COMPLETED)
+        setCurrentStepStatus(StepStatus.Completed)
     }
 }

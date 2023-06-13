@@ -48,9 +48,11 @@ class Session(
                 return@forEach
             }
             logger.error("$patch failed:")
-            result.exceptionOrNull()!!.printStackTrace()
+            result.exceptionOrNull()!!.let {
+                logger.error(result.exceptionOrNull()!!.stackTraceToString())
 
-            throw PatchFailedException(patch, result.exceptionOrNull())
+                throw it
+            }
         }
     }
 
