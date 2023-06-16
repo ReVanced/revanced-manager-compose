@@ -38,8 +38,10 @@ import app.revanced.manager.patcher.worker.Step
 import app.revanced.manager.patcher.worker.State
 import app.revanced.manager.ui.component.AppScaffold
 import app.revanced.manager.ui.component.AppTopBar
+import app.revanced.manager.ui.component.ArrowButton
 import app.revanced.manager.ui.viewmodel.InstallerViewModel
 import app.revanced.manager.util.APK_MIMETYPE
+import kotlin.math.exp
 import kotlin.math.floor
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,7 +50,8 @@ fun InstallerScreen(
     onBackClick: () -> Unit,
     vm: InstallerViewModel
 ) {
-    val exportApkLauncher = rememberLauncherForActivityResult(CreateDocument(APK_MIMETYPE), vm::export)
+    val exportApkLauncher =
+        rememberLauncherForActivityResult(CreateDocument(APK_MIMETYPE), vm::export)
     val patcherState by vm.patcherState.observeAsState(vm.initialState)
     val canInstall by remember { derivedStateOf { patcherState.succeeded == true && (vm.installedPackageName != null || !vm.isInstalling) } }
 
@@ -124,11 +127,7 @@ fun InstallStep(step: Step) {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 16.dp, end = 16.dp)
-                .run { if (expanded) {
-                    background(MaterialTheme.colorScheme.secondaryContainer)
-                } else
-                    background(MaterialTheme.colorScheme.surface)
-                }
+                .background(if (expanded) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface)
         ) {
             StepIcon(step.state, 24.dp)
 
@@ -136,18 +135,8 @@ fun InstallStep(step: Step) {
 
             Spacer(modifier = Modifier.weight(1f))
 
-            IconButton(onClick = { expanded = !expanded }) {
-                if (expanded) {
-                    Icon(
-                        imageVector = Icons.Filled.KeyboardArrowUp,
-                        contentDescription = "collapse"
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.Filled.KeyboardArrowDown,
-                        contentDescription = "expand"
-                    )
-                }
+            ArrowButton(expanded = expanded) {
+                expanded = !expanded
             }
         }
 
@@ -163,6 +152,9 @@ fun InstallStep(step: Step) {
                     .padding(start = 4.dp)
             ) {
                 step.substeps.forEach {
+                    var messageExpanded by rememberSaveable { mutableStateOf(true) }
+                    val stacktrace = it.message
+
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -176,12 +168,19 @@ fun InstallStep(step: Step) {
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.weight(1f, true),
                         )
+
+                        if (stacktrace != null) {
+                            ArrowButton(expanded = messageExpanded) {
+                                messageExpanded = !messageExpanded
+                            }
+                        }
                     }
 
-                    it.message?.let { stacktrace ->
+                    AnimatedVisibility(visible = messageExpanded && stacktrace != null) {
                         Text(
-                            text = stacktrace,
-                            style = MaterialTheme.typography.bodySmall
+                            text = stacktrace ?: "",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.secondary
                         )
                     }
                 }
