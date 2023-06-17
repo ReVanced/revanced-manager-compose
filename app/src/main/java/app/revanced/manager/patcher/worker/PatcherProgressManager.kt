@@ -42,28 +42,28 @@ class PatcherProgressManager(context: Context, selectedPatches: List<String>) {
     val steps = generateSteps(context, selectedPatches)
     private var currentStep: StepKey? = StepKey(0, 0)
 
-    private fun updateStep(key: StepKey, newState: State, message: String? = null) {
+    private fun update(key: StepKey, state: State, message: String? = null) {
         val isLastSubStep: Boolean
         steps[key.step] = steps[key.step].let { step ->
             isLastSubStep = key.substep == step.substeps.lastIndex
 
-            val newGroupState = when {
+            val newStepState = when {
                 // This step failed because one of its sub-steps failed.
-                newState == State.FAILED -> State.FAILED
+                state == State.FAILED -> State.FAILED
                 // All sub-steps succeeded.
-                newState == State.COMPLETED && isLastSubStep -> State.COMPLETED
+                state == State.COMPLETED && isLastSubStep -> State.COMPLETED
                 // Keep the old status.
                 else -> step.state
             }
 
             Step(step.name, step.substeps.mapIndexed { index, subStep ->
-                if (index != key.substep) subStep else SubStep(subStep.name, newState, message)
-            }, newGroupState)
+                if (index != key.substep) subStep else SubStep(subStep.name, state, message)
+            }, newStepState)
         }
 
         val isFinal = isLastSubStep && key.step == steps.lastIndex
 
-        if (newState == State.COMPLETED) {
+        if (state == State.COMPLETED) {
             // Move the cursor to the next step.
             currentStep = when {
                 isFinal -> null // Final step has been completed.
@@ -81,7 +81,7 @@ class PatcherProgressManager(context: Context, selectedPatches: List<String>) {
     }
 
     private fun updateCurrent(newState: State, message: String? = null) =
-        currentStep?.let { updateStep(it, newState, message) }
+        currentStep?.let { update(it, newState, message) }
 
 
     fun handle(progress: Progress) = success().also {
