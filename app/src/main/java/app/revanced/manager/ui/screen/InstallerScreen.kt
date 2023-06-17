@@ -196,25 +196,27 @@ fun StepIcon(status: State, size: Dp) {
     when (status) {
         State.COMPLETED -> Icon(
             Icons.Filled.CheckCircle,
-            contentDescription = "success",
+            contentDescription = stringResource(R.string.step_completed),
             tint = MaterialTheme.colorScheme.surfaceTint,
             modifier = Modifier.size(size)
         )
 
         State.FAILED -> Icon(
             Icons.Filled.Cancel,
-            contentDescription = "failed",
+            contentDescription = stringResource(R.string.step_failed),
             tint = MaterialTheme.colorScheme.error,
             modifier = Modifier.size(size)
         )
 
         State.WAITING -> CircularProgressIndicator(
             strokeWidth = strokeWidth,
-            modifier = Modifier
-                .size(size)
-                .semantics {
-                    contentDescription = "waiting"
-                }
+            modifier = stringResource(R.string.step_running).let { description ->
+                Modifier
+                    .size(size)
+                    .semantics {
+                        contentDescription = description
+                    }
+            }
         )
     }
 }
