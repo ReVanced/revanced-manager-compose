@@ -31,7 +31,7 @@ class SourceRepository(app: Application, private val persistenceRepo: SourcePers
         it.bundle.map { bundle -> it.uid to bundle }
     }
 
-        /**
+    /**
      * Get the directory of the [Source] with the specified [uid], creating it if needed.
      */
     private fun directoryOf(uid: Int) = sourcesDir.resolve(uid.toString()).also { it.mkdirs() }
