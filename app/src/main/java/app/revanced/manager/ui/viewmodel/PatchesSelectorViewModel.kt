@@ -14,7 +14,7 @@ import app.revanced.manager.patcher.patch.PatchInfo
 import app.revanced.manager.util.AppInfo
 import app.revanced.manager.util.PatchesSelection
 import app.revanced.manager.util.SnapshotStateSet
-import app.revanced.manager.util.flatMapAndCombine
+import app.revanced.manager.util.flatMapLatestAndCombine
 import app.revanced.manager.util.mutableStateSetOf
 import app.revanced.manager.util.toMutableStateSet
 import kotlinx.coroutines.Dispatchers
@@ -30,7 +30,7 @@ class PatchesSelectorViewModel(
 ) : ViewModel(), KoinComponent {
     private val selectionRepository: PatchSelectionRepository = get()
 
-    val bundlesFlow = get<SourceRepository>().sources.flatMapAndCombine(
+    val bundlesFlow = get<SourceRepository>().sources.flatMapLatestAndCombine(
         combiner = { it }
     ) { source ->
         // Regenerate bundle information whenever this source updates.

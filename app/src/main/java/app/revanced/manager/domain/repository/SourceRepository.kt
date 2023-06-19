@@ -7,7 +7,7 @@ import app.revanced.manager.data.room.sources.SourceLocation
 import app.revanced.manager.domain.sources.LocalSource
 import app.revanced.manager.domain.sources.RemoteSource
 import app.revanced.manager.domain.sources.Source
-import app.revanced.manager.util.flatMapAndCombine
+import app.revanced.manager.util.flatMapLatestAndCombine
 import app.revanced.manager.util.tag
 import io.ktor.http.*
 import kotlinx.coroutines.Dispatchers
@@ -25,7 +25,7 @@ class SourceRepository(app: Application, private val persistenceRepo: SourcePers
     private val _sources: MutableStateFlow<Map<Int, Source>> = MutableStateFlow(emptyMap())
     val sources = _sources.map { it.values }
 
-    val bundles = sources.flatMapAndCombine(
+    val bundles = sources.flatMapLatestAndCombine(
         combiner = { it.toMap() }
     ) {
         it.bundle.map { bundle -> it.uid to bundle }

@@ -20,7 +20,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.cbor.Cbor
@@ -92,7 +91,7 @@ inline fun LifecycleOwner.launchAndRepeatWithViewLifecycle(
  * This is used to transform collections that contain [Flow]s into something that is easier to work with.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-inline fun <T, reified R, C> Flow<Iterable<T>>.flatMapAndCombine(
+inline fun <T, reified R, C> Flow<Iterable<T>>.flatMapLatestAndCombine(
     crossinline combiner: (Array<R>) -> C,
     crossinline transformer: (T) -> Flow<R>,
 ): Flow<C> = flatMapLatest { iterable ->
