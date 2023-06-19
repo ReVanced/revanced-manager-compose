@@ -41,13 +41,13 @@ fun ImportExportSettingsScreen(
     if (showImportKeystoreDialog) {
         ImportKeystoreDialog(
             onDismissRequest = { showImportKeystoreDialog = false },
-            onImport = vm::import
+            onImport = vm::importKeystore
         )
     }
     if (showExportKeystoreDialog) {
         ExportKeystoreDialog(
             onDismissRequest = { showExportKeystoreDialog = false },
-            onExport = vm::export
+            onExport = vm::exportKeystore
         )
     }
 
@@ -81,9 +81,16 @@ fun ImportExportSettingsScreen(
                 description = R.string.export_keystore_description
             )
             GroupItem(
-                onClick = vm::regenerate,
+                onClick = vm::regenerateKeystore,
                 headline = R.string.regenerate_keystore,
                 description = R.string.regenerate_keystore_description
+            )
+
+            GroupHeader(stringResource(R.string.patches_selection))
+            GroupItem(
+                onClick = vm::resetSelection,
+                headline = R.string.clear_patches_selection,
+                description = R.string.clear_patches_selection_description
             )
         }
     }
