@@ -23,7 +23,7 @@ class SourceRepository(app: Application, private val persistenceRepo: SourcePers
     private val sourcesDir = app.dataDir.resolve("sources").also { it.mkdirs() }
 
     private val _sources: MutableStateFlow<Map<Int, Source>> = MutableStateFlow(emptyMap())
-    val sources = _sources.map { it.values }
+    val sources = _sources.map { it.values.toList() }
 
     val bundles = sources.flatMapLatestAndCombine(
         combiner = { it.toMap() }

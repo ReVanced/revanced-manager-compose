@@ -17,14 +17,26 @@ abstract class SelectionDao {
     )
     abstract suspend fun getSelectedPatches(packageName: String): Map<Int, List<String>>
 
-    @Query("SELECT uid FROM patch_selections WHERE source = :sourceId AND package_name = :packageName")
-    abstract suspend fun getSelectionId(sourceId: Int, packageName: String): Int?
+    @Transaction
+    @MapInfo(keyColumn = "package_name", valueColumn = "patch_name")
+    @Query(
+        "SELECT package_name, patch_name FROM patch_selections" +
+                " LEFT JOIN selected_patches ON uid = selected_patches.selection" +
+                " WHERE source = :sourceUid"
+    )
+    abstract suspend fun exportSelection(sourceUid: Int): Map<String, List<String>>
 
-    @Query("DELETE FROM patch_selections")
-    abstract suspend fun reset()
+    @Query("SELECT uid FROM patch_selections WHERE source = :sourceUid AND package_name = :packageName")
+    abstract suspend fun getSelectionId(sourceUid: Int, packageName: String): Int?
 
     @Insert
     abstract suspend fun createSelection(selection: PatchSelection)
+
+    @Query("DELETE FROM patch_selections WHERE source = :uid")
+    abstract suspend fun clearForSource(uid: Int)
+
+    @Query("DELETE FROM patch_selections")
+    abstract suspend fun reset()
 
     @Insert
     protected abstract suspend fun selectPatches(patches: List<SelectedPatch>)
