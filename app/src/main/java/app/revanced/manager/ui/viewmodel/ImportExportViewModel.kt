@@ -17,6 +17,7 @@ import app.revanced.manager.domain.repository.SourceRepository
 import app.revanced.manager.domain.sources.Source
 import app.revanced.manager.util.JSON_MIMETYPE
 import app.revanced.manager.util.toast
+import app.revanced.manager.util.uiSafe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -53,25 +54,27 @@ class ImportExportViewModel(
         selectionRepository.reset()
     }
 
-    fun executeSelectionAction(target: Uri) = viewModelScope.launch(Dispatchers.Default) {
+    fun executeSelectionAction(target: Uri) = viewModelScope.launch {
         val source = selectedSource!!
         val action = selectionAction!!
-        withContext(Dispatchers.Main) {
-            clearSelectionAction()
-        }
+        clearSelectionAction()
 
         action.execute(source, target)
     }
+
     fun selectSource(source: Source) {
         selectedSource = source
     }
+
     fun clearSelectionAction() {
         selectionAction = null
         selectedSource = null
     }
+
     fun importSelection() = clearSelectionAction().also {
         selectionAction = Import()
     }
+
     fun exportSelection() = clearSelectionAction().also {
         selectionAction = Export()
     }
@@ -85,7 +88,11 @@ class ImportExportViewModel(
     private inner class Import : SelectionAction {
         override val activityContract = ActivityResultContracts.GetContent()
         override val activityArg = JSON_MIMETYPE
-        override suspend fun execute(source: Source, location: Uri) {
+        override suspend fun execute(source: Source, location: Uri) = uiSafe(
+            app,
+            R.string.restore_patches_selection_fail,
+            "Failed to restore patches selection"
+        ) {
             val selection = withContext(Dispatchers.IO) {
                 contentResolver.openInputStream(location)!!.use {
                     Json.decodeFromStream<SerializedSelection>(it)
@@ -99,7 +106,11 @@ class ImportExportViewModel(
     private inner class Export : SelectionAction {
         override val activityContract = ActivityResultContracts.CreateDocument(JSON_MIMETYPE)
         override val activityArg = "selection.json"
-        override suspend fun execute(source: Source, location: Uri) {
+        override suspend fun execute(source: Source, location: Uri) = uiSafe(
+            app,
+            R.string.backup_patches_selection_fail,
+            "Failed to backup patches selection"
+        ) {
             val selection = selectionRepository.export(source)
 
             withContext(Dispatchers.IO) {
