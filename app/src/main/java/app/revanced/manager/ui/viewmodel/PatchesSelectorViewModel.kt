@@ -78,37 +78,40 @@ class PatchesSelectorViewModel(
         if (patches.contains(name)) patches.remove(name) else patches.add(name)
     }
 
-    suspend fun getAndSaveSelection(): PatchesSelection = selectedPatches.also {
-        selectionRepository.updateSelection(appInfo.packageName, it)
-    }.mapValues { it.value.toMutableList() }.apply {
-        if (allowUnsupported) {
-            return@apply
-        }
+    suspend fun getAndSaveSelection(): PatchesSelection = withContext(Dispatchers.Default) {
+        selectedPatches.also {
+            selectionRepository.updateSelection(appInfo.packageName, it)
+        }.mapValues { it.value.toMutableList() }.apply {
+            if (allowUnsupported) {
+                return@apply
+            }
 
-        // Filter out unsupported patches that may have gotten selected through the database if the setting is not enabled.
-        bundlesFlow.first().forEach {
-            this[it.uid]?.removeAll(it.unsupported.map { patch -> patch.name })
+            // Filter out unsupported patches that may have gotten selected through the database if the setting is not enabled.
+            bundlesFlow.first().forEach {
+                this[it.uid]?.removeAll(it.unsupported.map { patch -> patch.name })
+            }
         }
     }
 
     init {
-        viewModelScope.launch {
-            val lastSelection = withContext(Dispatchers.Default) {
-                selectionRepository.getSelection(appInfo.packageName)
-            }
+        viewModelScope.launch(Dispatchers.Default) {
             val bundles = bundlesFlow.first()
+            val filteredSelection =
+                selectionRepository.getSelection(appInfo.packageName).mapValues { (uid, patches) ->
+                    // Filter out patches that don't exist.
+                    val filteredPatches = bundles.singleOrNull { it.uid == uid }
+                        ?.let { bundle ->
+                            val allPatches = bundle.all.map { it.name }
+                            patches.filter { allPatches.contains(it) }
+                        }
+                        ?: patches
 
-            selectedPatches.putAll(lastSelection.mapValues { (uid, patches) ->
-                // Filter out patches that don't exist.
-                val filteredPatches = bundles.singleOrNull { it.uid == uid }
-                    ?.let { bundle ->
-                        val allPatches = bundle.all.map { it.name }
-                        patches.filter { allPatches.contains(it) }
-                    }
-                    ?: patches
+                    filteredPatches.toMutableStateSet()
+                }
 
-                filteredPatches.toMutableStateSet()
-            })
+            withContext(Dispatchers.Main) {
+                selectedPatches.putAll(filteredSelection)
+            }
         }
     }
 
