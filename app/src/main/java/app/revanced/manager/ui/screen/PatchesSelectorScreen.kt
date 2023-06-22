@@ -180,7 +180,7 @@ fun PatchesSelectorScreen(
                                         PatchItem(
                                             patch = patch,
                                             onOptionsDialog = vm::openOptionsDialog,
-                                            selected = vm.isSelected(bundle.uid, patch),
+                                            selected = supported && vm.isSelected(bundle.uid, patch),
                                             onToggle = { vm.togglePatch(bundle.uid, patch) },
                                             supported = supported
                                         )

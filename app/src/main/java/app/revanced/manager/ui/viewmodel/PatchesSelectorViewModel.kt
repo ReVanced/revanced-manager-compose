@@ -11,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import app.revanced.manager.domain.repository.PatchSelectionRepository
 import app.revanced.manager.domain.repository.SourceRepository
 import app.revanced.manager.patcher.patch.PatchInfo
+import app.revanced.manager.ui.screen.allowUnsupported
 import app.revanced.manager.util.AppInfo
 import app.revanced.manager.util.PatchesSelection
 import app.revanced.manager.util.SnapshotStateSet
@@ -18,6 +19,7 @@ import app.revanced.manager.util.flatMapLatestAndCombine
 import app.revanced.manager.util.mutableStateSetOf
 import app.revanced.manager.util.toMutableStateSet
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -49,7 +51,7 @@ class PatchesSelectorViewModel(
                 targetList.add(it)
             }
 
-            Bundle(source.name, source.uid, supported, unsupported, universal)
+            BundleInfo(source.name, source.uid, bundle.patches, supported, unsupported, universal)
         }
     }
 
@@ -78,15 +80,35 @@ class PatchesSelectorViewModel(
 
     suspend fun getAndSaveSelection(): PatchesSelection = selectedPatches.also {
         selectionRepository.updateSelection(appInfo.packageName, it)
-    }.mapValues { it.value.toList() }
+    }.mapValues { it.value.toMutableList() }.apply {
+        if (allowUnsupported) {
+            return@apply
+        }
+
+        // Filter out unsupported patches that may have gotten selected through the database if the setting is not enabled.
+        bundlesFlow.first().forEach {
+            this[it.uid]?.removeAll(it.unsupported.map { patch -> patch.name })
+        }
+    }
 
     init {
         viewModelScope.launch {
             val lastSelection = withContext(Dispatchers.Default) {
                 selectionRepository.getSelection(appInfo.packageName)
             }
+            val bundles = bundlesFlow.first()
 
-            selectedPatches.putAll(lastSelection.mapValues { it.value.toMutableStateSet() })
+            selectedPatches.putAll(lastSelection.mapValues { (uid, patches) ->
+                // Filter out patches that don't exist.
+                val filteredPatches = bundles.singleOrNull { it.uid == uid }
+                    ?.let { bundle ->
+                        val allPatches = bundle.all.map { it.name }
+                        patches.filter { allPatches.contains(it) }
+                    }
+                    ?: patches
+
+                filteredPatches.toMutableStateSet()
+            })
         }
     }
 
@@ -122,9 +144,10 @@ class PatchesSelectorViewModel(
         const val SHOW_UNSUPPORTED = 4 // 2^2
     }
 
-    data class Bundle(
+    data class BundleInfo(
         val name: String,
         val uid: Int,
+        val all: List<PatchInfo>,
         val supported: List<PatchInfo>,
         val unsupported: List<PatchInfo>,
         val universal: List<PatchInfo>
