@@ -1,5 +1,6 @@
 package app.revanced.manager.ui.screen
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -60,6 +61,8 @@ fun PatchesSelectorScreen(
     onBackClick: () -> Unit,
     vm: PatchesSelectorViewModel
 ) {
+    BackHandler(onBack = onBackClick)
+
     val pagerState = rememberPagerState()
     val coroutineScope = rememberCoroutineScope()
 

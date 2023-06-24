@@ -125,7 +125,7 @@ class PM(
         app.startActivity(it)
     }
 
-    fun getApkInfo(apk: File) = app.packageManager.getPackageArchiveInfo(apk.path, 0)!!.let {
+    fun getApkInfo(apk: File) = app.packageManager.getPackageArchiveInfo(apk.path, 0)?.let {
         AppInfo(
             it.packageName,
             0,
