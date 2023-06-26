@@ -1,19 +1,22 @@
 package app.revanced.manager.ui.screen.settings
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ExpandMore
+import androidx.compose.material.icons.outlined.ArrowDropDown
+import androidx.compose.material.icons.outlined.ArrowDropUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -33,19 +36,19 @@ fun ContributorScreen(
     viewModel: ContributorScreenViewModel
 ) {
     val repositories = viewModel.getRepositories()
-
     Scaffold(
         topBar = {
             AppTopBar(
                 title = stringResource(R.string.contributors),
                 onBackClick = onBackClick
             )
-        }
+        },
     ) { paddingValues ->
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .height(IntrinsicSize.Max)
                 .padding(paddingValues)
+                .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
         ) {
             repositories.forEach {
@@ -58,6 +61,7 @@ fun ContributorScreen(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ExpandableListCard(
     title: String,
@@ -65,11 +69,11 @@ fun ExpandableListCard(
 ) {
     var expanded by remember { mutableStateOf(false) }
     Card(
-        shape = RoundedCornerShape(8.dp),
+        shape = RoundedCornerShape(30.dp),
         elevation = CardDefaults.outlinedCardElevation(),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
+            .padding(16.dp)
             .border(
                 width = 2.dp,
                 color = MaterialTheme.colorScheme.outline,
@@ -82,7 +86,7 @@ fun ExpandableListCard(
                 ListItem(
                     headlineContent = {
                         Text(
-                            text = title,
+                            text = processHeadlineText(title),
                             style = MaterialTheme.typography.titleMedium
                         )
                     },
@@ -91,10 +95,17 @@ fun ExpandableListCard(
                             IconButton(
                                 onClick = { expanded = !expanded },
                             ) {
-                                Icon(
-                                    Icons.Outlined.ExpandMore,
-                                    stringResource(R.string.expand_more)
-                                )
+                                if (expanded) {
+                                    Icon(
+                                        Icons.Outlined.ArrowDropDown,
+                                        stringResource(R.string.arrow_drop_down)
+                                    )
+                                } else {
+                                    Icon(
+                                        Icons.Outlined.ArrowDropUp,
+                                        stringResource(R.string.arrow_drop_up)
+                                    )
+                                }
                             }
                         }
                     },
@@ -102,29 +113,37 @@ fun ExpandableListCard(
             }
 
             if (expanded) {
-                contributors.forEach {
-                    ListItem(
-                        headlineContent = {
-                            AsyncImage(
-                                model = it.avatarUrl,
-                                contentDescription = it.avatarUrl,
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier.clip(CircleShape)
-                                    .width(100.dp)
-                            )
-                        },
-
-                        trailingContent = {
-                            Text(
-                                text = it.username,
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                        },
-
-                    )
+                FlowRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .padding(8.dp),
+                ) {
+                    contributors.forEach {
+                        AsyncImage(
+                            model = it.avatarUrl,
+                            contentDescription = it.avatarUrl,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .size(45.dp)
+                                .clip(CircleShape)
+                        )
+                    }
                 }
-            }
-        }
 
+            }
+
+
+        }
     }
+}
+
+fun processHeadlineText(repositoryName: String): String {
+    return repositoryName.replace("revanced/revanced-", "")
+        .replace("-", " ")
+        .split(" ")
+        .map { if (it.length > 3) it else it.uppercase() }
+        .joinToString(" ")
+        .replaceFirstChar { it.uppercase() }
 }
