@@ -89,7 +89,9 @@ dependencies {
     implementation("me.zhanghai.android.appiconloader:appiconloader-coil:1.5.0")
 
     // KotlinX
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
+    val serializationVersion = "1.5.1"
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$serializationVersion")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-cbor:$serializationVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5")
 
     // Room
@@ -100,7 +102,7 @@ dependencies {
     ksp("androidx.room:room-compiler:$roomVersion")
 
     // ReVanced
-    implementation("app.revanced:revanced-patcher:9.0.0")
+    implementation("app.revanced:revanced-patcher:11.0.1")
 
     // Signing
     implementation("com.android.tools.build:apksig:8.2.0-alpha05")

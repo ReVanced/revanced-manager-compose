@@ -12,11 +12,21 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.work.Data
+import androidx.work.workDataOf
 import io.ktor.http.Url
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.cbor.Cbor
+import kotlinx.serialization.decodeFromByteArray
+import kotlinx.serialization.encodeToByteArray
 
-typealias PatchesSelection = Map<String, List<String>>
+typealias PatchesSelection = Map<Int, List<String>>
 
 fun Context.openUrl(url: String) {
     startActivity(Intent(Intent.ACTION_VIEW, url.toUri()).apply {
@@ -55,7 +65,12 @@ inline fun uiSafe(context: Context, @StringRes toastMsg: Int, logMsg: String, bl
     try {
         block()
     } catch (error: Exception) {
-        context.toast(context.getString(toastMsg, error.message ?: error.cause?.message ?: error::class.simpleName))
+        context.toast(
+            context.getString(
+                toastMsg,
+                error.message ?: error.cause?.message ?: error::class.simpleName
+            )
+        )
         Log.e(tag, logMsg, error)
     }
 }
@@ -70,3 +85,27 @@ inline fun LifecycleOwner.launchAndRepeatWithViewLifecycle(
         }
     }
 }
+
+/**
+ * Run [transformer] on the [Iterable] and then [combine] the result using [combiner].
+ * This is used to transform collections that contain [Flow]s into something that is easier to work with.
+ */
+@OptIn(ExperimentalCoroutinesApi::class)
+inline fun <T, reified R, C> Flow<Iterable<T>>.flatMapLatestAndCombine(
+    crossinline combiner: (Array<R>) -> C,
+    crossinline transformer: (T) -> Flow<R>,
+): Flow<C> = flatMapLatest { iterable ->
+    combine(iterable.map(transformer)) {
+        combiner(it)
+    }
+}
+
+const val workDataKey = "payload"
+
+@OptIn(ExperimentalSerializationApi::class)
+inline fun <reified T> T.serialize(): Data =
+    workDataOf(workDataKey to Cbor.Default.encodeToByteArray(this))
+
+@OptIn(ExperimentalSerializationApi::class)
+inline fun <reified T> Data.deserialize(): T? =
+    getByteArray(workDataKey)?.let { Cbor.Default.decodeFromByteArray(it) }

@@ -37,6 +37,15 @@
     <string name="regenerate_keystore">Regenerate keystore</string>
     <string name="regenerate_keystore_description">Generate a new keystore</string>
     <string name="regenerate_keystore_success">The keystore has been successfully replaced</string>
+    <string name="patches_selection">Patches selection</string>
+    <string name="restore_patches_selection">Restore patches selections</string>
+    <string name="restore_patches_selection_description">Restore patches selection from a file</string>
+    <string name="restore_patches_selection_fail">Failed to restore patches selection: %s</string>
+    <string name="backup_patches_selection">Backup patches selections</string>
+    <string name="backup_patches_selection_description">Backup patches selection to a file</string>
+    <string name="backup_patches_selection_fail">Failed to backup patches selection: %s</string>
+    <string name="clear_patches_selection">Clear patches selection</string>
+    <string name="clear_patches_selection_description">Clear all patches selection</string>
     
     <string name="search_apps">Search apps…</string>
     <string name="loading_body">Loading…</string>
@@ -69,6 +78,10 @@
     <string name="no_patched_apps_found">No patched apps found</string>
     <string name="unsupported_app">Unsupported app</string>
     <string name="unsupported_patches">Unsupported patches</string>
+    <string name="universal_patches">Universal patches</string>
+    <string name="supported">Supported</string>
+    <string name="universal">Universal</string>
+    <string name="unsupported">Unsupported</string>
     <string name="app_not_supported">Some of the patches do not support this app version (%1$s). The patches only support the following versions: %2$s.</string>
 
     <string name="select_file">Select file</string>
@@ -83,12 +96,20 @@
     <string name="sign_fail">Failed to sign Apk: %s</string>
 
     <string name="patcher_step_group_prepare">Preparation</string>
+    <string name="patcher_step_load_patches">Load patches</string>
     <string name="patcher_step_unpack">Unpack Apk</string>
     <string name="patcher_step_integrations">Merge Integrations</string>
     <string name="patcher_step_group_patching">Patching</string>
     <string name="patcher_step_group_saving">Saving</string>
     <string name="patcher_step_write_patched">Write patched Apk</string>
     <string name="patcher_notification_message">Patching in progress…</string>
+
+    <string name="step_completed">completed</string>
+    <string name="step_failed">failed</string>
+    <string name="step_running">running</string>
+
+    <string name="expand_content">expand</string>
+    <string name="collapse_content">collapse</string>
 
     <string name="more">More</string>
     <string name="donate">Donate</string>
