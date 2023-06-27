@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import app.revanced.manager.R
 import app.revanced.manager.network.dto.ReVancedContributor
 import app.revanced.manager.ui.component.AppTopBar
+import app.revanced.manager.ui.component.ArrowButton
 import app.revanced.manager.ui.component.LoadingIndicator
 import app.revanced.manager.ui.viewmodel.ContributorViewModel
 import coil.compose.AsyncImage
@@ -70,7 +71,7 @@ fun ExpandableListCard(
     title: String,
     contributors: List<ReVancedContributor>
 ) {
-    var expanded by remember { mutableStateOf(true) }
+    var expanded by remember { mutableStateOf(false) }
     Card(
         shape = RoundedCornerShape(30.dp),
         elevation = CardDefaults.outlinedCardElevation(),
@@ -95,21 +96,10 @@ fun ExpandableListCard(
                     },
                     trailingContent = {
                         if (contributors.size > 0) {
-                            IconButton(
-                                onClick = { expanded = !expanded },
-                            ) {
-                                if (expanded) {
-                                    Icon(
-                                        Icons.Outlined.ArrowDropDown,
-                                        stringResource(R.string.arrow_drop_down)
-                                    )
-                                } else {
-                                    Icon(
-                                        Icons.Outlined.ArrowDropUp,
-                                        stringResource(R.string.arrow_drop_up)
-                                    )
-                                }
-                            }
+                            ArrowButton(
+                                expanded = expanded,
+                                onClick = { expanded = !expanded }
+                            )
                         }
                     },
                 )
