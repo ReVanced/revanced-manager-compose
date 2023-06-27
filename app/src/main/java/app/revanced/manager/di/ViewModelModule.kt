@@ -13,5 +13,5 @@ val viewModelModule = module {
     viewModelOf(::InstallerViewModel)
     viewModelOf(::UpdateSettingsViewModel)
     viewModelOf(::ImportExportViewModel)
-    viewModelOf(::ContributorScreenViewModel)
+    viewModelOf(::ContributorViewModel)
 }

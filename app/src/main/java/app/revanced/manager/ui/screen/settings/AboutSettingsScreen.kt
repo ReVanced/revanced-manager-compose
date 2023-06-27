@@ -32,7 +32,7 @@ import dev.olshevski.navigation.reimagined.navigate
 @Composable
 fun AboutSettingsScreen(
     onBackClick: () -> Unit,
-    navController: NavController<SettingsDestination>,
+    onContributorsClick: () -> Unit,
 ) {
     val context = LocalContext.current
     val icon = rememberDrawablePainter(context.packageManager.getApplicationIcon(context.packageName))
@@ -59,7 +59,7 @@ fun AboutSettingsScreen(
         Triple(stringResource(R.string.submit_feedback), stringResource(R.string.submit_feedback_description),
             third = { /*TODO*/ }),
         Triple(stringResource(R.string.contributors), stringResource(R.string.contributors_description),
-            third = { navController.navigate(SettingsDestination.Contributors) }),
+            third = { onContributorsClick() }),
         Triple(stringResource(R.string.developer_options), stringResource(R.string.developer_options_description),
             third = { /*TODO*/ }),
     )

@@ -1,7 +1,6 @@
 package app.revanced.manager.ui.screen.settings
 
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -16,7 +15,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -25,17 +23,20 @@ import androidx.compose.ui.unit.dp
 import app.revanced.manager.R
 import app.revanced.manager.network.dto.ReVancedContributor
 import app.revanced.manager.ui.component.AppTopBar
-import app.revanced.manager.ui.viewmodel.ContributorScreenViewModel
+import app.revanced.manager.ui.component.LoadingIndicator
+import app.revanced.manager.ui.viewmodel.ContributorViewModel
 import coil.compose.AsyncImage
+import org.koin.androidx.compose.getViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ContributorScreen(
     onBackClick: () -> Unit,
-    viewModel: ContributorScreenViewModel
+    viewModel: ContributorViewModel = getViewModel()
 ) {
-    val repositories = viewModel.getRepositories()
+    val repositories = viewModel.repositories
+
     Scaffold(
         topBar = {
             AppTopBar(
@@ -51,6 +52,9 @@ fun ContributorScreen(
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
         ) {
+            if(repositories.isEmpty()) {
+                LoadingIndicator()
+            }
             repositories.forEach {
                 ExpandableListCard(
                     title = it.name,
@@ -60,14 +64,13 @@ fun ContributorScreen(
         }
     }
 }
-
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ExpandableListCard(
     title: String,
     contributors: List<ReVancedContributor>
 ) {
-    var expanded by remember { mutableStateOf(false) }
+    var expanded by remember { mutableStateOf(true) }
     Card(
         shape = RoundedCornerShape(30.dp),
         elevation = CardDefaults.outlinedCardElevation(),
@@ -138,7 +141,6 @@ fun ExpandableListCard(
         }
     }
 }
-
 fun processHeadlineText(repositoryName: String): String {
     return repositoryName.replace("revanced/revanced-", "")
         .replace("-", " ")

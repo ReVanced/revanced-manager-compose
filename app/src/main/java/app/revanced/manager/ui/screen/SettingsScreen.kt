@@ -111,7 +111,7 @@ fun SettingsScreen(
 
             is SettingsDestination.About -> AboutSettingsScreen(
                 onBackClick = { navController.pop() },
-                navController = navController
+                onContributorsClick = { navController.navigate(SettingsDestination.Contributors) }
             )
 
             is SettingsDestination.UpdateProgress -> UpdateProgressScreen(
@@ -120,7 +120,6 @@ fun SettingsScreen(
 
             is SettingsDestination.Contributors -> ContributorScreen(
                 onBackClick = { navController.pop() },
-                viewModel = getViewModel()
             )
 
             is SettingsDestination.Settings -> {
