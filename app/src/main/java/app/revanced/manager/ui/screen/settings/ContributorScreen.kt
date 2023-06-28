@@ -94,7 +94,7 @@ fun ExpandableListCard(
                         )
                     },
                     trailingContent = {
-                        if (contributors.size > 0) {
+                        if (contributors.isNotEmpty()) {
                             ArrowButton(
                                 expanded = expanded,
                                 onClick = { expanded = !expanded }

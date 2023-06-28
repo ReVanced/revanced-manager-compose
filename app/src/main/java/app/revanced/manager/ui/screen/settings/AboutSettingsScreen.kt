@@ -59,7 +59,7 @@ fun AboutSettingsScreen(
         Triple(stringResource(R.string.submit_feedback), stringResource(R.string.submit_feedback_description),
             third = { /*TODO*/ }),
         Triple(stringResource(R.string.contributors), stringResource(R.string.contributors_description),
-            third = { onContributorsClick() }),
+            third = onContributorsClick),
         Triple(stringResource(R.string.developer_options), stringResource(R.string.developer_options_description),
             third = { /*TODO*/ }),
     )
