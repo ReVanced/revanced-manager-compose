@@ -37,7 +37,6 @@ fun ContributorScreen(
     viewModel: ContributorViewModel = getViewModel()
 ) {
     val repositories = viewModel.repositories
-
     Scaffold(
         topBar = {
             AppTopBar(
@@ -48,7 +47,7 @@ fun ContributorScreen(
     ) { paddingValues ->
         Column(
             modifier = Modifier
-                .height(IntrinsicSize.Max)
+                .fillMaxHeight()
                 .padding(paddingValues)
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
@@ -104,7 +103,6 @@ fun ExpandableListCard(
                     },
                 )
             }
-
             if (expanded) {
                 FlowRow(
                     modifier = Modifier
@@ -124,15 +122,12 @@ fun ExpandableListCard(
                         )
                     }
                 }
-
             }
-
-
         }
     }
 }
 fun processHeadlineText(repositoryName: String): String {
-    return repositoryName.replace("revanced/revanced-", "")
+    return "Revanced " + repositoryName.replace("revanced/revanced-", "")
         .replace("-", " ")
         .split(" ")
         .map { if (it.length > 3) it else it.uppercase() }

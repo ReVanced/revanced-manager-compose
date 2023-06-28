@@ -11,15 +11,14 @@ import kotlinx.coroutines.withContext
 
 class ContributorViewModel(private val repository: ReVancedRepository): ViewModel() {
     val repositories = mutableStateListOf<app.revanced.manager.network.dto.ReVancedRepository>()
-    private suspend fun loadContributors() = withContext(Dispatchers.IO){
-        val repos = repository.getContributors().getOrNull()?.repositories
-        withContext(Dispatchers.Main) {
-            if (repos != null) { repositories.addAll(repos) }
-        }
-    }
     init {
         viewModelScope.launch {
-            loadContributors()
+            withContext(Dispatchers.IO) {
+                val repos = repository.getContributors().getOrNull()?.repositories
+                withContext(Dispatchers.Main) {
+                    if (repos != null) { repositories.addAll(repos) }
+                }
+            }
         }
     }
 }
