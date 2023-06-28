@@ -83,11 +83,12 @@ class MainActivity : ComponentActivity() {
 
                         is Destination.PatchesSelector -> PatchesSelectorScreen(
                             onBackClick = { navController.pop() },
-                            onPatchClick = {
+                            onPatchClick = { patches, options ->
                                 navController.navigate(
                                     Destination.Installer(
                                         destination.input,
-                                        it
+                                        patches,
+                                        options
                                     )
                                 )
                             },
@@ -102,10 +103,8 @@ class MainActivity : ComponentActivity() {
                                 }
                             },
                             vm = getViewModel {
-                                parametersOf(
-                                    destination.input,
-                                    destination.selectedPatches
-                                )
+                                // TODO: figure out how to deal with koin skill issues caused by type erasure.
+                                parametersOf(destination.input, destination.selectedPatches to destination.options)
                             }
                         )
                     }

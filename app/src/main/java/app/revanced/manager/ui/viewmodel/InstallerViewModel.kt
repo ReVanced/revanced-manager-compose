@@ -24,6 +24,7 @@ import app.revanced.manager.patcher.worker.PatcherWorker
 import app.revanced.manager.service.InstallService
 import app.revanced.manager.service.UninstallService
 import app.revanced.manager.util.AppInfo
+import app.revanced.manager.util.Options
 import app.revanced.manager.util.PM
 import app.revanced.manager.util.PatchesSelection
 import app.revanced.manager.util.tag
@@ -39,7 +40,7 @@ import java.nio.file.Files
 @Stable
 class InstallerViewModel(
     input: AppInfo,
-    selectedPatches: PatchesSelection
+    patcherInput: Pair<PatchesSelection, Options>
 ) : ViewModel(), KoinComponent {
     private val keystoreManager: KeystoreManager by inject()
     private val app: Application by inject()
@@ -61,7 +62,7 @@ class InstallerViewModel(
 
     private val _progress = MutableStateFlow(PatcherProgressManager.generateSteps(
         app,
-        selectedPatches.flatMap { (_, selected) -> selected }
+        patcherInput.first.flatMap { (_, selected) -> selected }
     ).toImmutableList())
     val progress = _progress.asStateFlow()
 
@@ -70,7 +71,8 @@ class InstallerViewModel(
             "patching", PatcherWorker.Args(
                 input.path!!.absolutePath,
                 outputFile.path,
-                selectedPatches,
+                patcherInput.first,
+                patcherInput.second,
                 input.packageName,
                 input.packageInfo!!.versionName,
                 _progress

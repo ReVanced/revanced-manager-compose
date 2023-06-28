@@ -19,6 +19,7 @@ import androidx.compose.material.icons.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -41,20 +42,23 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewModelScope
 import app.revanced.manager.R
 import app.revanced.manager.patcher.patch.PatchInfo
 import app.revanced.manager.ui.component.AppTopBar
+import app.revanced.manager.ui.component.patches.OptionField
 import app.revanced.manager.ui.viewmodel.PatchesSelectorViewModel
 import app.revanced.manager.ui.viewmodel.PatchesSelectorViewModel.Companion.SHOW_SUPPORTED
 import app.revanced.manager.ui.viewmodel.PatchesSelectorViewModel.Companion.SHOW_UNIVERSAL
 import app.revanced.manager.ui.viewmodel.PatchesSelectorViewModel.Companion.SHOW_UNSUPPORTED
+import app.revanced.manager.util.Options
 import app.revanced.manager.util.PatchesSelection
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun PatchesSelectorScreen(
-    onPatchClick: (PatchesSelection) -> Unit,
+    onPatchClick: (PatchesSelection, Options) -> Unit,
     onBackClick: () -> Unit,
     vm: PatchesSelectorViewModel
 ) {
@@ -70,7 +74,15 @@ fun PatchesSelectorScreen(
             onDismissRequest = vm::dismissDialogs
         )
 
-    if (vm.showOptionsDialog) OptionsDialog(onDismissRequest = vm::dismissDialogs, onConfirm = {})
+    vm.optionsDialog?.let { (bundle, patch) ->
+        OptionsDialog(
+            onDismissRequest = vm::dismissDialogs,
+            patch = patch,
+            values = vm.patchOptions[bundle]?.get(patch.name),
+            set = { key, value -> vm.setOption(bundle, patch, key, value) },
+            unset = { vm.unsetOption(bundle, patch, it) }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -92,8 +104,9 @@ fun PatchesSelectorScreen(
                 text = { Text(stringResource(R.string.patch)) },
                 icon = { Icon(Icons.Default.Build, null) },
                 onClick = {
-                    coroutineScope.launch {
-                        onPatchClick(vm.getAndSaveSelection())
+                    vm.viewModelScope.launch {
+                        // TODO: only allow this if all required options have been set.
+                        onPatchClick(vm.getAndSaveSelection(), vm.getOptions())
                     }
                 }
             )
@@ -177,8 +190,11 @@ fun PatchesSelectorScreen(
                                     ) { patch ->
                                         PatchItem(
                                             patch = patch,
-                                            onOptionsDialog = vm::openOptionsDialog,
-                                            selected = supported && vm.isSelected(bundle.uid, patch),
+                                            onOptionsDialog = { vm.optionsDialog = bundle.uid to patch },
+                                            selected = supported && vm.isSelected(
+                                                bundle.uid,
+                                                patch
+                                            ),
                                             onToggle = { vm.togglePatch(bundle.uid, patch) },
                                             supported = supported
                                         )
@@ -301,22 +317,39 @@ fun UnsupportedDialog(
 
 @Composable
 fun OptionsDialog(
-    onDismissRequest: () -> Unit, onConfirm: () -> Unit
+    patch: PatchInfo,
+    values: Map<String, Any?>?,
+    unset: (String) -> Unit,
+    set: (String, Any?) -> Unit,
+    onDismissRequest: () -> Unit,
 ) = AlertDialog(
     onDismissRequest = onDismissRequest,
-    dismissButton = {
-        TextButton(onClick = onDismissRequest) {
-            Text(stringResource(R.string.cancel))
-        }
-    },
     confirmButton = {
         TextButton(onClick = {
-            onConfirm()
             onDismissRequest()
         }) {
             Text(stringResource(R.string.apply))
         }
     },
     title = { Text(stringResource(R.string.options)) },
-    text = { Text("You really thought these would exist?") }
+    text = {
+        Column {
+            patch.options?.forEach {
+                ListItem(
+                    headlineContent = { Text(it.title) },
+                    supportingContent = { Text(it.description) },
+                    trailingContent = {
+                        Row {
+                            val key = it.key
+                            val value = if (values == null || !values.contains(key)) it.defaultValue else values[key]
+                            Button(onClick = { unset(key) }) {
+                                Text("reset")
+                            }
+                            OptionField(option = it, value = value, setValue = { set(key, it) })
+                        }
+                    }
+                )
+            }
+        }
+    }
 )
