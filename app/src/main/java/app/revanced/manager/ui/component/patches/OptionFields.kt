@@ -4,8 +4,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FileOpen
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -15,8 +15,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.res.stringResource
-import app.revanced.manager.R
 import app.revanced.manager.data.platform.FileSystem
 import app.revanced.manager.patcher.patch.Option
 import app.revanced.patcher.patch.PatchOption
@@ -49,14 +47,15 @@ private val StringField: OptionField = { value, setValue ->
 
     Column {
         TextField(value = current ?: "", onValueChange = setValue)
-        IconButton(onClick = {
+        Button(onClick = {
             if (fs.hasStoragePermission()) {
                 showFileDialog = true
             } else {
                 permissionLauncher.launch(permissionName)
             }
         }) {
-            Icon(Icons.Filled.FileOpen, stringResource(R.string.select_file))
+            Icon(Icons.Filled.FileOpen, null)
+            Text("Select file or folder")
         }
     }
 }
