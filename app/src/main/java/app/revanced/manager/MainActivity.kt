@@ -59,7 +59,8 @@ class MainActivity : ComponentActivity() {
                 darkTheme = prefs.theme == Theme.SYSTEM && isSystemInDarkTheme() || prefs.theme == Theme.DARK,
                 dynamicColor = prefs.dynamicColor
             ) {
-                val navController = rememberNavController<Destination>(startDestination = Destination.Dashboard)
+                val navController =
+                    rememberNavController<Destination>(startDestination = Destination.Dashboard)
 
                 NavBackHandler(navController)
 
@@ -102,10 +103,7 @@ class MainActivity : ComponentActivity() {
                                     navigate(Destination.Dashboard)
                                 }
                             },
-                            vm = getViewModel {
-                                // TODO: figure out how to deal with koin skill issues caused by type erasure.
-                                parametersOf(destination.input, destination.selectedPatches to destination.options)
-                            }
+                            vm = getViewModel { parametersOf(destination) }
                         )
                     }
                 }
