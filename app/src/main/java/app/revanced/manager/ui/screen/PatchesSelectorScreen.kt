@@ -42,7 +42,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewModelScope
 import app.revanced.manager.R
 import app.revanced.manager.patcher.patch.PatchInfo
 import app.revanced.manager.ui.component.AppTopBar
@@ -63,7 +62,7 @@ fun PatchesSelectorScreen(
     vm: PatchesSelectorViewModel
 ) {
     val pagerState = rememberPagerState()
-    val coroutineScope = rememberCoroutineScope()
+    val composableScope = rememberCoroutineScope()
 
     val bundles by vm.bundlesFlow.collectAsStateWithLifecycle(initialValue = emptyArray())
 
@@ -104,7 +103,7 @@ fun PatchesSelectorScreen(
                 text = { Text(stringResource(R.string.patch)) },
                 icon = { Icon(Icons.Default.Build, null) },
                 onClick = {
-                    vm.viewModelScope.launch {
+                    composableScope.launch {
                         // TODO: only allow this if all required options have been set.
                         onPatchClick(vm.getAndSaveSelection(), vm.getOptions())
                     }
@@ -125,7 +124,7 @@ fun PatchesSelectorScreen(
                     bundles.forEachIndexed { index, bundle ->
                         Tab(
                             selected = pagerState.currentPage == index,
-                            onClick = { coroutineScope.launch { pagerState.animateScrollToPage(index) } },
+                            onClick = { composableScope.launch { pagerState.animateScrollToPage(index) } },
                             text = { Text(bundle.name) },
                             selectedContentColor = MaterialTheme.colorScheme.primary,
                             unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant

@@ -2,6 +2,7 @@ package app.revanced.manager.ui.screen
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -39,7 +40,7 @@ fun DashboardScreen(
     val pages: Array<DashboardPage> = DashboardPage.values()
 
     val pagerState = rememberPagerState()
-    val coroutineScope = rememberCoroutineScope()
+    val composableScope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -73,7 +74,7 @@ fun DashboardScreen(
                 pages.forEachIndexed { index, page ->
                     Tab(
                         selected = pagerState.currentPage == index,
-                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(index) } },
+                        onClick = { composableScope.launch { pagerState.animateScrollToPage(index) } },
                         text = { Text(stringResource(page.titleResId)) },
                         icon = { Icon(page.icon, null) },
                         selectedContentColor = MaterialTheme.colorScheme.primary,
@@ -86,6 +87,7 @@ fun DashboardScreen(
                 pageCount = pages.size,
                 state = pagerState,
                 userScrollEnabled = true,
+                modifier = Modifier.fillMaxSize(),
                 pageContent = { index ->
                     when (pages[index]) {
                         DashboardPage.DASHBOARD -> {

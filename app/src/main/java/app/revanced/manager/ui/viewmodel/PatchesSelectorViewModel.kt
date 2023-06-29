@@ -86,9 +86,11 @@ class PatchesSelectorViewModel(
         if (patches.contains(name)) patches.remove(name) else patches.add(name)
     }
 
-    suspend fun getAndSaveSelection(): PatchesSelection = withContext(Dispatchers.Default) {
+    suspend fun getAndSaveSelection(): PatchesSelection =
         selectedPatches.also {
-            selectionRepository.updateSelection(appInfo.packageName, it)
+            withContext(Dispatchers.Default) {
+                selectionRepository.updateSelection(appInfo.packageName, it)
+            }
         }.mapValues { it.value.toMutableList() }.apply {
             if (allowExperimental) {
                 return@apply
@@ -99,7 +101,6 @@ class PatchesSelectorViewModel(
                 this[it.uid]?.removeAll(it.unsupported.map { patch -> patch.name })
             }
         }
-    }
 
     fun getOptions(): Options = patchOptions
 
