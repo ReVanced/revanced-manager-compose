@@ -8,6 +8,9 @@ import android.os.Parcelable
 import android.util.Log
 import android.widget.Toast
 import androidx.annotation.StringRes
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.Saver
 import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
@@ -21,6 +24,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
+import java.nio.file.Path
+import kotlin.io.path.Path
 
 typealias PatchesSelection = Map<Int, List<String>>
 typealias Options = Map<Int, Map<String, Map<String, Any?>>>
@@ -96,3 +101,8 @@ inline fun <T, reified R, C> Flow<Iterable<T>>.flatMapLatestAndCombine(
         combiner(it)
     }
 }
+
+val PathSaver = Saver<MutableState<Path>, String>(
+    save = { it.value.toString() },
+    restore = { mutableStateOf(Path(it)) }
+)

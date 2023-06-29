@@ -1,12 +1,26 @@
 package app.revanced.manager.ui.component.patches
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FileOpen
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.res.stringResource
+import app.revanced.manager.R
+import app.revanced.manager.data.platform.FileSystem
 import app.revanced.manager.patcher.patch.Option
 import app.revanced.patcher.patch.PatchOption
+import org.koin.compose.rememberKoinInject
 
 /**
  * [Composable] functions do not support function references, so we have to use composable lambdas instead.
@@ -14,8 +28,37 @@ import app.revanced.patcher.patch.PatchOption
 private typealias OptionField = @Composable (Any?, (Any?) -> Unit) -> Unit
 
 private val StringField: OptionField = { value, setValue ->
+    val fs: FileSystem = rememberKoinInject()
+    var showFileDialog by rememberSaveable { mutableStateOf(false) }
+    val (contract, permissionName) = fs.permissionContract()
+    val permissionLauncher = rememberLauncherForActivityResult(contract = contract) {
+        showFileDialog = it
+    }
     val current = value as? String
-    TextField(value = current ?: "", onValueChange = setValue)
+
+    if (showFileDialog) {
+        FileSelectorDialog(
+            root = fs.externalFilesDir()
+        ) {
+            showFileDialog = false
+            it?.let { path ->
+                setValue(path.toString())
+            }
+        }
+    }
+
+    Column {
+        TextField(value = current ?: "", onValueChange = setValue)
+        IconButton(onClick = {
+            if (fs.hasStoragePermission()) {
+                showFileDialog = true
+            } else {
+                permissionLauncher.launch(permissionName)
+            }
+        }) {
+            Icon(Icons.Filled.FileOpen, stringResource(R.string.select_file))
+        }
+    }
 }
 
 private val BooleanField: OptionField = { value, setValue ->
