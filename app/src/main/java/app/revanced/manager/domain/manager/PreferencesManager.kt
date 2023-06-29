@@ -14,6 +14,9 @@ class PreferencesManager(
     var theme by enumPreference("theme", Theme.SYSTEM)
     //var sentry by booleanPreference("sentry", true)
 
+    var preferSplits by booleanPreference("prefer_splits", false)
+    var preferUniversal by booleanPreference("prefer_universal", false)
+
     var keystoreCommonName by stringPreference("keystore_cn", KeystoreManager.DEFAULT)
     var keystorePass by stringPreference("keystore_pass", KeystoreManager.DEFAULT)
 }

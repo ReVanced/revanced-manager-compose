@@ -1,15 +1,13 @@
 package app.revanced.manager.network.downloader
 
-import android.app.Application
 import android.os.Build.SUPPORTED_ABIS
+import app.revanced.manager.network.dto.APKMirrorResponse
 import app.revanced.manager.network.utils.APIResponse
 import app.revanced.manager.network.utils.getOrThrow
-import io.ktor.client.call.body
 import io.ktor.client.plugins.onDownload
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
 import io.ktor.client.request.parameter
-import io.ktor.client.request.prepareGet
 import io.ktor.client.request.setBody
 import io.ktor.client.request.url
 import io.ktor.client.statement.bodyAsText
@@ -17,9 +15,6 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.contentType
-import io.ktor.utils.io.ByteReadChannel
-import io.ktor.utils.io.core.isNotEmpty
-import io.ktor.utils.io.core.readBytes
 import it.skrape.core.htmlDocument
 import it.skrape.selects.html5.a
 import it.skrape.selects.html5.div
@@ -29,12 +24,9 @@ import it.skrape.selects.html5.p
 import it.skrape.selects.html5.span
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.serialization.Serializable
 import java.io.File
 
-class APKMirror(
-    private val app: Application
-) : AppDownloader() {
+class APKMirror : AppDownloader() {
 
     private val _availableApps: MutableStateFlow<Map<String, String>> = MutableStateFlow(emptyMap())
     override val availableApps = _availableApps.asStateFlow()
@@ -46,21 +38,17 @@ class APKMirror(
     override val loadingText = _loadingText.asStateFlow()
 
 
-    private suspend fun getAppInfo(packages: List<String>): APIResponse<Response> =
+    private suspend fun getAppInfo(packages: List<String>): APIResponse<APKMirrorResponse> =
         client.request {
-            url("https://www.apkmirror.com/wp-json/apkm/v1/app_exists/")
+            url("$apkMirror/wp-json/apkm/v1/app_exists/")
             method = HttpMethod.Post
             headers {
                 append(HttpHeaders.Accept, ContentType.Application.Json.toString())
-                append(
-                    HttpHeaders.Authorization,
-                    "Basic YXBpLXRvb2xib3gtZm9yLWdvb2dsZS1wbGF5OkNiVVcgQVVMZyBNRVJXIHU4M3IgS0s0SCBEbmJL"
-                )
+                append(HttpHeaders.Authorization, authorization)
             }
             contentType(ContentType.Application.Json)
             setBody(mapOf("pnames" to packages))
         }
-
 
     override suspend fun getAvailableVersionList(apk: String, versionFilter: Set<String>) {
         _availableApps.emit(emptyMap())
@@ -84,7 +72,7 @@ class APKMirror(
             ) {
                 htmlDocument(
                     html = client.http.get {
-                        url("https://www.apkmirror.com/uploads/page/$page/")
+                        url("$apkMirror/uploads/page/$page/")
                         parameter("appcategory", appCategory)
                     }.bodyAsText()
                 ) {
@@ -137,12 +125,11 @@ class APKMirror(
                             if (versionFilter.isEmpty())
                                 it
                             else
-                                it.filterKeys { versionFilter.contains(it) }
+                                it.filterKeys { version -> versionFilter.contains(version) }
                         }
                         .toMap()
                 )
 
-                println("loaded page $page")
                 page += 1
             }
 
@@ -152,12 +139,20 @@ class APKMirror(
         }
     }
 
-    override suspend fun downloadApp(link: String, preferSplit: Boolean, preferUniversal: Boolean): File {
+    override suspend fun downloadApp(
+        link: String,
+        version: String,
+        savePath: File,
+        preferSplit: Boolean,
+        preferUniversal: Boolean
+    ): File {
         _loadingText.emit("Loading variants...")
         _downloadProgress.emit(null)
 
+        var isSplit = false
+
         val appPage = htmlDocument(
-            html = client.http.get { url("https://apkmirror.com$link") }.bodyAsText()
+            html = client.http.get { url(apkMirror + link) }.bodyAsText()
         ) {
             div {
                 withClass = "variants-table"
@@ -173,11 +168,18 @@ class APKMirror(
                     val variants = children.drop(1)
                         .groupBy { if (it.text.contains("APK")) "full" else "split"}.let {
 
-                        if (preferSplit) it["split"] ?: it["full"]!! else it["full"] ?: it["split"]!!
+                        if (preferSplit)
+                            it["split"]?.also { isSplit = true }
+                                ?: it["full"]
+                        else
+                            it["full"]
+                                ?: it["split"].also { isSplit = true }
                     }
 
+                    if (isSplit) TODO("\nSplit apks are not supported yet")
+
                     supportedArches.firstNotNullOfOrNull { arch ->
-                        variants.find { it.text.contains(arch) }
+                        variants?.find { it.text.contains(arch) }
                     }?.a {
                         findFirst {
                             attribute("href")
@@ -191,7 +193,7 @@ class APKMirror(
         _loadingText.emit("Loading download page...")
 
         val downloadPage = htmlDocument(
-            html = client.http.get { url("https://apkmirror.com$appPage") }.bodyAsText()
+            html = client.http.get { url(apkMirror + appPage) }.bodyAsText()
         ) {
             a {
                 withClass = "downloadButton"
@@ -204,7 +206,7 @@ class APKMirror(
         _loadingText.emit("Getting download link...")
 
         val downloadLink = htmlDocument(
-            html = client.http.get { url("https://apkmirror.com$downloadPage") }.bodyAsText()
+            html = client.http.get { url(apkMirror + downloadPage) }.bodyAsText()
         ) {
             form {
                 withId = "filedownload"
@@ -227,67 +229,48 @@ class APKMirror(
             }
         }
 
-        val saveLocation = app.filesDir.resolve("downloaded-apk.apk")
+        val saveLocation = if (isSplit)
+            savePath.resolve(version).also { it.mkdirs() }
+        else
+            savePath.resolve("$version.apk")
 
-        saveLocation.delete()
-        client.http.prepareGet("https://apkmirror.com$downloadLink") {
-            onDownload { bytesSentTotal, contentLength ->
-                _downloadProgress.emit(bytesSentTotal.toFloat() / contentLength.toFloat())
-                _loadingText.emit("Downloading apk... (${bytesSentTotal.toFloat().div(1000000)}/${contentLength.toFloat().div(1000000)})")
-            }
-        }.execute { httpResponse ->
-            val channel: ByteReadChannel = httpResponse.body()
-            while (!channel.isClosedForRead) {
-                val packet = channel.readRemaining(DEFAULT_BUFFER_SIZE.toLong())
-                while (packet.isNotEmpty) {
-                    val bytes = packet.readBytes()
-                    saveLocation.appendBytes(bytes)
+        try {
+            (if (isSplit)
+                saveLocation.resolve("temp.zip")
+            else
+                saveLocation).let {
+
+                client.download(saveLocation) {
+                    url(apkMirror + downloadLink)
+                    onDownload { bytesSentTotal, contentLength ->
+                        _downloadProgress.emit(bytesSentTotal.toFloat() / contentLength.toFloat())
+                        _loadingText.emit(
+                            "Downloading apk... (${bytesSentTotal.toFloat().div(1000000)}/${contentLength.toFloat().div(1000000)})"
+                        )
+                    }
                 }
+
             }
+
+            if (isSplit) {
+                // TODO: Extract temp.zip
+
+                saveLocation.resolve("temp.zip").delete()
+            }
+        } catch (e: Exception) {
+            saveLocation.deleteRecursively()
+            throw e
         }
         _downloadProgress.emit(null)
         _loadingText.emit(null)
 
         return saveLocation
     }
+
+    companion object {
+        const val apkMirror = "https://www.apkmirror.com"
+
+        const val authorization = "Basic YXBpLXRvb2xib3gtZm9yLWdvb2dsZS1wbGF5OkNiVVcgQVVMZyBNRVJXIHU4M3IgS0s0SCBEbmJL"
+    }
+
 }
-
-@Serializable
-data class Response(
-    val data: List<Data>,
-    val headers: Map<String, String>,
-    val status: Int
-)
-
-@Serializable
-data class Data(
-    val pname: String,
-    val exists: Boolean,
-    val developer: Developer? = null,
-    val app: App? = null,
-    val release: Release? = null,
-    val apks: List<Apk>? = null
-)
-
-@Serializable
-data class Developer(val name: String, val link: String)
-
-@Serializable
-data class App(val name: String, val description: String, val link: String)
-
-@Serializable
-data class Release(val version: String, val publish_date: String, val whats_new: String, val downloads: String, val link: String)
-
-@Serializable
-data class Apk(
-    val version_code: String,
-    val link: String,
-    val publish_date: String,
-    val `signatures-sha1`: List<String>,
-    val `signatures-sha256`: List<String>,
-    val pname: String,
-    val arches: List<String>,
-    val dpis: List<String>,
-    val minapi: String,
-    val description: String
-)

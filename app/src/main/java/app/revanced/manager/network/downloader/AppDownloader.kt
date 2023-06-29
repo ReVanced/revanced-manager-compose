@@ -21,8 +21,8 @@ sealed class AppDownloader : KoinComponent {
     /**
      * Loads all available apps to [availableApps].
      *
-     * @param apk The package name of the app
-     * @param versionFilter a set of versions to filter
+     * @param apk The package name of the app.
+     * @param versionFilter a set of versions to filter.
      */
     abstract suspend fun getAvailableVersionList(apk: String, versionFilter: Set<String>)
 
@@ -30,9 +30,16 @@ sealed class AppDownloader : KoinComponent {
      * Downloads the specific app version
      *
      * @param link The download link from [availableApps].
-     * @param preferSplit whether it prefer a split or a full apk
-     * @param preferUniversal whether it prefer an universal or an arch-specific apk
-     * @return the downloaded file
+     * @param savePath The folder where the downloaded app should be stored.
+     * @param preferSplit whether it should prefer a split or a full apk.
+     * @param preferUniversal whether it should prefer an universal or an arch-specific apk
+     * @return the downloaded apk or the folder containing all split apks.
      */
-    abstract suspend fun downloadApp(link: String, preferSplit: Boolean = false, preferUniversal: Boolean = false): File
+    abstract suspend fun downloadApp(
+        link: String,
+        version: String,
+        savePath: File,
+        preferSplit: Boolean = false,
+        preferUniversal: Boolean = false
+    ): File
 }

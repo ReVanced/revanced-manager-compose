@@ -66,19 +66,24 @@ fun AppDownloaderScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (viewModel.errorMessage == null) {
-                if (viewModel.isDownloading == null) {
+                if (!viewModel.isDownloading) {
                     if (availableVersions.isNotEmpty()) {
 
 
                         availableVersions.forEach { (version, link) ->
                             ListItem(
-                                modifier = Modifier.clickable(enabled = viewModel.isDownloading == null) {
+                                modifier = Modifier.clickable(enabled = !viewModel.isDownloading) {
                                     viewModel.downloadApp(
+                                        version,
                                         link,
                                         onComplete = onApkClick
                                     )
                                 },
                                 headlineContent = { Text(version) },
+                                supportingContent =
+                                    if (viewModel.downloadedVersions.contains(version))
+                                        { { Text("Already downloaded") } }
+                                    else null,
                                 trailingContent = viewModel.compatibleVersions[version]?.let {
                                     {
                                         Text(
