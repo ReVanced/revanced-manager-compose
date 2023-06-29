@@ -81,7 +81,7 @@ fun PatchesSelectorScreen(
         OptionsDialog(
             onDismissRequest = vm::dismissDialogs,
             patch = patch,
-            values = vm.patchOptions[bundle]?.get(patch.name),
+            values = vm.getOptions(bundle, patch),
             set = { key, value -> vm.setOption(bundle, patch, key, value) },
             unset = { vm.unsetOption(bundle, patch, it) }
         )

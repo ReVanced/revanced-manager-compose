@@ -15,7 +15,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,27 +35,19 @@ import kotlin.io.path.name
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FileSelectorDialog(root: Path, onSelect: (Path?) -> Unit) {
-    var currentDirectory by rememberSaveable(saver = PathSaver) { mutableStateOf(root) }
-    val notAtRootDir by remember {
-        derivedStateOf {
-            currentDirectory != root
-        }
+fun UnixFileSelectorDialog(root: Path, onSelect: (Path?) -> Unit) {
+    var currentDirectory by rememberSaveable(root, saver = PathSaver) { mutableStateOf(root) }
+    val notAtRootDir = remember(currentDirectory) {
+        currentDirectory != root
     }
-    val everything by remember {
-        derivedStateOf {
-            currentDirectory.listDirectoryEntries()
-        }
+    val everything = remember(currentDirectory) {
+        currentDirectory.listDirectoryEntries()
     }
-    val directories by remember {
-        derivedStateOf {
-            everything.filter { it.isDirectory() }
-        }
+    val directories = remember(everything) {
+        everything.filter { it.isDirectory() }
     }
-    val files by remember {
-        derivedStateOf {
-            everything.filter { it.isRegularFile() }
-        }
+    val files = remember(everything) {
+        everything.filter { it.isRegularFile() }
     }
 
     Dialog(
@@ -101,7 +92,7 @@ fun FileSelectorDialog(root: Path, onSelect: (Path?) -> Unit) {
                     Row(
                         modifier = Modifier.clickable { currentDirectory = it }
                     ) {
-                        Icon(Icons.Default.Folder, null)
+                        Icon(Icons.Filled.Folder, null)
                         Text(text = it.name)
                     }
                 }
@@ -109,7 +100,7 @@ fun FileSelectorDialog(root: Path, onSelect: (Path?) -> Unit) {
                     Row(
                         modifier = Modifier.clickable { onSelect(it) }
                     ) {
-                        Icon(Icons.Default.FileOpen, null)
+                        Icon(Icons.Filled.FileOpen, null)
                         Text(text = it.name)
                     }
                 }

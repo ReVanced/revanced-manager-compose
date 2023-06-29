@@ -60,7 +60,7 @@ class PatchesSelectorViewModel(
     }
 
     private val selectedPatches = mutableStateMapOf<Int, SnapshotStateSet<String>>()
-    val patchOptions =
+    private val patchOptions =
         mutableStateMapOf<Int, SnapshotStateMap<String, SnapshotStateMap<String, Any?>>>()
 
     /**
@@ -102,8 +102,6 @@ class PatchesSelectorViewModel(
             }
         }
 
-    fun getOptions(): Options = patchOptions
-
     init {
         viewModelScope.launch(Dispatchers.Default) {
             val bundles = bundlesFlow.first()
@@ -125,6 +123,9 @@ class PatchesSelectorViewModel(
             }
         }
     }
+
+    fun getOptions(): Options = patchOptions
+    fun getOptions(bundle: Int, patch: PatchInfo) = patchOptions[bundle]?.get(patch.name)
 
     fun setOption(bundle: Int, patch: PatchInfo, key: String, value: Any?) {
         patchOptions.getOrCreate(bundle).getOrCreate(patch.name)[key] = value

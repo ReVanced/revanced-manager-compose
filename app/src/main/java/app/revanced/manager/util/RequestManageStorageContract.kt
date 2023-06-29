@@ -15,5 +15,5 @@ object RequestManageStorageContract : ActivityResultContract<String, Boolean>() 
 
     override fun getSynchronousResult(context: Context, input: String): SynchronousResult<Boolean>? = if (Environment.isExternalStorageManager()) SynchronousResult(true) else null
 
-    override fun parseResult(resultCode: Int, intent: Intent?) = resultCode == RESULT_OK && Environment.isExternalStorageManager()
+    override fun parseResult(resultCode: Int, intent: Intent?) = Environment.isExternalStorageManager()
 }
