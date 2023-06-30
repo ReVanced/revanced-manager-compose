@@ -41,7 +41,7 @@ fun DownloadsSettingsScreen(
                 actions = {
                     if (viewModel.selection.isNotEmpty()) {
                         IconButton(onClick = { viewModel.delete() }) {
-                            Icon(Icons.Default.Delete, "Delete")
+                            Icon(Icons.Default.Delete, stringResource(R.string.delete))
                         }
                     }
                 }
@@ -56,8 +56,8 @@ fun DownloadsSettingsScreen(
         ) {
             ListItem(
                 modifier = Modifier.clickable { prefs.preferSplits = !prefs.preferSplits },
-                headlineContent = { Text("Prefer split apks") },
-                supportingContent = { Text("Prefer split apks instead of full apks") },
+                headlineContent = { Text(stringResource(R.string.prefer_splits)) },
+                supportingContent = { Text(stringResource(R.string.prefer_splits_description)) },
                 trailingContent = {
                     Switch(checked = prefs.preferSplits, onCheckedChange = { prefs.preferSplits = it })
                 }
@@ -65,14 +65,14 @@ fun DownloadsSettingsScreen(
 
             ListItem(
                 modifier = Modifier.clickable { prefs.preferUniversal = !prefs.preferUniversal },
-                headlineContent = { Text("Prefer universal apks") },
-                supportingContent = { Text("Prefer universal instead of arch-specific apks") },
+                headlineContent = { Text(stringResource(R.string.prefer_universal)) },
+                supportingContent = { Text(stringResource(R.string.prefer_universal_description)) },
                 trailingContent = {
                     Switch(checked = prefs.preferUniversal, onCheckedChange = { prefs.preferUniversal = it })
                 }
             )
 
-            GroupHeader(title = "Downloaded apps")
+            GroupHeader(stringResource(R.string.downloaded_apps))
 
             viewModel.downloadedApps.forEach {
                 ListItem(

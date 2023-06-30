@@ -49,7 +49,7 @@ fun AppSelectorScreen(
             uri?.let { apkUri ->
                 vm.loadSelectedFile(apkUri)?.let {
                     onAppClick(it)
-                } ?: context.toast("Failed to load apk")
+                } ?: context.toast(context.getString(R.string.failed_to_load_apk))
             }
         }
 
@@ -141,7 +141,9 @@ fun AppSelectorScreen(
         }
     ) { paddingValues ->
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(paddingValues)
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
         ) {
             item {
                 ListItem(
@@ -192,8 +194,8 @@ fun VersionDialog(
     onContinueClick: (AppInfo) -> Unit
 ) = if (selectedApp.packageInfo != null) AlertDialog(
     onDismissRequest = onDismissRequest,
-    title = { Text("Continue with this version?") },
-    text = { Text("your balls are so small the patches don't support them (${selectedApp.packageInfo.versionName}), do you want to continue anyways?") },
+    title = { Text(stringResource(R.string.continue_with_this_version)) },
+    text = { Text(stringResource(R.string.not_all_patches_support_this_version, selectedApp.packageInfo.versionName)) },
     confirmButton = {
         Column(
             horizontalAlignment = Alignment.End
@@ -202,31 +204,31 @@ fun VersionDialog(
                 onSelectVersionClick(selectedApp)
                 onDismissRequest()
             }) {
-                Text("Select another version")
+                Text(stringResource(R.string.download_another_version))
             }
             TextButton(onClick = {
                 onContinueClick(selectedApp)
                 onDismissRequest()
             }) {
-                Text("Continue anyways")
+                Text(stringResource(R.string.continue_anyways))
             }
         }
     }
 ) else AlertDialog(
     onDismissRequest = onDismissRequest,
-    title = { Text("App not installed") },
-    text = { Text("your balls are not installed, want to download it?") },
+    title = { Text(stringResource(R.string.download_application)) },
+    text = { Text(stringResource(R.string.app_not_installed)) },
     confirmButton = {
         TextButton(onClick = {
             onDismissRequest()
         }) {
-            Text("Cancel")
+            Text(stringResource(R.string.cancel))
         }
         TextButton(onClick = {
             onSelectVersionClick(selectedApp)
             onDismissRequest()
         }) {
-            Text("Download app")
+            Text(stringResource(R.string.download_app))
         }
     }
 )

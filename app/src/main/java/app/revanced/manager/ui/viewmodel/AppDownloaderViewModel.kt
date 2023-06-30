@@ -15,6 +15,7 @@ import app.revanced.manager.network.downloader.APKMirror
 import app.revanced.manager.network.downloader.AppDownloader
 import app.revanced.manager.util.AppInfo
 import app.revanced.manager.util.PM
+import app.revanced.manager.util.simpleMessage
 import app.revanced.manager.util.tag
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -71,7 +72,7 @@ class AppDownloaderViewModel(
         } catch (e: Exception) {
             withContext(Dispatchers.Main) {
                 Log.e(tag, "Failed to load apps", e)
-                errorMessage = e.message ?: e.cause?.message ?: e::class.simpleName
+                errorMessage = e.simpleMessage()
             }
         }
     }
@@ -130,7 +131,7 @@ class AppDownloaderViewModel(
             } catch (e: Throwable) {
                 withContext(Dispatchers.Main) {
                     Log.e(tag, "Failed to download apk", e)
-                    errorMessage = e.message ?: e.cause?.message ?: e::class.simpleName
+                    errorMessage = e.simpleMessage()
                 }
             }
         }
