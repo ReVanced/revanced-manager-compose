@@ -22,20 +22,25 @@ import androidx.compose.ui.unit.dp
 import app.revanced.manager.BuildConfig
 import app.revanced.manager.R
 import app.revanced.manager.ui.component.AppTopBar
+import app.revanced.manager.ui.destination.SettingsDestination
 import app.revanced.manager.util.openUrl
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import dev.olshevski.navigation.reimagined.NavController
+import dev.olshevski.navigation.reimagined.navigate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutSettingsScreen(
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onContributorsClick: () -> Unit,
+    onLicensesClick: () -> Unit,
 ) {
     val context = LocalContext.current
     val icon = rememberDrawablePainter(context.packageManager.getApplicationIcon(context.packageName))
 
     val filledButton = listOf(
         Triple(Icons.Outlined.FavoriteBorder, stringResource(R.string.donate)) {
-            context.openUrl("https://github.com/sponsors/ReVanced")
+            context.openUrl("https://revanced.app/donate")
         },
         Triple(Icons.Outlined.Language, stringResource(R.string.website), third = {
             context.openUrl("https://revanced.app")
@@ -47,14 +52,19 @@ fun AboutSettingsScreen(
             context.openUrl("https://revanced.app/github")
         }),
         Triple(Icons.Outlined.MailOutline, stringResource(R.string.contact), third = {
-            context.openUrl("mailto:contact@revanced.app")
+            context.openUrl("mailto:nosupport@revanced.app")
         }),
     )
 
     val listItems = listOf(
-        Triple(stringResource(R.string.submit_feedback), stringResource(R.string.submit_feedback_description), third = { /*TODO*/ }),
-        Triple(stringResource(R.string.contributors), stringResource(R.string.contributors_description), third = { /*TODO*/ }),
-        Triple(stringResource(R.string.developer_options), stringResource(R.string.developer_options_description), third = { /*TODO*/ }),
+        Triple(stringResource(R.string.submit_feedback), stringResource(R.string.submit_feedback_description),
+            third = { /*TODO*/ }),
+        Triple(stringResource(R.string.contributors), stringResource(R.string.contributors_description),
+            third = onContributorsClick),
+        Triple(stringResource(R.string.developer_options), stringResource(R.string.developer_options_description),
+            third = { /*TODO*/ }),
+        Triple(stringResource(R.string.opensource_licenses), stringResource(R.string.opensource_licenses_description),
+            third = onLicensesClick)
     )
 
     Scaffold(
@@ -72,7 +82,9 @@ fun AboutSettingsScreen(
                 .verticalScroll(rememberScrollState())
         ) {
             Column(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {

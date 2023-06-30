@@ -16,6 +16,8 @@
     <string name="general_description">General settings</string>
     <string name="updates">Updates</string>
     <string name="updates_description">Updates for ReVanced Manager</string>
+    <string name="opensource_licenses">Open source licenses</string>
+    <string name="opensource_licenses_description">View all the libraries used to make this application</string>
     <string name="downloads">Downloads</string>
     <string name="downloads_description">Manage downloaded content</string>
     <string name="import_export">Import &amp; export</string>
@@ -29,6 +31,8 @@
     <string name="dynamic_color_description">Adapt colors to the wallpaper</string>
     <string name="theme">Theme</string>
     <string name="theme_description">Choose between light or dark theme</string>
+    <string name="experimental_patches">Allow experimental patches</string>
+    <string name="experimental_patches_description">Allow patching incompatible patches with experimental versions, something may break</string>
     <string name="import_keystore">Import keystore</string>
     <string name="import_keystore_descripion">Import a custom keystore</string>
     <string name="import_keystore_preset_default">Default</string>
@@ -66,6 +70,7 @@
     <string name="light">Light</string>
     <string name="dark">Dark</string>
     <string name="appearance">Appearance</string>
+    <string name="patching">Patching</string>
     <string name="signing">Signing</string>
     <string name="storage">Storage</string>
     <string name="tab_apps">Apps</string>

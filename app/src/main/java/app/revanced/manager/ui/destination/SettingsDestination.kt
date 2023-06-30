@@ -26,4 +26,10 @@ sealed interface SettingsDestination : Parcelable {
     @Parcelize
     object UpdateProgress : SettingsDestination
 
+    @Parcelize
+    object Contributors: SettingsDestination
+
+    @Parcelize
+    object Licenses: SettingsDestination
+
 }

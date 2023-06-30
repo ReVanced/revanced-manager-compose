@@ -52,8 +52,6 @@ import app.revanced.manager.ui.viewmodel.PatchesSelectorViewModel.Companion.SHOW
 import app.revanced.manager.util.PatchesSelection
 import kotlinx.coroutines.launch
 
-const val allowUnsupported = false
-
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun PatchesSelectorScreen(
@@ -64,7 +62,7 @@ fun PatchesSelectorScreen(
     BackHandler(onBack = onBackClick)
 
     val pagerState = rememberPagerState()
-    val coroutineScope = rememberCoroutineScope()
+    val composableScope = rememberCoroutineScope()
 
     val bundles by vm.bundlesFlow.collectAsStateWithLifecycle(initialValue = emptyArray())
 
@@ -97,7 +95,7 @@ fun PatchesSelectorScreen(
                 text = { Text(stringResource(R.string.patch)) },
                 icon = { Icon(Icons.Default.Build, null) },
                 onClick = {
-                    coroutineScope.launch {
+                    composableScope.launch {
                         onPatchClick(vm.getAndSaveSelection())
                     }
                 }
@@ -117,7 +115,7 @@ fun PatchesSelectorScreen(
                     bundles.forEachIndexed { index, bundle ->
                         Tab(
                             selected = pagerState.currentPage == index,
-                            onClick = { coroutineScope.launch { pagerState.animateScrollToPage(index) } },
+                            onClick = { composableScope.launch { pagerState.animateScrollToPage(index) } },
                             text = { Text(bundle.name) },
                             selectedContentColor = MaterialTheme.colorScheme.primary,
                             unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant
@@ -209,7 +207,7 @@ fun PatchesSelectorScreen(
                             patchList(
                                 patches = bundle.unsupported,
                                 filterFlag = SHOW_UNSUPPORTED,
-                                supported = allowUnsupported
+                                supported = vm.allowExperimental
                             ) {
                                 ListHeader(
                                     title = stringResource(R.string.unsupported_patches),
