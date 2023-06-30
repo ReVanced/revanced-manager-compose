@@ -45,6 +45,8 @@ class AppDownloaderViewModel(
 
     private val job = viewModelScope.launch(Dispatchers.IO) {
         try {
+            compatibleVersions.putAll(getCompatibleVersions())
+
             downloadedAppRepository.getAll()
                 .mapNotNull {
                     if (it.packageName == selectedApp.packageName)
@@ -58,8 +60,6 @@ class AppDownloaderViewModel(
                     }
                 }
 
-            compatibleVersions.putAll(getCompatibleVersions())
-
             appDownloader.getAvailableVersionList(
                 selectedApp.packageName,
                 compatibleVersions.keys
@@ -70,8 +70,8 @@ class AppDownloaderViewModel(
             }
         } catch (e: Exception) {
             withContext(Dispatchers.Main) {
+                Log.e(tag, "Failed to load apps", e)
                 errorMessage = e.message ?: e.cause?.message ?: e::class.simpleName
-                Log.e(tag, "Failed to load app info", e)
             }
         }
     }
@@ -96,6 +96,7 @@ class AppDownloaderViewModel(
         link: String,
         onComplete: (AppInfo) -> Unit
     ) {
+        errorMessage = null
         isDownloading = true
 
         job.cancel()
@@ -128,8 +129,8 @@ class AppDownloaderViewModel(
                 }
             } catch (e: Throwable) {
                 withContext(Dispatchers.Main) {
-                    errorMessage = e.message ?: e.cause?.message ?: e::class.simpleName
                     Log.e(tag, "Failed to download apk", e)
+                    errorMessage = e.message ?: e.cause?.message ?: e::class.simpleName
                 }
             }
         }

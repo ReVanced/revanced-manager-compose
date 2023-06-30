@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -17,7 +18,9 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
@@ -38,8 +41,20 @@ fun AppDownloaderScreen(
     viewModel: AppDownloaderViewModel
 ) {
     val downloadProgress by viewModel.appDownloader.downloadProgress.collectAsStateWithLifecycle()
-    val loadingText by viewModel.appDownloader.loadingText.collectAsStateWithLifecycle()
     val availableVersions by viewModel.appDownloader.availableApps.collectAsStateWithLifecycle()
+
+    val list by remember {
+        derivedStateOf {
+            (viewModel.downloadedVersions + availableVersions.keys)
+                .distinct()
+                .sortedWith(
+                    compareByDescending<String> {
+                        viewModel.downloadedVersions.contains(it)
+                    }.thenByDescending { viewModel.compatibleVersions[it] }
+                        .thenByDescending { it }
+                )
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -60,30 +75,31 @@ fun AppDownloaderScreen(
         Column(
             modifier = Modifier
                 .padding(paddingValues)
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState()),
+                .fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (viewModel.errorMessage == null) {
-                if (!viewModel.isDownloading) {
-                    if (availableVersions.isNotEmpty()) {
-
-
-                        availableVersions.forEach { (version, link) ->
+            when {
+                !viewModel.isDownloading && list.isNotEmpty() -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        list.forEach { version ->
                             ListItem(
-                                modifier = Modifier.clickable(enabled = !viewModel.isDownloading) {
+                                modifier = Modifier.clickable {
                                     viewModel.downloadApp(
                                         version,
-                                        link,
+                                        availableVersions[version].orEmpty(),
                                         onComplete = onApkClick
                                     )
                                 },
                                 headlineContent = { Text(version) },
                                 supportingContent =
-                                    if (viewModel.downloadedVersions.contains(version))
-                                        { { Text("Already downloaded") } }
-                                    else null,
+                                    if (viewModel.downloadedVersions.contains(version)) {
+                                        { Text(stringResource(R.string.already_downloaded)) }
+                                    } else null,
                                 trailingContent = viewModel.compatibleVersions[version]?.let {
                                     {
                                         Text(
@@ -97,27 +113,36 @@ fun AppDownloaderScreen(
                                 }
                             )
                         }
-                        if (viewModel.isLoading)
+                        if (viewModel.errorMessage != null) {
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(stringResource(R.string.error_occurred))
+                                Text(
+                                    text = viewModel.errorMessage!!,
+                                    modifier = Modifier.padding(horizontal = 15.dp)
+                                )
+                            }
+                        } else if (viewModel.isLoading)
                             LoadingIndicator()
-
-
-                    } else {
-                        LoadingIndicator(
-                            text = loadingText
-                        )
                     }
-                } else {
-                    LoadingIndicator(
-                        progress = downloadProgress,
-                        text = loadingText
+                }
+
+                viewModel.errorMessage != null -> {
+                    Text(stringResource(R.string.error_occurred))
+                    Text(
+                        text = viewModel.errorMessage!!,
+                        modifier = Modifier.padding(horizontal = 15.dp)
                     )
                 }
-            } else {
-                Text("An error occurred:")
-                Text(
-                    text = viewModel.errorMessage!!,
-                    modifier = Modifier.padding(horizontal = 15.dp)
-                )
+
+                else -> {
+                    LoadingIndicator(
+                        progress = downloadProgress?.let { (it.first / it.second) },
+                        text = downloadProgress?.let { stringResource(R.string.downloading_app, it.first, it.second) }
+                    )
+                }
             }
         }
     }

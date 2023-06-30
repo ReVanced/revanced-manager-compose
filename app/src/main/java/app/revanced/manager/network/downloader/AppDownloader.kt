@@ -14,9 +14,7 @@ sealed class AppDownloader : KoinComponent {
      */
     abstract val availableApps: StateFlow<Map<String, String>>
 
-    abstract val downloadProgress: StateFlow<Float?>
-
-    abstract val loadingText: StateFlow<String?>
+    abstract val downloadProgress: StateFlow<Pair<Float, Float>?>
 
     /**
      * Loads all available apps to [availableApps].

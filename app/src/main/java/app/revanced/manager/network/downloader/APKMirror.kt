@@ -31,12 +31,8 @@ class APKMirror : AppDownloader() {
     private val _availableApps: MutableStateFlow<Map<String, String>> = MutableStateFlow(emptyMap())
     override val availableApps = _availableApps.asStateFlow()
 
-    private val _downloadProgress: MutableStateFlow<Float?> = MutableStateFlow(null)
+    private val _downloadProgress: MutableStateFlow<Pair<Float, Float>?> = MutableStateFlow(null)
     override val downloadProgress = _downloadProgress.asStateFlow()
-
-    private val _loadingText: MutableStateFlow<String?> = MutableStateFlow(null)
-    override val loadingText = _loadingText.asStateFlow()
-
 
     private suspend fun getAppInfo(packages: List<String>): APIResponse<APKMirrorResponse> =
         client.request {
@@ -52,7 +48,6 @@ class APKMirror : AppDownloader() {
 
     override suspend fun getAvailableVersionList(apk: String, versionFilter: Set<String>) {
         _availableApps.emit(emptyMap())
-        _loadingText.emit("Checking if app is available...")
         val appInfo = getAppInfo(listOf(apk)).getOrThrow()
 
         if (appInfo.data.first().exists) {
@@ -61,8 +56,6 @@ class APKMirror : AppDownloader() {
             val appCategory = if (apk == "com.google.android.apps.youtube.music") "youtube-music" else appInfo.data.first().app!!.link.split("/")[3]
             val versions = mutableMapOf<String, String>()
             var page = 1
-
-            _loadingText.emit("Loading available versions...")
 
             while (
                 if (versionFilter.isNotEmpty())
@@ -132,8 +125,6 @@ class APKMirror : AppDownloader() {
 
                 page += 1
             }
-
-            _loadingText.emit(null)
         } else {
             throw Exception("App isn't available for download")
         }
@@ -146,7 +137,6 @@ class APKMirror : AppDownloader() {
         preferSplit: Boolean,
         preferUniversal: Boolean
     ): File {
-        _loadingText.emit("Loading variants...")
         _downloadProgress.emit(null)
 
         var isSplit = false
@@ -190,8 +180,6 @@ class APKMirror : AppDownloader() {
             }
         }
 
-        _loadingText.emit("Loading download page...")
-
         val downloadPage = htmlDocument(
             html = client.http.get { url(apkMirror + appPage) }.bodyAsText()
         ) {
@@ -202,8 +190,6 @@ class APKMirror : AppDownloader() {
                 }
             }
         }
-
-        _loadingText.emit("Getting download link...")
 
         val downloadLink = htmlDocument(
             html = client.http.get { url(apkMirror + downloadPage) }.bodyAsText()
@@ -243,10 +229,7 @@ class APKMirror : AppDownloader() {
                 client.download(saveLocation) {
                     url(apkMirror + downloadLink)
                     onDownload { bytesSentTotal, contentLength ->
-                        _downloadProgress.emit(bytesSentTotal.toFloat() / contentLength.toFloat())
-                        _loadingText.emit(
-                            "Downloading apk... (${bytesSentTotal.toFloat().div(1000000)}/${contentLength.toFloat().div(1000000)})"
-                        )
+                        _downloadProgress.emit(bytesSentTotal.div(100000).toFloat().div(10) to contentLength.div(100000).toFloat().div(10))
                     }
                 }
 
@@ -259,10 +242,10 @@ class APKMirror : AppDownloader() {
             }
         } catch (e: Exception) {
             saveLocation.deleteRecursively()
+            _downloadProgress.emit(null)
             throw e
         }
         _downloadProgress.emit(null)
-        _loadingText.emit(null)
 
         return saveLocation
     }
