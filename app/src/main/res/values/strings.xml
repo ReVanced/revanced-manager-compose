@@ -96,8 +96,8 @@
     <string name="universal">Universal</string>
     <string name="unsupported">Unsupported</string>
     <string name="app_not_supported">Some of the patches do not support this app version (%1$s). The patches only support the following versions: %2$s.</string>
-    <string name="continue_with_this_version">Continue with this version?</string>
-    <string name="not_all_patches_support_this_version">Not all patches support this version (%s). Do you want to continue anyway?</string>
+    <string name="continue_with_version">Continue with this version?</string>
+    <string name="version_not_supported">Not all patches support this version (%s). Do you want to continue anyway?</string>
     <string name="download_application">Download application?</string>
     <string name="app_not_installed">The app you selected isn\'t installed. Do you want to download it?</string>
     <string name="failed_to_load_apk">Failed to load apk</string>

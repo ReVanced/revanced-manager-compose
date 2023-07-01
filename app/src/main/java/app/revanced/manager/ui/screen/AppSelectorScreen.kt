@@ -194,8 +194,8 @@ fun VersionDialog(
     onContinueClick: (AppInfo) -> Unit
 ) = if (selectedApp.packageInfo != null) AlertDialog(
     onDismissRequest = onDismissRequest,
-    title = { Text(stringResource(R.string.continue_with_this_version)) },
-    text = { Text(stringResource(R.string.not_all_patches_support_this_version, selectedApp.packageInfo.versionName)) },
+    title = { Text(stringResource(R.string.continue_with_version)) },
+    text = { Text(stringResource(R.string.version_not_supported, selectedApp.packageInfo.versionName)) },
     confirmButton = {
         Column(
             horizontalAlignment = Alignment.End

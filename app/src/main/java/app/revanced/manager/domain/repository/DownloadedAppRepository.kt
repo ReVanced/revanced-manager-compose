@@ -2,6 +2,7 @@ package app.revanced.manager.domain.repository
 
 import app.revanced.manager.data.room.AppDatabase
 import app.revanced.manager.data.room.apps.DownloadedApp
+import kotlinx.coroutines.flow.distinctUntilChanged
 import java.io.File
 
 class DownloadedAppRepository(
@@ -9,7 +10,7 @@ class DownloadedAppRepository(
 ) {
     private val dao = db.appDao()
 
-    suspend fun getAll() = dao.getAllApps()
+    fun getAll() = dao.getAllApps().distinctUntilChanged()
 
     suspend fun get(packageName: String, version: String) = dao.get(packageName, version)
 
@@ -25,9 +26,11 @@ class DownloadedAppRepository(
         )
     )
 
-    suspend fun delete(downloadedApp: DownloadedApp) {
-        downloadedApp.file.deleteRecursively()
+    suspend fun delete(downloadedApps: Collection<DownloadedApp>) {
+        downloadedApps.forEach {
+            it.file.deleteRecursively()
+        }
 
-        dao.delete(downloadedApp)
+        dao.delete(downloadedApps)
     }
 }

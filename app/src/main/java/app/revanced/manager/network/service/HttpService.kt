@@ -12,6 +12,7 @@ import io.ktor.client.request.get
 import io.ktor.client.request.prepareGet
 import io.ktor.client.request.request
 import io.ktor.client.statement.bodyAsText
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.core.isNotEmpty
@@ -63,22 +64,21 @@ class HttpService(
         builder: HttpRequestBuilder.() -> Unit
     ) {
         http.prepareGet(builder).execute { httpResponse ->
-
             if (httpResponse.status.isSuccess()) {
 
-                val channel: ByteReadChannel = httpResponse.body()
-                while (!channel.isClosedForRead) {
-                    val packet = channel.readRemaining(DEFAULT_BUFFER_SIZE.toLong())
-                    while (packet.isNotEmpty) {
-                        val bytes = packet.readBytes()
-                        saveLocation.appendBytes(bytes)
+                saveLocation.outputStream().use { stream ->
+                    val channel: ByteReadChannel = httpResponse.body()
+                    while (!channel.isClosedForRead) {
+                        val packet = channel.readRemaining(DEFAULT_BUFFER_SIZE.toLong())
+                        while (packet.isNotEmpty) {
+                            val bytes = packet.readBytes()
+                            stream.write(bytes)
+                        }
                     }
                 }
 
             } else {
-
-                throw HttpException("Failed to fetch: http status: ${httpResponse.status}")
-
+                throw HttpException(httpResponse.status)
             }
         }
     }
@@ -87,5 +87,5 @@ class HttpService(
         html = http.get(builder).bodyAsText()
     )
 
-    class HttpException(message: String) : Exception(message)
+    class HttpException(status: HttpStatusCode) : Exception("Failed to fetch: http status: $status")
 }

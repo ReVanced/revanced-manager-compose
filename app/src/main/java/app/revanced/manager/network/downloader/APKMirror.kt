@@ -258,10 +258,10 @@ class APKMirror : AppDownloader() {
             }
         } catch (e: Exception) {
             saveLocation.deleteRecursively()
-            _downloadProgress.emit(null)
             throw e
+        } finally {
+            _downloadProgress.emit(null)
         }
-        _downloadProgress.emit(null)
 
         return saveLocation
     }

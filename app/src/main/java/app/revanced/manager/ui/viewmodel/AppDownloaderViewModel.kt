@@ -3,7 +3,6 @@ package app.revanced.manager.ui.viewmodel
 import android.app.Application
 import android.util.Log
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
@@ -19,6 +18,7 @@ import app.revanced.manager.util.simpleMessage
 import app.revanced.manager.util.tag
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
@@ -41,29 +41,43 @@ class AppDownloaderViewModel(
     var errorMessage: String? by mutableStateOf(null)
         private set
 
-    val compatibleVersions = HashMap<String, Int>()
-    val downloadedVersions = mutableStateListOf<String>()
+    val compatibleVersions = sourceRepository.bundles.map { bundles ->
+        var patchesWithoutVersions = 0
+
+        bundles.flatMap { bundle ->
+            bundle.value.patches.flatMap { patch ->
+                patch.compatiblePackages
+                    .orEmpty()
+                    .filter { it.name == selectedApp.packageName }
+                    .onEach {
+                        if (it.versions.isEmpty()) patchesWithoutVersions += 1
+                    }
+                    .flatMap { it.versions }
+            }
+        }.groupingBy { it }
+            .eachCount()
+            .toMutableMap()
+            .apply {
+                replaceAll { _, count ->
+                    count + patchesWithoutVersions
+                }
+            }
+    }
+
+    val downloadedVersions = downloadedAppRepository.getAll().map { downloadedApps ->
+        downloadedApps.mapNotNull {
+            if (it.packageName == selectedApp.packageName)
+                it.version
+            else
+                null
+        }
+    }
 
     private val job = viewModelScope.launch(Dispatchers.IO) {
         try {
-            compatibleVersions.putAll(getCompatibleVersions())
-
-            downloadedAppRepository.getAll()
-                .mapNotNull {
-                    if (it.packageName == selectedApp.packageName)
-                        it.version
-                    else
-                        null
-                }
-                .also {
-                    withContext(Dispatchers.Main) {
-                        downloadedVersions.addAll(it)
-                    }
-                }
-
             appDownloader.getAvailableVersionList(
                 selectedApp.packageName,
-                compatibleVersions.keys
+                compatibleVersions.first().keys
             )
 
             withContext(Dispatchers.Main) {
@@ -77,27 +91,11 @@ class AppDownloaderViewModel(
         }
     }
 
-    private suspend fun getCompatibleVersions(): HashMap<String, Int> {
-        val map = HashMap<String, Int>()
-
-        sourceRepository.bundles.first().flatMap { it.value.patches }.forEach { patch ->
-            patch.compatiblePackages?.find { it.name == selectedApp.packageName }
-                ?.let { compatiblePackage ->
-                    compatiblePackage.versions.forEach { compatibleVersion ->
-                        map[compatibleVersion] = map.getOrDefault(compatibleVersion, 0) + 1
-                    }
-                }
-        }
-
-        return map
-    }
-
     fun downloadApp(
         version: String,
         link: String,
         onComplete: (AppInfo) -> Unit
     ) {
-        errorMessage = null
         isDownloading = true
 
         job.cancel()

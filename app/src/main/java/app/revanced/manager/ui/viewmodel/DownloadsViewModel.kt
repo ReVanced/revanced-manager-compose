@@ -1,13 +1,14 @@
 package app.revanced.manager.ui.viewmodel
 
-import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.revanced.manager.data.room.apps.DownloadedApp
 import app.revanced.manager.domain.manager.PreferencesManager
 import app.revanced.manager.domain.repository.DownloadedAppRepository
+import app.revanced.manager.util.mutableStateSetOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -15,24 +16,15 @@ class DownloadsViewModel(
     private val downloadedAppRepository: DownloadedAppRepository,
     val prefs: PreferencesManager
 ) : ViewModel() {
-    val downloadedApps = mutableStateListOf<DownloadedApp>()
-    val selection = mutableStateListOf<DownloadedApp>()
-
-    init {
-        viewModelScope.launch(Dispatchers.IO) {
-            downloadedAppRepository.getAll()
-                .sortedWith(
-                    compareBy<DownloadedApp> {
-                        it.packageName
-                    }.thenBy { it.version }
-                )
-                .also {
-                    withContext(Dispatchers.Main) {
-                        downloadedApps.addAll(it)
-                    }
-                }
-        }
+    val downloadedApps = downloadedAppRepository.getAll().map { downloadedApps ->
+        downloadedApps.sortedWith(
+            compareBy<DownloadedApp> {
+                it.packageName
+            }.thenBy { it.version }
+        )
     }
+
+    val selection = mutableStateSetOf<DownloadedApp>()
 
     fun toggleItem(downloadedApp: DownloadedApp) {
         if (selection.contains(downloadedApp))
@@ -43,11 +35,10 @@ class DownloadsViewModel(
 
     fun delete() {
         viewModelScope.launch(NonCancellable) {
-            selection.toList().forEach {
-                downloadedAppRepository.delete(it)
-            }
+            downloadedAppRepository.delete(selection)
+
             withContext(Dispatchers.Main) {
-                downloadedApps.removeAll(selection)
+                //downloadedApps.removeAll(selection)
                 selection.clear()
             }
         }

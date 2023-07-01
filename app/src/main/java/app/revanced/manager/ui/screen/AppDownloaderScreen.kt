@@ -41,16 +41,18 @@ fun AppDownloaderScreen(
     viewModel: AppDownloaderViewModel
 ) {
     val downloadProgress by viewModel.appDownloader.downloadProgress.collectAsStateWithLifecycle()
+    val compatibleVersions by viewModel.compatibleVersions.collectAsStateWithLifecycle(emptyMap())
     val availableVersions by viewModel.appDownloader.availableApps.collectAsStateWithLifecycle()
+    val downloadedVersions by viewModel.downloadedVersions.collectAsStateWithLifecycle(emptyList())
 
     val list by remember {
         derivedStateOf {
-            (viewModel.downloadedVersions + availableVersions.keys)
+            (downloadedVersions + availableVersions.keys)
                 .distinct()
                 .sortedWith(
                     compareByDescending<String> {
-                        viewModel.downloadedVersions.contains(it)
-                    }.thenByDescending { viewModel.compatibleVersions[it] }
+                        downloadedVersions.contains(it)
+                    }.thenByDescending { compatibleVersions[it] }
                         .thenByDescending { it }
                 )
         }
@@ -97,10 +99,10 @@ fun AppDownloaderScreen(
                                 },
                                 headlineContent = { Text(version) },
                                 supportingContent =
-                                    if (viewModel.downloadedVersions.contains(version)) {
+                                    if (downloadedVersions.contains(version)) {
                                         { Text(stringResource(R.string.already_downloaded)) }
                                     } else null,
-                                trailingContent = viewModel.compatibleVersions[version]?.let {
+                                trailingContent = compatibleVersions[version]?.let {
                                     {
                                         Text(
                                             pluralStringResource(
