@@ -15,6 +15,8 @@
     <string name="general_description">General settings</string>
     <string name="updates">Updates</string>
     <string name="updates_description">Updates for ReVanced Manager</string>
+    <string name="opensource_licenses">Open source licenses</string>
+    <string name="opensource_licenses_description">View all the libraries used to make this application</string>
     <string name="downloads">Downloads</string>
     <string name="downloads_description">Manage downloaded content</string>
     <string name="import_export">Import &amp; export</string>
@@ -28,10 +30,26 @@
     <string name="dynamic_color_description">Adapt colors to the wallpaper</string>
     <string name="theme">Theme</string>
     <string name="theme_description">Choose between light or dark theme</string>
+    <string name="experimental_patches">Allow experimental patches</string>
+    <string name="experimental_patches_description">Allow patching incompatible patches with experimental versions, something may break</string>
     <string name="import_keystore">Import keystore</string>
     <string name="import_keystore_descripion">Import a custom keystore</string>
+    <string name="import_keystore_preset_default">Default</string>
+    <string name="import_keystore_preset_flutter">ReVanced Manager (Flutter)</string>
     <string name="export_keystore">Export keystore</string>
     <string name="export_keystore_description">Export the current keystore</string>
+    <string name="regenerate_keystore">Regenerate keystore</string>
+    <string name="regenerate_keystore_description">Generate a new keystore</string>
+    <string name="regenerate_keystore_success">The keystore has been successfully replaced</string>
+    <string name="patches_selection">Patches selection</string>
+    <string name="restore_patches_selection">Restore patches selections</string>
+    <string name="restore_patches_selection_description">Restore patches selection from a file</string>
+    <string name="restore_patches_selection_fail">Failed to restore patches selection: %s</string>
+    <string name="backup_patches_selection">Backup patches selections</string>
+    <string name="backup_patches_selection_description">Backup patches selection to a file</string>
+    <string name="backup_patches_selection_fail">Failed to backup patches selection: %s</string>
+    <string name="clear_patches_selection">Clear patches selection</string>
+    <string name="clear_patches_selection_description">Clear all patches selection</string>
     
     <string name="search_apps">Search apps…</string>
     <string name="loading_body">Loading…</string>
@@ -51,28 +69,52 @@
     <string name="light">Light</string>
     <string name="dark">Dark</string>
     <string name="appearance">Appearance</string>
+    <string name="patching">Patching</string>
     <string name="signing">Signing</string>
     <string name="storage">Storage</string>
     <string name="tab_apps">Apps</string>
     <string name="tab_sources">Sources</string>
-    <string name="no_sources_set">No sources set</string>
+    <string name="reload_sources">Reload all sources</string>
+    <string name="source_download_fail">Failed to download patch bundle: %s</string>
+    <string name="source_replace_fail">Failed to load updated patch bundle: %s</string>
+    <string name="source_replace_integrations_fail">Failed to update integrations: %s</string>
     <string name="no_patched_apps_found">No patched apps found</string>
     <string name="unsupported_app">Unsupported app</string>
     <string name="unsupported_patches">Unsupported patches</string>
-    <string name="app_not_supported">Some of the patches do not support this app version (%s). The patches only support the following versions: %s.</string>
+    <string name="universal_patches">Universal patches</string>
+    <string name="supported">Supported</string>
+    <string name="universal">Universal</string>
+    <string name="unsupported">Unsupported</string>
+    <string name="app_not_supported">Some of the patches do not support this app version (%1$s). The patches only support the following versions: %2$s.</string>
+
+    <string name="select_file">Select file</string>
 
     <string name="installer">Installer</string>
     <string name="install_app">Install</string>
+    <string name="install_app_success">App installed</string>
+    <string name="install_app_fail">Failed to install app: %s</string>
+    <string name="open_app">Open</string>
     <string name="export_app">Export</string>
     <string name="export_app_success">Apk exported</string>
     <string name="sign_fail">Failed to sign Apk: %s</string>
 
     <string name="patcher_step_group_prepare">Preparation</string>
+    <string name="patcher_step_load_patches">Load patches</string>
     <string name="patcher_step_unpack">Unpack Apk</string>
     <string name="patcher_step_integrations">Merge Integrations</string>
     <string name="patcher_step_group_patching">Patching</string>
     <string name="patcher_step_group_saving">Saving</string>
     <string name="patcher_step_write_patched">Write patched Apk</string>
+    <string name="patcher_notification_message">Patching in progress…</string>
+
+    <string name="step_completed">completed</string>
+    <string name="step_failed">failed</string>
+    <string name="step_running">running</string>
+
+    <string name="expand_content">expand</string>
+    <string name="collapse_content">collapse</string>
+
+    <string name="more">More</string>
     <string name="donate">Donate</string>
     <string name="website">Website</string>
     <string name="github">GitHub</string>
@@ -90,6 +132,7 @@
     <string name="update_notifications">Update notifications</string>
     <string name="update_notifications_description">Dialog on app launch + badges</string>
     <string name="changelog">Changelog</string>
+    <string name="changelog_download_fail">Failed to download changelog: %s</string>
     <string name="changelog_description">Check out the latest changes in this update</string>
     <string name="battery_optimization_notification">Battery optimization must be turned off in order for ReVanced Manager to work correctly in the background. Tap here to turn off.</string>
     <string name="installing_manager_update">Installing update…</string>
