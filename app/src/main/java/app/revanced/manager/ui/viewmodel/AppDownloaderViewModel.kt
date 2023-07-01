@@ -91,10 +91,11 @@ class AppDownloaderViewModel(
         }
     }
 
+    lateinit var onComplete: (AppInfo) -> Unit
+
     fun downloadApp(
         version: String,
-        link: String,
-        onComplete: (AppInfo) -> Unit
+        link: String
     ) {
         isDownloading = true
 

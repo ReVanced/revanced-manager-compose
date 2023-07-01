@@ -18,6 +18,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -40,6 +41,10 @@ fun AppDownloaderScreen(
     onApkClick: (AppInfo) -> Unit,
     viewModel: AppDownloaderViewModel
 ) {
+    SideEffect {
+        viewModel.onComplete = onApkClick
+    }
+
     val downloadProgress by viewModel.appDownloader.downloadProgress.collectAsStateWithLifecycle()
     val compatibleVersions by viewModel.compatibleVersions.collectAsStateWithLifecycle(emptyMap())
     val availableVersions by viewModel.appDownloader.availableApps.collectAsStateWithLifecycle()
@@ -93,8 +98,7 @@ fun AppDownloaderScreen(
                                 modifier = Modifier.clickable {
                                     viewModel.downloadApp(
                                         version,
-                                        availableVersions[version].orEmpty(),
-                                        onComplete = onApkClick
+                                        availableVersions[version].orEmpty()
                                     )
                                 },
                                 headlineContent = { Text(version) },
