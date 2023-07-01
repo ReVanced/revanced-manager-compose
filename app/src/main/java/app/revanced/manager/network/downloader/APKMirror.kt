@@ -1,24 +1,13 @@
 package app.revanced.manager.network.downloader
 
 import android.os.Build.SUPPORTED_ABIS
-import app.revanced.manager.network.dto.APKMirrorResponse
-import app.revanced.manager.network.utils.APIResponse
-import app.revanced.manager.network.utils.getOrThrow
 import io.ktor.client.plugins.onDownload
-import io.ktor.client.request.get
-import io.ktor.client.request.headers
 import io.ktor.client.request.parameter
-import io.ktor.client.request.setBody
 import io.ktor.client.request.url
-import io.ktor.client.statement.bodyAsText
-import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpMethod
-import io.ktor.http.contentType
-import it.skrape.core.htmlDocument
 import it.skrape.selects.html5.a
 import it.skrape.selects.html5.div
 import it.skrape.selects.html5.form
+import it.skrape.selects.html5.h5
 import it.skrape.selects.html5.input
 import it.skrape.selects.html5.p
 import it.skrape.selects.html5.span
@@ -34,76 +23,50 @@ class APKMirror : AppDownloader() {
     private val _downloadProgress: MutableStateFlow<Pair<Float, Float>?> = MutableStateFlow(null)
     override val downloadProgress = _downloadProgress.asStateFlow()
 
-    private suspend fun getAppInfo(packages: List<String>): APIResponse<APKMirrorResponse> =
-        client.request {
-            url("$apkMirror/wp-json/apkm/v1/app_exists/")
-            method = HttpMethod.Post
-            headers {
-                append(HttpHeaders.Accept, ContentType.Application.Json.toString())
-                append(HttpHeaders.Authorization, authorization)
-            }
-            contentType(ContentType.Application.Json)
-            setBody(mapOf("pnames" to packages))
-        }
-
-    override suspend fun getAvailableVersionList(apk: String, versionFilter: Set<String>) {
-        _availableApps.emit(emptyMap())
-        val appInfo = getAppInfo(listOf(apk)).getOrThrow()
-
-        if (appInfo.data.first().exists) {
-
-            // APKMirror gives the wear os version of youtube music for some reason
-            val appCategory = if (apk == "com.google.android.apps.youtube.music") "youtube-music" else appInfo.data.first().app!!.link.split("/")[3]
-            val versions = mutableMapOf<String, String>()
-            var page = 1
-
-            while (
-                if (versionFilter.isNotEmpty())
-                    versions.filterKeys { it in versionFilter }.size < versionFilter.size && page <= 7
-                else
-                    page <= 1
-            ) {
-                htmlDocument(
-                    html = client.http.get {
-                        url("$apkMirror/uploads/page/$page/")
-                        parameter("appcategory", appCategory)
-                    }.bodyAsText()
-                ) {
+    private suspend fun getAppLink(packageName: String): String {
+        val searchResults = client.getHtml { url("$apkMirror/?post_type=app_release&searchtype=app&s=$packageName") }
+            .div {
+                withId = "content"
+                findFirst {
                     div {
-                        withClass = "widget_appmanager_recentpostswidget"
-                        findFirst {
-                            div {
-                                withClass = "listWidget"
-                                findFirst {
-                                    children.forEach { element ->
-                                        if (element.className.isEmpty()) {
+                        withClass = "listWidget"
+                        findAll {
 
-                                            val version = element.div {
-                                                withClass = "infoSlide"
+                            find {
+                                it.children.first().text.contains(packageName)
+                            }!!.children.mapNotNull {
+                                if (it.classNames.isEmpty()) {
+                                    it.h5 {
+                                        withClass = "appRowTitle"
+                                        findFirst {
+                                            a {
                                                 findFirst {
-                                                    p {
-                                                        findFirst {
-                                                            span {
-                                                                withClass = "infoSlide-value"
-                                                                findFirst {
-                                                                    text
-                                                                }
-                                                            }
-                                                        }
-                                                    }
+                                                    attribute("href")
                                                 }
                                             }
+                                        }
+                                    }
+                                } else null
+                            }
 
-                                            val link = element.findFirst {
-                                                a {
-                                                    withClass = "downloadLink"
-                                                    findFirst {
-                                                        attribute("href")
-                                                    }
-                                                }
-                                            }
+                        }
+                    }
+                }
+            }
 
-                                            versions[version] = link
+        return searchResults.find { url ->
+            client.getHtml { url(apkMirror + url) }
+                .div {
+                    withId = "primary"
+                    findFirst {
+                        div {
+                            withClass = "tab-buttons"
+                            findFirst {
+                                div {
+                                    withClass = "tab-button-positioning"
+                                    findFirst {
+                                        children.any {
+                                            it.attribute("href") == "https://play.google.com/store/apps/details?id=$packageName"
                                         }
                                     }
                                 }
@@ -111,22 +74,84 @@ class APKMirror : AppDownloader() {
                         }
                     }
                 }
+        } ?: throw Exception("App isn't available for download")
+    }
 
-                _availableApps.emit(
-                    versions
-                        .let {
-                            if (versionFilter.isEmpty())
-                                it
-                            else
-                                it.filterKeys { version -> versionFilter.contains(version) }
+    override suspend fun getAvailableVersionList(packageName: String, versionFilter: Set<String>) {
+        _availableApps.emit(emptyMap())
+
+        // Vanced music uses the same package name so we have to hardcode...
+        val appCategory = if (packageName == "com.google.android.apps.youtube.music")
+            "youtube-music"
+        else
+            getAppLink(packageName).split("/")[3]
+
+        val versions = HashMap<String, String>()
+        var page = 1
+
+        while (
+            if (versionFilter.isNotEmpty())
+                versions.filterKeys { it in versionFilter }.size < versionFilter.size && page <= 7
+            else
+                page <= 1
+        ) {
+            client.getHtml {
+                url("$apkMirror/uploads/page/$page/")
+                parameter("appcategory", appCategory)
+            }.div {
+                withClass = "widget_appmanager_recentpostswidget"
+                findFirst {
+                    div {
+                        withClass = "listWidget"
+                        findFirst {
+                            children.forEach { element ->
+                                if (element.className.isEmpty()) {
+
+                                    val version = element.div {
+                                        withClass = "infoSlide"
+                                        findFirst {
+                                            p {
+                                                findFirst {
+                                                    span {
+                                                        withClass = "infoSlide-value"
+                                                        findFirst {
+                                                            text
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    val link = element.findFirst {
+                                        a {
+                                            withClass = "downloadLink"
+                                            findFirst {
+                                                attribute("href")
+                                            }
+                                        }
+                                    }
+
+                                    versions[version] = link
+                                }
+                            }
                         }
-                        .toMap()
-                )
-
-                page += 1
+                    }
+                }
             }
-        } else {
-            throw Exception("App isn't available for download")
+
+            _availableApps.emit(
+                versions
+                    .let {
+                        if (versionFilter.isEmpty())
+                            it
+                        else
+                            it.filterKeys { version -> versionFilter.contains(version) }
+                    }
+                    .toMap()
+            )
+
+            page += 1
         }
     }
 
@@ -141,60 +166,52 @@ class APKMirror : AppDownloader() {
 
         var isSplit = false
 
-        val appPage = htmlDocument(
-            html = client.http.get { url(apkMirror + link) }.bodyAsText()
-        ) {
-            div {
+        val appPage = client.getHtml { url(apkMirror + link) }
+            .div {
                 withClass = "variants-table"
                 findFirst { // list of variants
 
                     val supportedArches = SUPPORTED_ABIS.toMutableList().apply {
                         addAll(
-                            if (preferUniversal) 0 else 1,
+                            index = if (preferUniversal) 0 else 1,
                             listOf("universal", "noarch")
                         )
                     }
 
                     val variants = children.drop(1)
-                        .groupBy { if (it.text.contains("APK")) "full" else "split"}.let {
+                        .groupBy { if (it.text.contains("APK")) "full" else "split" }.let {
 
-                        if (preferSplit)
-                            it["split"]?.also { isSplit = true }
-                                ?: it["full"]
-                        else
-                            it["full"]
-                                ?: it["split"].also { isSplit = true }
-                    }
+                            if (preferSplit)
+                                it["split"]?.also { isSplit = true }
+                                    ?: it["full"]
+                            else
+                                it["full"]
+                                    ?: it["split"].also { isSplit = true }
+                        } ?: throw Exception("No variants, this should never happen")
 
                     if (isSplit) TODO("\nSplit apks are not supported yet")
 
                     supportedArches.firstNotNullOfOrNull { arch ->
-                        variants?.find { it.text.contains(arch) }
+                        variants.find { it.text.contains(arch) }
                     }?.a {
                         findFirst {
                             attribute("href")
                         }
-                    }
+                    } ?: throw Exception("No compatible variant found")
 
                 }
             }
-        }
 
-        val downloadPage = htmlDocument(
-            html = client.http.get { url(apkMirror + appPage) }.bodyAsText()
-        ) {
-            a {
+        val downloadPage = client.getHtml { url(apkMirror + appPage) }
+            .a {
                 withClass = "downloadButton"
                 findFirst {
                     attribute("href")
                 }
             }
-        }
 
-        val downloadLink = htmlDocument(
-            html = client.http.get { url(apkMirror + downloadPage) }.bodyAsText()
-        ) {
-            form {
+        val downloadLink = client.getHtml { url(apkMirror + downloadPage) }
+            .form {
                 withId = "filedownload"
                 findFirst {
                     val apkLink = attribute("action")
@@ -213,7 +230,6 @@ class APKMirror : AppDownloader() {
                     "$apkLink?id=$id&key=$key"
                 }
             }
-        }
 
         val saveLocation = if (isSplit)
             savePath.resolve(version).also { it.mkdirs() }
@@ -252,8 +268,6 @@ class APKMirror : AppDownloader() {
 
     companion object {
         const val apkMirror = "https://www.apkmirror.com"
-
-        const val authorization = "Basic YXBpLXRvb2xib3gtZm9yLWdvb2dsZS1wbGF5OkNiVVcgQVVMZyBNRVJXIHU4M3IgS0s0SCBEbmJL"
     }
 
 }

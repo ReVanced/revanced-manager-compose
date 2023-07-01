@@ -19,10 +19,10 @@ sealed class AppDownloader : KoinComponent {
     /**
      * Loads all available apps to [availableApps].
      *
-     * @param apk The package name of the app.
+     * @param packageName The package name of the app.
      * @param versionFilter a set of versions to filter.
      */
-    abstract suspend fun getAvailableVersionList(apk: String, versionFilter: Set<String>)
+    abstract suspend fun getAvailableVersionList(packageName: String, versionFilter: Set<String>)
 
     /**
      * Downloads the specific app version
