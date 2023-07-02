@@ -38,7 +38,6 @@ class DownloadsViewModel(
             downloadedAppRepository.delete(selection)
 
             withContext(Dispatchers.Main) {
-                //downloadedApps.removeAll(selection)
                 selection.clear()
             }
         }
