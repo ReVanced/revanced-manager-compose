@@ -1,6 +1,7 @@
 package app.revanced.manager.network.downloader
 
 import android.os.Build.SUPPORTED_ABIS
+import app.revanced.manager.network.service.HttpService
 import io.ktor.client.plugins.onDownload
 import io.ktor.client.request.parameter
 import io.ktor.client.request.url
@@ -15,7 +16,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.io.File
 
-class APKMirror : AppDownloader() {
+class APKMirror(
+    private val client: HttpService
+) : AppDownloader {
 
     private val _availableApps: MutableStateFlow<Map<String, String>> = MutableStateFlow(emptyMap())
     override val availableApps = _availableApps.asStateFlow()

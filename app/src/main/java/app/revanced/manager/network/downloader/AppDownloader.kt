@@ -1,20 +1,16 @@
 package app.revanced.manager.network.downloader
 
-import app.revanced.manager.network.service.HttpService
 import kotlinx.coroutines.flow.StateFlow
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.get
 import java.io.File
 
-sealed class AppDownloader : KoinComponent {
-    protected val client: HttpService = get()
+interface AppDownloader {
 
     /**
      * Contains a list of versions with their download links.
      */
-    abstract val availableApps: StateFlow<Map<String, String>>
+    val availableApps: StateFlow<Map<String, String>>
 
-    abstract val downloadProgress: StateFlow<Pair<Float, Float>?>
+    val downloadProgress: StateFlow<Pair<Float, Float>?>
 
     /**
      * Loads all available apps to [availableApps].
@@ -22,7 +18,7 @@ sealed class AppDownloader : KoinComponent {
      * @param packageName The package name of the app.
      * @param versionFilter A set of versions to filter.
      */
-    abstract suspend fun getAvailableVersionList(packageName: String, versionFilter: Set<String>)
+    suspend fun getAvailableVersionList(packageName: String, versionFilter: Set<String>)
 
     /**
      * Downloads the specific app version.
@@ -33,7 +29,7 @@ sealed class AppDownloader : KoinComponent {
      * @param preferUniversal Whether it should prefer an universal or an arch-specific apk.
      * @return the downloaded apk or the folder containing all split apks.
      */
-    abstract suspend fun downloadApp(
+    suspend fun downloadApp(
         link: String,
         version: String,
         savePath: File,
