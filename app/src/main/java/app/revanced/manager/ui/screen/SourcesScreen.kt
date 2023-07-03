@@ -9,27 +9,45 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import app.revanced.manager.R
+import app.revanced.manager.ui.component.sources.ImportBundleDialog
 import app.revanced.manager.ui.component.sources.NewSourceDialog
 import app.revanced.manager.ui.component.sources.SourceItem
 import app.revanced.manager.ui.viewmodel.SourcesViewModel
 import org.koin.androidx.compose.getViewModel
 
 @Composable
-fun SourcesScreen(vm: SourcesViewModel = getViewModel()) {
+fun SourcesScreen(
+    vm: SourcesViewModel = getViewModel(),
+) {
     var showNewSourceDialog by rememberSaveable { mutableStateOf(false) }
     val sources by vm.sources.collectAsStateWithLifecycle(initialValue = emptyList())
 
-    if (showNewSourceDialog) NewSourceDialog(
-        onDismissRequest = { showNewSourceDialog = false },
-        onLocalSubmit = { name, patches, integrations ->
-            showNewSourceDialog = false
-            vm.addLocal(name, patches, integrations)
-        },
-        onRemoteSubmit = { name, url ->
-            showNewSourceDialog = false
-            vm.addRemote(name, url)
-        }
-    )
+    if (showNewSourceDialog)  {
+        /**
+        NewSourceDialog(
+            onDismissRequest = { showNewSourceDialog = false },
+            onLocalSubmit = { name, patches, integrations ->
+                showNewSourceDialog = false
+                vm.addLocal(name, patches, integrations)
+            },
+            onRemoteSubmit = { name, url ->
+                showNewSourceDialog = false
+                vm.addRemote(name, url)
+            }
+        )*/
+        ImportBundleDialog(
+            onDismissRequest = { showNewSourceDialog = false },
+            onLocalSubmit = { name, patches, integrations ->
+                showNewSourceDialog = false
+                vm.addLocal(name, patches, integrations)
+            },
+            onRemoteSubmit = { name, url ->
+                showNewSourceDialog = false
+                vm.addRemote(name, url)
+            }
+        )
+    }
+
 
     Column(
         modifier = Modifier

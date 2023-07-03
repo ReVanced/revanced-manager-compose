@@ -35,7 +35,7 @@ enum class DashboardPage(
 @Composable
 fun DashboardScreen(
     onAppSelectorClick: () -> Unit,
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
 ) {
     val pages: Array<DashboardPage> = DashboardPage.values()
 

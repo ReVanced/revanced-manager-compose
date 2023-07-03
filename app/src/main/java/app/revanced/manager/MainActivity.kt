@@ -69,7 +69,7 @@ class MainActivity : ComponentActivity() {
                     when (destination) {
                         is Destination.Dashboard -> DashboardScreen(
                             onSettingsClick = { navController.navigate(Destination.Settings) },
-                            onAppSelectorClick = { navController.navigate(Destination.AppSelector) }
+                            onAppSelectorClick = { navController.navigate(Destination.AppSelector) },
                         )
 
                         is Destination.Settings -> SettingsScreen(
