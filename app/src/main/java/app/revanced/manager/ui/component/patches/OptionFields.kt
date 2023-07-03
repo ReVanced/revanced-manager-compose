@@ -35,7 +35,7 @@ private val StringField: OptionField = { value, setValue ->
     val current = value as? String
 
     if (showFileDialog) {
-        UnixFileSelectorDialog(
+        PathSelectorDialog(
             root = fs.externalFilesDir()
         ) {
             showFileDialog = false

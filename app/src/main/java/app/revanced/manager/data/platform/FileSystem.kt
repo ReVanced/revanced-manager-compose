@@ -19,7 +19,7 @@ class FileSystem(private val app: Application) {
     private val storagePermissionName = if (usesManagePermission()) Manifest.permission.MANAGE_EXTERNAL_STORAGE else Manifest.permission.READ_EXTERNAL_STORAGE
 
     fun permissionContract(): Pair<ActivityResultContract<String, Boolean>, String> {
-        val contract = if (usesManagePermission()) RequestManageStorageContract else ActivityResultContracts.RequestPermission()
+        val contract = if (usesManagePermission()) RequestManageStorageContract() else ActivityResultContracts.RequestPermission()
         return contract to storagePermissionName
     }
 

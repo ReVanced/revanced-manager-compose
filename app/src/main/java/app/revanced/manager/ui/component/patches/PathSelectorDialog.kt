@@ -35,7 +35,7 @@ import kotlin.io.path.name
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UnixFileSelectorDialog(root: Path, onSelect: (Path?) -> Unit) {
+fun PathSelectorDialog(root: Path, onSelect: (Path?) -> Unit) {
     var currentDirectory by rememberSaveable(root, stateSaver = PathSaver) { mutableStateOf(root) }
     val notAtRootDir = remember(currentDirectory) {
         currentDirectory != root
