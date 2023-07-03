@@ -71,7 +71,11 @@ fun BundleTopBar(
     val containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.0.dp)
 
     TopAppBar(
-        title = { Text(title) },
+        title = {
+            Text(
+                text = title,
+            )
+        },
         scrollBehavior = scrollBehavior,
         navigationIcon = {
             if (onBackClick != null) {
