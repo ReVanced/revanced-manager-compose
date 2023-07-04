@@ -10,7 +10,7 @@ import app.revanced.manager.util.SnapshotStateSet
 import app.revanced.manager.util.toMutableStateSet
 
 /**
- * Create a saver for [SnapshotStateList]s.
+ * Create a [Saver] for [SnapshotStateList]s.
  */
 fun <T> snapshotStateListSaver() = Saver<SnapshotStateList<T>, List<T>>(
     save = {
@@ -22,7 +22,7 @@ fun <T> snapshotStateListSaver() = Saver<SnapshotStateList<T>, List<T>>(
 )
 
 /**
- * Create a saver for [SnapshotStateSet]s.
+ * Create a [Saver] for [SnapshotStateSet]s.
  */
 fun <T> snapshotStateSetSaver() = Saver<SnapshotStateSet<T>, Set<T>>(
     save = {
@@ -34,7 +34,7 @@ fun <T> snapshotStateSetSaver() = Saver<SnapshotStateSet<T>, Set<T>>(
 )
 
 /**
- * Create a saver for [SnapshotStateMap]s.
+ * Create a [Saver] for [SnapshotStateMap]s.
  */
 fun <K, V> snapshotStateMapSaver() = Saver<SnapshotStateMap<K, V>, Map<K, V>>(
     save = {
@@ -48,8 +48,10 @@ fun <K, V> snapshotStateMapSaver() = Saver<SnapshotStateMap<K, V>, Map<K, V>>(
 )
 
 /**
- * Create a saver for [SnapshotStateMap]s with a custom saver used for the values.
- * Null values will not be saved by this saver.
+ * Create a saver for [SnapshotStateMap]s with a custom [Saver] used for the values.
+ * Null values will not be saved by this [Saver].
+ *
+ * @param valueSaver The [Saver] used for the values of the [Map].
  */
 fun <K, Original, Saveable : Any> snapshotStateMapSaver(
     valueSaver: Saver<Original, Saveable>
