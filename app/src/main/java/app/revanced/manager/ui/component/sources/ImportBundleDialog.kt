@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.ArrowRight
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
@@ -46,8 +47,8 @@ fun ImportBundleDialog(
     var name by rememberSaveable { mutableStateOf("") }
     var remoteUrl by rememberSaveable { mutableStateOf("") }
     var checked by remember { mutableStateOf(true) }
-    var isLocal by rememberSaveable { mutableStateOf(false) }
-    var patchBundle by rememberSaveable { mutableStateOf<Uri?>(null) }
+    val isLocal by rememberSaveable { mutableStateOf(false) }
+    val patchBundle by rememberSaveable { mutableStateOf<Uri?>(null) }
 
     val inputsAreValid by remember {
         derivedStateOf {
@@ -70,6 +71,12 @@ fun ImportBundleDialog(
                 BundleTopBar(
                     title = stringResource(R.string.import_bundle),
                     onBackClick = onDismissRequest,
+                    onBackIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = null
+                        )
+                    },
                     actions = {
                         Text(
                             text = stringResource(R.string.import_),
