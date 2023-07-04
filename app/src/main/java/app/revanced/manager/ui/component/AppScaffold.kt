@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -67,6 +66,7 @@ fun BundleTopBar(
     onBackClick: (() -> Unit)? = null,
     actions: @Composable (RowScope.() -> Unit) = {},
     scrollBehavior: TopAppBarScrollBehavior? = null,
+    onBackIcon: @Composable () -> Unit,
 ) {
     val containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.0.dp)
 
@@ -80,10 +80,7 @@ fun BundleTopBar(
         navigationIcon = {
             if (onBackClick != null) {
                 IconButton(onClick = onBackClick) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = null
-                    )
+                    onBackIcon()
                 }
             }
         },
