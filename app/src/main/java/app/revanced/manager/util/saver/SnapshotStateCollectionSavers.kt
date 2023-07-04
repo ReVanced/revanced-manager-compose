@@ -9,6 +9,9 @@ import androidx.compose.runtime.toMutableStateMap
 import app.revanced.manager.util.SnapshotStateSet
 import app.revanced.manager.util.toMutableStateSet
 
+/**
+ * Create a saver for [SnapshotStateList]s.
+ */
 fun <T> snapshotStateListSaver() = Saver<SnapshotStateList<T>, List<T>>(
     save = {
         it.toMutableList()
@@ -18,6 +21,21 @@ fun <T> snapshotStateListSaver() = Saver<SnapshotStateList<T>, List<T>>(
     }
 )
 
+/**
+ * Create a saver for [SnapshotStateSet]s.
+ */
+fun <T> snapshotStateSetSaver() = Saver<SnapshotStateSet<T>, Set<T>>(
+    save = {
+        it.toMutableSet()
+    },
+    restore = {
+        it.toMutableStateSet()
+    }
+)
+
+/**
+ * Create a saver for [SnapshotStateMap]s.
+ */
 fun <K, V> snapshotStateMapSaver() = Saver<SnapshotStateMap<K, V>, Map<K, V>>(
     save = {
         it.toMutableMap()
@@ -30,7 +48,7 @@ fun <K, V> snapshotStateMapSaver() = Saver<SnapshotStateMap<K, V>, Map<K, V>>(
 )
 
 /**
- * Create a saver that can save [SnapshotStateMap]s.
+ * Create a saver for [SnapshotStateMap]s with a custom saver used for the values.
  * Null values will not be saved by this saver.
  */
 fun <K, Original, Saveable : Any> snapshotStateMapSaver(
@@ -51,14 +69,5 @@ fun <K, Original, Saveable : Any> snapshotStateMapSaver(
         it.mapNotNull { (key, value) ->
             valueSaver.restore(value)?.let { restored -> key to restored }
         }.toMutableStateMap()
-    }
-)
-
-fun <T> snapshotStateSetSaver() = Saver<SnapshotStateSet<T>, Set<T>>(
-    save = {
-        it.toMutableSet()
-    },
-    restore = {
-        it.toMutableStateSet()
     }
 )
