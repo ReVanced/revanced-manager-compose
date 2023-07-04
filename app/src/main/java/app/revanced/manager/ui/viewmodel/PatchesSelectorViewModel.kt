@@ -195,11 +195,11 @@ class PatchesSelectorViewModel(
 }
 
 /**
- * [Options] using observable types.
+ * [Options] using observable collection types.
  */
 private typealias SnapshotStateOptions = SnapshotStateMap<Int, SnapshotStateMap<String, SnapshotStateMap<String, Any?>>>
 
 /**
- * [PatchesSelection] using observable types.
+ * [PatchesSelection] using observable collection types.
  */
 private typealias SnapshotStatePatchesSelection = SnapshotStateMap<Int, SnapshotStateSet<String>>
