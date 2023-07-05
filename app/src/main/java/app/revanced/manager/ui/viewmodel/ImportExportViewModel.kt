@@ -40,13 +40,15 @@ class ImportExportViewModel(
     var selectionAction by mutableStateOf<SelectionAction?>(null)
         private set
 
-    fun importKeystore(content: Uri, cn: String, pass: String) =
+    fun importKeystore(content: Uri, cn: String, pass: String) = viewModelScope.launch {
         keystoreManager.import(cn, pass, contentResolver.openInputStream(content)!!)
+    }
 
     fun exportKeystore(target: Uri) =
         keystoreManager.export(contentResolver.openOutputStream(target)!!)
 
-    fun regenerateKeystore() = keystoreManager.regenerate().also {
+    fun regenerateKeystore() = viewModelScope.launch {
+        keystoreManager.regenerate()
         app.toast(app.getString(R.string.regenerate_keystore_success))
     }
 

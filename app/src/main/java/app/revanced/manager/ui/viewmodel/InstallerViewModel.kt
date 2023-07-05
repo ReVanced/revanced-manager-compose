@@ -15,9 +15,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
-import androidx.work.*
-import app.revanced.manager.domain.manager.KeystoreManager
+import androidx.lifecycle.viewModelScope
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
 import app.revanced.manager.R
+import app.revanced.manager.domain.manager.KeystoreManager
 import app.revanced.manager.domain.worker.WorkerRepository
 import app.revanced.manager.patcher.worker.PatcherProgressManager
 import app.revanced.manager.patcher.worker.PatcherWorker
@@ -30,8 +32,11 @@ import app.revanced.manager.util.tag
 import app.revanced.manager.util.toast
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.io.File
@@ -131,7 +136,7 @@ class InstallerViewModel(input: Destination.Installer) : ViewModel(), KoinCompon
         signedFile.delete()
     }
 
-    private fun signApk(): Boolean {
+    private suspend fun signApk(): Boolean {
         if (!hasSigned) {
             try {
                 keystoreManager.sign(outputFile, signedFile)
@@ -146,21 +151,25 @@ class InstallerViewModel(input: Destination.Installer) : ViewModel(), KoinCompon
     }
 
     fun export(uri: Uri?) = uri?.let {
-        if (signApk()) {
-            Files.copy(signedFile.toPath(), app.contentResolver.openOutputStream(it))
-            app.toast(app.getString(R.string.export_app_success))
+        viewModelScope.launch {
+            if (signApk()) {
+                withContext(Dispatchers.IO) {
+                    Files.copy(signedFile.toPath(), app.contentResolver.openOutputStream(it))
+                }
+                app.toast(app.getString(R.string.export_app_success))
+            }
         }
     }
 
-    fun installOrOpen() {
+    fun installOrOpen() = viewModelScope.launch {
         installedPackageName?.let {
             pm.launch(it)
-            return
+            return@launch
         }
 
         isInstalling = true
         try {
-            if (!signApk()) return
+            if (!signApk()) return@launch
             pm.installApp(listOf(signedFile))
         } finally {
             isInstalling = false
