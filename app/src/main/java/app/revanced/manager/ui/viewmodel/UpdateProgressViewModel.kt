@@ -7,10 +7,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.revanced.manager.R
 import app.revanced.manager.network.api.ManagerAPI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import app.revanced.manager.util.PM
+import app.revanced.manager.util.uiSafe
+import kotlinx.coroutines.withContext
 import java.io.File
 
 class UpdateProgressViewModel(
@@ -27,9 +30,13 @@ class UpdateProgressViewModel(
         private set
 
     private val location = File.createTempFile("updater", ".apk", app.cacheDir)
-    private val job = viewModelScope.launch(Dispatchers.IO) {
-        managerAPI.downloadManager(location)
-        finished = true
+    private val job = viewModelScope.launch {
+        uiSafe(app, R.string.download_manager_failed, "Failed to download manager") {
+            withContext(Dispatchers.IO) {
+                managerAPI.downloadManager(location)
+            }
+            finished = true
+        }
     }
 
     fun installUpdate() {
