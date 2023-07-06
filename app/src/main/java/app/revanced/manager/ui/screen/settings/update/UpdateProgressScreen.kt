@@ -89,9 +89,7 @@ fun UpdateProgressScreen(
                 ) {
                     Text(text = stringResource(R.string.cancel))
                 }
-                Button(onClick = {
-                    vm.installUpdate()
-                }) {
+                Button(onClick = vm::installUpdate, enabled = vm.finished) {
                     Text(text = stringResource(R.string.update))
                 }
             }
