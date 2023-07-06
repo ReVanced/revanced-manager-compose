@@ -22,7 +22,8 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import java.util.Locale
 
-typealias PatchesSelection = Map<Int, List<String>>
+typealias PatchesSelection = Map<Int, Set<String>>
+typealias Options = Map<Int, Map<String, Map<String, Any?>>>
 
 fun Context.openUrl(url: String) {
     startActivity(Intent(Intent.ACTION_VIEW, url.toUri()).apply {
