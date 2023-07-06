@@ -11,6 +11,7 @@ import app.revanced.manager.network.api.ManagerAPI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import app.revanced.manager.util.PM
+import java.io.File
 
 class UpdateProgressViewModel(
     app: Application,
@@ -25,12 +26,10 @@ class UpdateProgressViewModel(
     var finished by mutableStateOf(false)
         private set
 
-    private val location = app.cacheDir.resolve("revanced-manager.apk")
-    init {
-        viewModelScope.launch(Dispatchers.IO) {
-            managerAPI.downloadManager(location)
-            finished = true
-        }
+    private val location = File.createTempFile("updater", ".apk", app.cacheDir)
+    private val job = viewModelScope.launch(Dispatchers.IO) {
+        managerAPI.downloadManager(location)
+        finished = true
     }
 
     fun installUpdate() {
@@ -40,6 +39,7 @@ class UpdateProgressViewModel(
     override fun onCleared() {
         super.onCleared()
 
+        job.cancel()
         location.delete()
     }
 }
