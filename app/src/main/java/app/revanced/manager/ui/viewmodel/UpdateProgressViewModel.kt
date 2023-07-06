@@ -1,0 +1,45 @@
+package app.revanced.manager.ui.viewmodel
+
+import android.app.Application
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import app.revanced.manager.network.api.ManagerAPI
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import app.revanced.manager.util.PM
+
+class UpdateProgressViewModel(
+    app: Application,
+    private val managerAPI: ManagerAPI,
+    private val pm: PM
+) : ViewModel() {
+
+    val downloadProgress by derivedStateOf { managerAPI.downloadProgress?.times(100) ?: 0f }
+    val downloadedSize by derivedStateOf { managerAPI.downloadedSize ?: 0L }
+    val totalSize by derivedStateOf { managerAPI.totalSize ?: 0L }
+    val isInstalling by derivedStateOf { downloadProgress >= 100 }
+    var finished by mutableStateOf(false)
+        private set
+
+    private val location = app.cacheDir.resolve("revanced-manager.apk")
+    init {
+        viewModelScope.launch(Dispatchers.IO) {
+            managerAPI.downloadManager(location)
+            finished = true
+        }
+    }
+
+    fun installUpdate() {
+        pm.installApp(listOf(location))
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+
+        location.delete()
+    }
+}
