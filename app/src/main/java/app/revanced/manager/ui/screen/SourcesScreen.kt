@@ -1,16 +1,23 @@
 package app.revanced.manager.ui.screen
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import app.revanced.manager.R
 import app.revanced.manager.ui.component.sources.ImportBundleDialog
-import app.revanced.manager.ui.component.sources.NewSourceDialog
 import app.revanced.manager.ui.component.sources.SourceItem
 import app.revanced.manager.ui.viewmodel.SourcesViewModel
 import org.koin.androidx.compose.getViewModel
@@ -22,32 +29,26 @@ fun SourcesScreen(
     var showNewSourceDialog by rememberSaveable { mutableStateOf(false) }
     val sources by vm.sources.collectAsStateWithLifecycle(initialValue = emptyList())
 
-    if (showNewSourceDialog)  {
-        /**
-        NewSourceDialog(
-            onDismissRequest = { showNewSourceDialog = false },
-            onLocalSubmit = { name, patches, integrations ->
-                showNewSourceDialog = false
-                vm.addLocal(name, patches, integrations)
-            },
-            onRemoteSubmit = { name, url ->
-                showNewSourceDialog = false
-                vm.addRemote(name, url)
-            }
-        )*/
+    if (showNewSourceDialog) {
         ImportBundleDialog(
             onDismissRequest = { showNewSourceDialog = false },
             onLocalSubmit = { name, patches, integrations ->
                 showNewSourceDialog = false
                 vm.addLocal(name, patches, integrations)
             },
+            onBackIcon = {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = null
+                )
+            },
+            topBarTitle = stringResource(R.string.import_bundle),
             onRemoteSubmit = { name, url ->
                 showNewSourceDialog = false
                 vm.addRemote(name, url)
-            }
+            },
         )
     }
-
 
     Column(
         modifier = Modifier
