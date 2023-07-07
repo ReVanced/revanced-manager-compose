@@ -4,6 +4,8 @@ import android.net.Uri
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -11,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.revanced.manager.R
@@ -21,18 +24,25 @@ import app.revanced.manager.ui.viewmodel.SourcesViewModel
 import app.revanced.manager.util.uiSafe
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import org.koin.androidx.compose.getViewModel
 import java.io.InputStream
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SourceItem(source: Source, onDelete: () -> Unit, coroutineScope: CoroutineScope) {
+fun SourceItem(
+    source: Source, onDelete: () -> Unit,
+    coroutineScope: CoroutineScope,
+    vm: SourcesViewModel = getViewModel(),
+) {
     val composableScope = rememberCoroutineScope()
     var sheetActive by rememberSaveable { mutableStateOf(false) }
+    var viewBundleDialogPage by remember { mutableStateOf(false) }
 
     val bundle by source.bundle.collectAsStateWithLifecycle()
     val patchCount = bundle.patches.size
     val padding = PaddingValues(16.dp, 0.dp)
 
+    /**
     if (sheetActive) {
         val modalSheetState = rememberModalBottomSheetState(
             confirmValueChange = { it != SheetValue.PartiallyExpanded },
@@ -72,6 +82,26 @@ fun SourceItem(source: Source, onDelete: () -> Unit, coroutineScope: CoroutineSc
             }
         }
     }
+    */
+
+    if(viewBundleDialogPage) {
+        BundleInformationDialog(
+            onDismissRequest = { viewBundleDialogPage = false },
+            onDeleteRequest = {
+                viewBundleDialogPage = false
+                vm.delete(source)
+            },
+            onBackIcon = {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = null
+                )
+            },
+            topBarTitle = stringResource(R.string.bundle_information),
+            sourceName = source.name,
+            patchCount = patchCount
+        )
+    }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -79,7 +109,8 @@ fun SourceItem(source: Source, onDelete: () -> Unit, coroutineScope: CoroutineSc
             .height(64.dp)
             .fillMaxWidth()
             .clickable {
-                sheetActive = true
+                //sheetActive = true
+                viewBundleDialogPage = true
             }
     ) {
         Text(

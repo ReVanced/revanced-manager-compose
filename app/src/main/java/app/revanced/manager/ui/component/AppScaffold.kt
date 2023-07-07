@@ -74,6 +74,7 @@ fun BundleTopBar(
         title = {
             Text(
                 text = title,
+                style = MaterialTheme.typography.titleLarge
             )
         },
         scrollBehavior = scrollBehavior,

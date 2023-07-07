@@ -12,6 +12,7 @@
     <string name="select_patches">Select patches</string>
     <string name="import_">Import</string>
     <string name="import_bundle">Import Bundle</string>
+    <string name="bundle_information">Bundle information</string>
 
     <string name="general">General</string>
     <string name="general_description">General settings</string>
