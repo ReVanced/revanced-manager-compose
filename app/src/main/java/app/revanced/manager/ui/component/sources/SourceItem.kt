@@ -42,48 +42,6 @@ fun SourceItem(
     val patchCount = bundle.patches.size
     val padding = PaddingValues(16.dp, 0.dp)
 
-    /**
-    if (sheetActive) {
-        val modalSheetState = rememberModalBottomSheetState(
-            confirmValueChange = { it != SheetValue.PartiallyExpanded },
-            skipPartiallyExpanded = true
-        )
-
-        ModalBottomSheet(
-            sheetState = modalSheetState,
-            onDismissRequest = { sheetActive = false }
-        ) {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-            ) {
-                Text(
-                    text = source.name,
-                    style = MaterialTheme.typography.titleLarge
-                )
-
-                when (source) {
-                    is RemoteSource -> RemoteSourceItem(source, coroutineScope)
-                    is LocalSource -> LocalSourceItem(source, coroutineScope)
-                }
-
-                Button(
-                    onClick = {
-                        composableScope.launch {
-                            modalSheetState.hide()
-                            sheetActive = false
-                            onDelete()
-                        }
-                    }
-                ) {
-                    Text("Delete this source")
-                }
-            }
-        }
-    }
-    */
-
     if(viewBundleDialogPage) {
         BundleInformationDialog(
             onDismissRequest = { viewBundleDialogPage = false },
@@ -97,8 +55,9 @@ fun SourceItem(
                     contentDescription = null
                 )
             },
+            patchInfoList = bundle.patches,
             topBarTitle = stringResource(R.string.bundle_information),
-            sourceName = source.name,
+            source = source,
             patchCount = patchCount
         )
     }
@@ -109,7 +68,6 @@ fun SourceItem(
             .height(64.dp)
             .fillMaxWidth()
             .clickable {
-                //sheetActive = true
                 viewBundleDialogPage = true
             }
     ) {

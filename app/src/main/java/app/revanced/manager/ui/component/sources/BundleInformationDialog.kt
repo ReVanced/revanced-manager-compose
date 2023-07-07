@@ -1,6 +1,5 @@
 package app.revanced.manager.ui.component.sources
 
-import android.net.Uri
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -23,7 +22,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -31,6 +29,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import app.revanced.manager.R
+import app.revanced.manager.domain.sources.Source
+import app.revanced.manager.patcher.patch.PatchBundle
+import app.revanced.manager.patcher.patch.PatchInfo
 import app.revanced.manager.ui.component.BundleTopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,19 +40,28 @@ fun BundleInformationDialog(
     onDismissRequest: () -> Unit,
     onDeleteRequest: () -> Unit,
     onBackIcon: @Composable () -> Unit,
+    patchInfoList: List<PatchInfo>,
     topBarTitle: String,
-    sourceName: String = "",
+    source: Source,
     remoteName: String = "",
     patchCount: Int = 0,
 ) {
-    var name by rememberSaveable { mutableStateOf(sourceName) }
-    var remoteUrl by rememberSaveable { mutableStateOf(remoteName) }
     var checked by remember { mutableStateOf(true) }
-    val isLocal by rememberSaveable { mutableStateOf(false) }
-    val patchBundle by rememberSaveable { mutableStateOf<Uri?>(null) }
+    var viewCurrentBundlePatches by remember { mutableStateOf(false) }
 
     val patchInfoText = if (patchCount == 0) "No Patches available to view"
     else "$patchCount Patches available, tap to view"
+
+    if(viewCurrentBundlePatches) {
+        BundlePatchesDialog(
+            onBackIcon = onBackIcon,
+            onDismissRequest = {
+                viewCurrentBundlePatches = false
+            },
+            topBarTitle = stringResource(R.string.bundle_patches),
+            patchInfoList = patchInfoList
+        )
+    }
 
     Dialog(
         onDismissRequest = onDismissRequest,
@@ -82,8 +92,7 @@ fun BundleInformationDialog(
                     }
                 )
             },
-
-            ) { paddingValues ->
+        ) { paddingValues ->
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -102,8 +111,8 @@ fun BundleInformationDialog(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = 16.dp),
-                        value = name,
-                        onValueChange = { name = it },
+                        value = source.name,
+                        onValueChange = {},
                         label = {
                             Text(stringResource(R.string.bundle_input_name))
                         }
@@ -113,14 +122,13 @@ fun BundleInformationDialog(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = 16.dp),
-                        value = remoteUrl,
-                        onValueChange = { remoteUrl = it },
+                        value = remoteName,
+                        onValueChange = {},
                         label = {
                             Text(stringResource(R.string.bundle_input_source_url))
                         }
                     )
                 }
-
                 Column(
                     Modifier.padding(
                         start = 8.dp,
@@ -134,7 +142,9 @@ fun BundleInformationDialog(
                         trailingContent = {
                             Switch(
                                 checked = checked,
-                                onCheckedChange = { checked = it }
+                                onCheckedChange = {
+                                    checked = it
+                                }
                             )
                         }
                     )
@@ -167,7 +177,7 @@ fun BundleInformationDialog(
                         supportingText = patchInfoText,
                         trailingContent = {
                             if (patchCount > 0) {
-                                IconButton(onClick = { }) {
+                                IconButton(onClick = { viewCurrentBundlePatches = true }) {
                                     Icon(
                                         Icons.Outlined.ArrowRight,
                                         stringResource(R.string.patches)
