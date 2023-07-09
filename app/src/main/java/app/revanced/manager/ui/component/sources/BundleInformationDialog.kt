@@ -30,8 +30,6 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import app.revanced.manager.R
 import app.revanced.manager.domain.sources.Source
-import app.revanced.manager.patcher.patch.PatchBundle
-import app.revanced.manager.patcher.patch.PatchInfo
 import app.revanced.manager.ui.component.BundleTopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,7 +38,6 @@ fun BundleInformationDialog(
     onDismissRequest: () -> Unit,
     onDeleteRequest: () -> Unit,
     onBackIcon: @Composable () -> Unit,
-    patchInfoList: List<PatchInfo>,
     topBarTitle: String,
     source: Source,
     remoteName: String = "",
@@ -52,14 +49,14 @@ fun BundleInformationDialog(
     val patchInfoText = if (patchCount == 0) "No Patches available to view"
     else "$patchCount Patches available, tap to view"
 
-    if(viewCurrentBundlePatches) {
+    if (viewCurrentBundlePatches) {
         BundlePatchesDialog(
             onBackIcon = onBackIcon,
             onDismissRequest = {
                 viewCurrentBundlePatches = false
             },
             topBarTitle = stringResource(R.string.bundle_patches),
-            patchInfoList = patchInfoList
+            source = source,
         )
     }
 
@@ -99,7 +96,6 @@ fun BundleInformationDialog(
                     .padding(paddingValues)
                     .verticalScroll(rememberScrollState())
             ) {
-
                 Column(
                     modifier = Modifier.padding(
                         start = 24.dp,
@@ -196,7 +192,6 @@ fun BundleInformationDialog(
                         headlineText = stringResource(R.string.integrations_version),
                         supportingText = "1.0.0",
                     )
-
                 }
             }
         }

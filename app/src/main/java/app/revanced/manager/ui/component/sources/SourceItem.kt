@@ -27,7 +27,7 @@ import kotlinx.coroutines.launch
 import org.koin.androidx.compose.getViewModel
 import java.io.InputStream
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun SourceItem(
     source: Source, onDelete: () -> Unit,
@@ -42,7 +42,7 @@ fun SourceItem(
     val patchCount = bundle.patches.size
     val padding = PaddingValues(16.dp, 0.dp)
 
-    if(viewBundleDialogPage) {
+    if (viewBundleDialogPage) {
         BundleInformationDialog(
             onDismissRequest = { viewBundleDialogPage = false },
             onDeleteRequest = {
@@ -55,7 +55,6 @@ fun SourceItem(
                     contentDescription = null
                 )
             },
-            patchInfoList = bundle.patches,
             topBarTitle = stringResource(R.string.bundle_information),
             source = source,
             patchCount = patchCount
