@@ -39,6 +39,9 @@ import app.revanced.manager.R
 import app.revanced.manager.ui.component.AppTopBar
 import app.revanced.manager.ui.destination.SettingsDestination
 import app.revanced.manager.ui.screen.settings.*
+import app.revanced.manager.ui.screen.settings.update.ManagerUpdateChangelog
+import app.revanced.manager.ui.screen.settings.update.UpdateProgressScreen
+import app.revanced.manager.ui.screen.settings.update.UpdatesSettingsScreen
 import app.revanced.manager.ui.viewmodel.SettingsViewModel
 import dev.olshevski.navigation.reimagined.*
 import org.koin.androidx.compose.getViewModel
@@ -79,6 +82,11 @@ fun SettingsScreen(
             Icons.Outlined.SwapVert
         ) to SettingsDestination.ImportExport,
         Triple(
+            R.string.advanced,
+            R.string.advanced_description,
+            Icons.Outlined.Tune
+        ) to SettingsDestination.Advanced,
+        Triple(
             R.string.about,
             R.string.about_description,
             Icons.Outlined.Info
@@ -96,9 +104,14 @@ fun SettingsScreen(
                 viewModel = viewModel
             )
 
+            is SettingsDestination.Advanced -> AdvancedSettingsScreen(
+                onBackClick = { navController.pop() }
+            )
+
             is SettingsDestination.Updates -> UpdatesSettingsScreen(
                 onBackClick = { navController.pop() },
-                navController = navController
+                onChangelogClick = { navController.navigate(SettingsDestination.UpdateChangelog) },
+                onUpdateClick = { navController.navigate(SettingsDestination.UpdateProgress) }
             )
 
             is SettingsDestination.Downloads -> DownloadsSettingsScreen(
@@ -117,6 +130,10 @@ fun SettingsScreen(
 
             is SettingsDestination.UpdateProgress -> UpdateProgressScreen(
                { navController.pop() },
+            )
+
+            is SettingsDestination.UpdateChangelog -> ManagerUpdateChangelog(
+                onBackClick = { navController.pop() },
             )
 
             is SettingsDestination.Contributors -> ContributorScreen(

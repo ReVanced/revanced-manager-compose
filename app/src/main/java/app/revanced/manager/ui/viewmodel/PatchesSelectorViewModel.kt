@@ -5,18 +5,26 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateMap
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi
+import androidx.lifecycle.viewmodel.compose.saveable
 import app.revanced.manager.domain.manager.PreferencesManager
 import app.revanced.manager.domain.repository.PatchSelectionRepository
 import app.revanced.manager.domain.repository.SourceRepository
 import app.revanced.manager.patcher.patch.PatchInfo
 import app.revanced.manager.util.AppInfo
+import app.revanced.manager.util.Options
 import app.revanced.manager.util.PatchesSelection
 import app.revanced.manager.util.SnapshotStateSet
 import app.revanced.manager.util.flatMapLatestAndCombine
 import app.revanced.manager.util.mutableStateSetOf
+import app.revanced.manager.util.saver.snapshotStateMapSaver
+import app.revanced.manager.util.saver.snapshotStateSetSaver
 import app.revanced.manager.util.toMutableStateSet
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -27,11 +35,13 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 
 @Stable
+@OptIn(SavedStateHandleSaveableApi::class)
 class PatchesSelectorViewModel(
     val appInfo: AppInfo
 ) : ViewModel(), KoinComponent {
     private val selectionRepository: PatchSelectionRepository = get()
     private val prefs: PreferencesManager = get()
+    private val savedStateHandle: SavedStateHandle = get()
     val allowExperimental get() = prefs.allowExperimental
 
     val bundlesFlow = get<SourceRepository>().sources.flatMapLatestAndCombine(
@@ -57,10 +67,35 @@ class PatchesSelectorViewModel(
         }
     }
 
-    private val selectedPatches = mutableStateMapOf<Int, SnapshotStateSet<String>>()
+    private val selectedPatches: SnapshotStatePatchesSelection by savedStateHandle.saveable(saver = patchesSelectionSaver, init = {
+        val map: SnapshotStatePatchesSelection = mutableStateMapOf()
+        viewModelScope.launch(Dispatchers.Default) {
+            val bundles = bundlesFlow.first()
+            val filteredSelection =
+                selectionRepository.getSelection(appInfo.packageName).mapValues { (uid, patches) ->
+                    // Filter out patches that don't exist.
+                    val filteredPatches = bundles.singleOrNull { it.uid == uid }
+                        ?.let { bundle ->
+                            val allPatches = bundle.all.map { it.name }
+                            patches.filter { allPatches.contains(it) }
+                        }
+                        ?: patches
 
-    var showOptionsDialog by mutableStateOf(false)
-        private set
+                    filteredPatches.toMutableStateSet()
+                }
+
+            withContext(Dispatchers.Main) {
+                map.putAll(filteredSelection)
+            }
+        }
+        return@saveable map
+    })
+    private val patchOptions: SnapshotStateOptions by savedStateHandle.saveable(saver = optionsSaver, init = ::mutableStateMapOf)
+
+    /**
+     * Show the patch options dialog for this patch.
+     */
+    var optionsDialog by mutableStateOf<Pair<Int, PatchInfo>?>(null)
 
     val compatibleVersions = mutableStateListOf<String>()
 
@@ -85,46 +120,31 @@ class PatchesSelectorViewModel(
             withContext(Dispatchers.Default) {
                 selectionRepository.updateSelection(appInfo.packageName, it)
             }
-        }.mapValues { it.value.toMutableList() }.apply {
+        }.mapValues { it.value.toMutableSet() }.apply {
             if (allowExperimental) {
                 return@apply
             }
 
             // Filter out unsupported patches that may have gotten selected through the database if the setting is not enabled.
             bundlesFlow.first().forEach {
-                this[it.uid]?.removeAll(it.unsupported.map { patch -> patch.name })
+                this[it.uid]?.removeAll(it.unsupported.map { patch -> patch.name }.toSet())
             }
         }
 
-    init {
-        viewModelScope.launch(Dispatchers.Default) {
-            val bundles = bundlesFlow.first()
-            val filteredSelection =
-                selectionRepository.getSelection(appInfo.packageName).mapValues { (uid, patches) ->
-                    // Filter out patches that don't exist.
-                    val filteredPatches = bundles.singleOrNull { it.uid == uid }
-                        ?.let { bundle ->
-                            val allPatches = bundle.all.map { it.name }
-                            patches.filter { allPatches.contains(it) }
-                        }
-                        ?: patches
+    fun getOptions(): Options = patchOptions
+    fun getOptions(bundle: Int, patch: PatchInfo) = patchOptions[bundle]?.get(patch.name)
 
-                    filteredPatches.toMutableStateSet()
-                }
+    fun setOption(bundle: Int, patch: PatchInfo, key: String, value: Any?) {
+        patchOptions.getOrCreate(bundle).getOrCreate(patch.name)[key] = value
+    }
 
-            withContext(Dispatchers.Main) {
-                selectedPatches.putAll(filteredSelection)
-            }
-        }
+    fun unsetOption(bundle: Int, patch: PatchInfo, key: String) {
+        patchOptions[bundle]?.get(patch.name)?.remove(key)
     }
 
     fun dismissDialogs() {
-        showOptionsDialog = false
+        optionsDialog = null
         compatibleVersions.clear()
-    }
-
-    fun openOptionsDialog() {
-        showOptionsDialog = true
     }
 
     fun openUnsupportedDialog(unsupportedVersions: List<PatchInfo>) {
@@ -148,6 +168,20 @@ class PatchesSelectorViewModel(
         const val SHOW_SUPPORTED = 1 // 2^0
         const val SHOW_UNIVERSAL = 2 // 2^1
         const val SHOW_UNSUPPORTED = 4 // 2^2
+
+        private fun <K, K2, V> SnapshotStateMap<K, SnapshotStateMap<K2, V>>.getOrCreate(key: K) =
+            getOrPut(key, ::mutableStateMapOf)
+
+        private val optionsSaver: Saver<SnapshotStateOptions, Options> = snapshotStateMapSaver(
+            // Patch name -> Options
+            valueSaver = snapshotStateMapSaver(
+                // Option key -> Option value
+                valueSaver = snapshotStateMapSaver()
+            )
+        )
+
+        private val patchesSelectionSaver: Saver<SnapshotStatePatchesSelection, PatchesSelection> =
+            snapshotStateMapSaver(valueSaver = snapshotStateSetSaver())
     }
 
     data class BundleInfo(
@@ -159,3 +193,13 @@ class PatchesSelectorViewModel(
         val universal: List<PatchInfo>
     )
 }
+
+/**
+ * [Options] but with observable collection types.
+ */
+private typealias SnapshotStateOptions = SnapshotStateMap<Int, SnapshotStateMap<String, SnapshotStateMap<String, Any?>>>
+
+/**
+ * [PatchesSelection] but with observable collection types.
+ */
+private typealias SnapshotStatePatchesSelection = SnapshotStateMap<Int, SnapshotStateSet<String>>
