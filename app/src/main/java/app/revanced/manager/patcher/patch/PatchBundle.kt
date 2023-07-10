@@ -18,6 +18,7 @@ class PatchBundle(private val loader: Iterable<PatchClass>, val integrations: Fi
                     PathClassLoader(it, Patcher::class.java.classLoader)
                 )
             }
+
             override fun iterator() = bundle.loadPatches().iterator()
         },
         integrations
