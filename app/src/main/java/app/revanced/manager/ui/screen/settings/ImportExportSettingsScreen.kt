@@ -78,7 +78,7 @@ fun ImportExportSettingsScreen(
     if (vm.showCredentialsDialog) {
         KeystoreCredentialsDialog(
             onDismissRequest = vm::cancelKeystoreImport,
-            tryImport = { cn, pass ->
+            onSubmit = { cn, pass ->
                 vm.viewModelScope.launch {
                     val result = vm.tryKeystoreImport(cn, pass)
                     if (!result) context.toast(context.getString(R.string.import_keystore_wrong_credentials))
@@ -157,9 +157,8 @@ private fun GroupItem(onClick: () -> Unit, @StringRes headline: Int, @StringRes 
 @Composable
 fun KeystoreCredentialsDialog(
     onDismissRequest: () -> Unit,
-    tryImport: (String, String) -> Unit
+    onSubmit: (String, String) -> Unit
 ) {
-
     var cn by rememberSaveable { mutableStateOf("") }
     var pass by rememberSaveable { mutableStateOf("") }
 
@@ -168,7 +167,7 @@ fun KeystoreCredentialsDialog(
         confirmButton = {
             TextButton(
                 onClick = {
-                    tryImport(cn, pass)
+                    onSubmit(cn, pass)
                 }
             ) {
                 Text(stringResource(R.string.import_keystore_dialog_button))
