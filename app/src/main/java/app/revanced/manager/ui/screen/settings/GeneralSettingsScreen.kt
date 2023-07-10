@@ -58,7 +58,7 @@ fun GeneralSettingsScreen(
         ) {
             GroupHeader(stringResource(R.string.appearance))
 
-            val theme by prefs.theme.asComposeState()
+            val theme by prefs.theme.getAsState()
             ListItem(
                 modifier = Modifier.clickable { showThemePicker = true },
                 headlineContent = { Text(stringResource(R.string.theme)) },
@@ -74,7 +74,7 @@ fun GeneralSettingsScreen(
                 }
             )
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                val dynamicColor by prefs.dynamicColor.asComposeState()
+                val dynamicColor by prefs.dynamicColor.getAsState()
                 BooleanItem(
                     value = dynamicColor,
                     onValueChange = { coroutineScope.launch { prefs.dynamicColor.update(it) } },
@@ -85,7 +85,7 @@ fun GeneralSettingsScreen(
 
             GroupHeader(stringResource(R.string.patcher))
 
-            val allowExperimental by prefs.allowExperimental.asComposeState()
+            val allowExperimental by prefs.allowExperimental.getAsState()
             BooleanItem(
                 value = allowExperimental,
                 onValueChange = { coroutineScope.launch { prefs.allowExperimental.update(it) } },

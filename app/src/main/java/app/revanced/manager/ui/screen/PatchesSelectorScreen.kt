@@ -177,7 +177,7 @@ fun PatchesSelectorScreen(
                             )
                         }
 
-                        val allowExperimental by vm.allowExperimental.asComposeState()
+                        val allowExperimental by vm.allowExperimental.getAsState()
 
                         LazyColumn(
                             modifier = Modifier.fillMaxSize()

@@ -56,8 +56,8 @@ class MainActivity : ComponentActivity() {
         )
 
         setContent {
-            val theme by prefs.theme.asComposeState()
-            val dynamicColor by prefs.dynamicColor.asComposeState()
+            val theme by prefs.theme.getAsState()
+            val dynamicColor by prefs.dynamicColor.getAsState()
 
             ReVancedManagerTheme(
                 darkTheme = theme == Theme.SYSTEM && isSystemInDarkTheme() || theme == Theme.DARK,

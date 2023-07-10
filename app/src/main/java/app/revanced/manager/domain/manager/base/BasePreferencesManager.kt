@@ -21,7 +21,7 @@ abstract class BasePreferencesManager(private val context: Context, name: String
         dataStore.data.first()
     }
 
-    suspend fun editor(block: EditorContext.() -> Unit) = dataStore.editor(block)
+    suspend fun edit(block: EditorContext.() -> Unit) = dataStore.editor(block)
 
     protected fun stringPreference(key: String, default: String) =
         StringPreference(dataStore, key, default)
@@ -65,14 +65,13 @@ abstract class Preference<T>(
 
     suspend fun get() = flow.first()
     fun getBlocking() = runBlocking { get() }
+    @Composable
+    fun getAsState() = flow.collectAsStateWithLifecycle(initialValue = remember {
+        getBlocking()
+    })
     suspend fun update(value: T) = dataStore.editor {
         this@Preference.value = value
     }
-
-    @Composable
-    fun asComposeState() = flow.collectAsStateWithLifecycle(initialValue = remember {
-        getBlocking()
-    })
 }
 
 class EnumPreference<E : Enum<E>>(

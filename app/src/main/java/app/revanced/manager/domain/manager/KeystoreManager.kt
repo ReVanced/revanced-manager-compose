@@ -24,7 +24,7 @@ class KeystoreManager(app: Application, private val prefs: PreferencesManager) {
     private val keystorePath =
         app.getDir("signing", Context.MODE_PRIVATE).resolve("manager.keystore").toPath()
 
-    private suspend fun updatePrefs(cn: String, pass: String) = prefs.editor {
+    private suspend fun updatePrefs(cn: String, pass: String) = prefs.edit {
         prefs.keystoreCommonName.value = cn
         prefs.keystorePass.value = pass
     }
