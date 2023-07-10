@@ -111,6 +111,10 @@ fun ImportExportSettingsScreen(
             )
             GroupItem(
                 onClick = {
+                    if (!vm.canExport()) {
+                        context.toast(context.getString(R.string.export_keystore_unavailable))
+                        return@GroupItem
+                    }
                     exportKeystoreLauncher.launch("Manager.keystore")
                 },
                 headline = R.string.export_keystore,

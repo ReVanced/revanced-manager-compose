@@ -4,12 +4,8 @@ import android.app.Application
 import android.content.Context
 import app.revanced.manager.util.signing.Signer
 import app.revanced.manager.util.signing.SigningOptions
-import app.revanced.manager.util.toast
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeout
 import java.io.File
 import java.io.OutputStream
 import java.nio.file.Files
@@ -17,7 +13,7 @@ import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import kotlin.io.path.exists
 
-class KeystoreManager(private val app: Application, private val prefs: PreferencesManager) {
+class KeystoreManager(app: Application, private val prefs: PreferencesManager) {
     companion object {
         /**
          * Default alias and password for the keystore.
@@ -46,26 +42,8 @@ class KeystoreManager(private val app: Application, private val prefs: Preferenc
         )
     }
 
-    /*
-    init {
-        if (!keystorePath.exists()) {
-            runBlocking {
-                initialize()
-            }
-        }
-    }
-
-
-    private suspend fun initialize() = try {
-        withTimeout(1500L) {
-            regenerate()
-        }
-    } catch (_: TimeoutCancellationException) {
-        app.toast("Failed to generate keystore quickly enough!")
-    }
-     */
-
-    suspend fun regenerate() = Signer(SigningOptions(DEFAULT, DEFAULT, keystorePath)).regenerateKeystore().also {
+    suspend fun regenerate() = withContext(Dispatchers.Default) {
+        Signer(SigningOptions(DEFAULT, DEFAULT, keystorePath)).regenerateKeystore()
         updatePrefs(DEFAULT, DEFAULT)
     }
 
@@ -80,6 +58,8 @@ class KeystoreManager(private val app: Application, private val prefs: Preferenc
         updatePrefs(cn, pass)
         return true
     }
+
+    fun hasKeystore() = keystorePath.exists()
 
     suspend fun export(target: OutputStream) {
         withContext(Dispatchers.IO) {

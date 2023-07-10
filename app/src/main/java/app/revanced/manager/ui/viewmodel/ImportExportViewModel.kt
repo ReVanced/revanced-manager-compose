@@ -91,6 +91,8 @@ class ImportExportViewModel(
         cancelKeystoreImport()
     }
 
+    fun canExport() = keystoreManager.hasKeystore()
+
     fun exportKeystore(target: Uri) = viewModelScope.launch {
         keystoreManager.export(contentResolver.openOutputStream(target)!!)
     }
