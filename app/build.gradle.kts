@@ -71,7 +71,7 @@ dependencies {
     implementation("androidx.work:work-runtime-ktx:2.8.1")
 
     // Compose
-    implementation(platform("androidx.compose:compose-bom:2023.05.01"))
+    implementation(platform("androidx.compose:compose-bom:2023.06.01"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.runtime:runtime-livedata")
@@ -83,6 +83,7 @@ dependencies {
     //implementation("com.google.accompanist:accompanist-systemuicontroller:$accompanistVersion")
     //implementation("com.google.accompanist:accompanist-placeholder-material:$accompanistVersion")
     implementation("com.google.accompanist:accompanist-drawablepainter:$accompanistVersion")
+    implementation("com.google.accompanist:accompanist-webview:$accompanistVersion")
     //implementation("com.google.accompanist:accompanist-flowlayout:$accompanistVersion")
     //implementation("com.google.accompanist:accompanist-permissions:$accompanistVersion")
 
@@ -101,21 +102,21 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5")
 
     // Room
-    val roomVersion = "2.5.1"
+    val roomVersion = "2.5.2"
     implementation("androidx.room:room-runtime:$roomVersion")
     implementation("androidx.room:room-ktx:$roomVersion")
     annotationProcessor("androidx.room:room-compiler:$roomVersion")
     ksp("androidx.room:room-compiler:$roomVersion")
 
     // ReVanced
-    implementation("app.revanced:revanced-patcher:11.0.1")
+    implementation("app.revanced:revanced-patcher:11.0.4")
 
     // Signing
     implementation("com.android.tools.build:apksig:8.0.2")
     implementation("org.bouncycastle:bcpkix-jdk15on:1.70")
 
     // Koin
-    val koinVersion = "3.4.1"
+    val koinVersion = "3.4.2"
     implementation("io.insert-koin:koin-android:$koinVersion")
     implementation("io.insert-koin:koin-androidx-compose:3.4.5")
     implementation("io.insert-koin:koin-androidx-workmanager:$koinVersion")
@@ -127,11 +128,13 @@ dependencies {
     implementation("com.mikepenz:aboutlibraries-compose:10.8.0")
 
     // Ktor
-    val ktorVersion = "2.3.1"
+    val ktorVersion = "2.3.2"
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-logging:$ktorVersion")
     implementation("io.ktor:ktor-client-okhttp:$ktorVersion")
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
 
+    // Markdown to HTML
+    implementation("org.jetbrains:markdown:0.4.1")
 }

@@ -60,7 +60,8 @@ class MainActivity : ComponentActivity() {
                 darkTheme = prefs.theme == Theme.SYSTEM && isSystemInDarkTheme() || prefs.theme == Theme.DARK,
                 dynamicColor = prefs.dynamicColor
             ) {
-                val navController = rememberNavController<Destination>(startDestination = Destination.Dashboard)
+                val navController =
+                    rememberNavController<Destination>(startDestination = Destination.Dashboard)
 
                 NavBackHandler(navController)
 
@@ -91,11 +92,12 @@ class MainActivity : ComponentActivity() {
 
                         is Destination.PatchesSelector -> PatchesSelectorScreen(
                             onBackClick = { navController.popUpTo { it is Destination.AppSelector } },
-                            onPatchClick = {
+                            onPatchClick = { patches, options ->
                                 navController.navigate(
                                     Destination.Installer(
                                         destination.input,
-                                        it
+                                        patches,
+                                        options
                                     )
                                 )
                             },
@@ -104,12 +106,7 @@ class MainActivity : ComponentActivity() {
 
                         is Destination.Installer -> InstallerScreen(
                             onBackClick = { navController.popUpTo { it is Destination.Dashboard } },
-                            vm = getViewModel {
-                                parametersOf(
-                                    destination.input,
-                                    destination.selectedPatches
-                                )
-                            }
+                            vm = getViewModel { parametersOf(destination) }
                         )
                     }
                 }
