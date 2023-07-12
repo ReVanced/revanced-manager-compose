@@ -14,6 +14,7 @@ import app.revanced.manager.network.downloader.APKMirror
 import app.revanced.manager.network.downloader.AppDownloader
 import app.revanced.manager.util.AppInfo
 import app.revanced.manager.util.PM
+import app.revanced.manager.util.mutableStateSetOf
 import app.revanced.manager.util.simpleMessage
 import app.revanced.manager.util.tag
 import kotlinx.coroutines.Dispatchers
@@ -41,11 +42,13 @@ class AppDownloaderViewModel(
     var errorMessage: String? by mutableStateOf(null)
         private set
 
+    val availableVersions = mutableStateSetOf<String>()
+
     val compatibleVersions = sourceRepository.bundles.map { bundles ->
         var patchesWithoutVersions = 0
 
-        bundles.flatMap { bundle ->
-            bundle.value.patches.flatMap { patch ->
+        bundles.flatMap { (_, bundle) ->
+            bundle.patches.flatMap { patch ->
                 patch.compatiblePackages
                     .orEmpty()
                     .filter { it.name == selectedApp.packageName }
@@ -75,10 +78,16 @@ class AppDownloaderViewModel(
 
     private val job = viewModelScope.launch(Dispatchers.IO) {
         try {
-            appDownloader.getAvailableVersionList(
+            val compatibleVersions = compatibleVersions.first()
+
+            appDownloader.getAvailableVersions(
                 selectedApp.packageName,
-                compatibleVersions.first().keys
-            )
+                compatibleVersions.keys
+            ).collect {
+                if (it in compatibleVersions || compatibleVersions.isEmpty()) {
+                    availableVersions.add(it)
+                }
+            }
 
             withContext(Dispatchers.Main) {
                 isLoading = false
@@ -94,8 +103,7 @@ class AppDownloaderViewModel(
     lateinit var onComplete: (AppInfo) -> Unit
 
     fun downloadApp(
-        version: String,
-        link: String
+        version: String
     ) {
         isDownloading = true
 
@@ -108,7 +116,6 @@ class AppDownloaderViewModel(
                 val downloadedFile =
                     downloadedAppRepository.get(selectedApp.packageName, version)?.file
                         ?: appDownloader.downloadApp(
-                            link,
                             version,
                             savePath,
                             preferSplit = prefs.preferSplits,

@@ -47,12 +47,11 @@ fun AppDownloaderScreen(
 
     val downloadProgress by viewModel.appDownloader.downloadProgress.collectAsStateWithLifecycle()
     val compatibleVersions by viewModel.compatibleVersions.collectAsStateWithLifecycle(emptyMap())
-    val availableVersions by viewModel.appDownloader.availableApps.collectAsStateWithLifecycle()
     val downloadedVersions by viewModel.downloadedVersions.collectAsStateWithLifecycle(emptyList())
 
     val list by remember {
         derivedStateOf {
-            (downloadedVersions + availableVersions.keys)
+            (downloadedVersions + viewModel.availableVersions)
                 .distinct()
                 .sortedWith(
                     compareByDescending<String> {
@@ -96,10 +95,7 @@ fun AppDownloaderScreen(
                         list.forEach { version ->
                             ListItem(
                                 modifier = Modifier.clickable {
-                                    viewModel.downloadApp(
-                                        version,
-                                        availableVersions[version].orEmpty()
-                                    )
+                                    viewModel.downloadApp(version)
                                 },
                                 headlineContent = { Text(version) },
                                 supportingContent =

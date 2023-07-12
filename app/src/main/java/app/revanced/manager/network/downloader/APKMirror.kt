@@ -14,17 +14,16 @@ import it.skrape.selects.html5.p
 import it.skrape.selects.html5.span
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flow
 import java.io.File
 
 class APKMirror(
     private val client: HttpService
 ) : AppDownloader {
-
-    private val _availableApps: MutableStateFlow<Map<String, String>> = MutableStateFlow(emptyMap())
-    override val availableApps = _availableApps.asStateFlow()
-
     private val _downloadProgress: MutableStateFlow<Pair<Float, Float>?> = MutableStateFlow(null)
     override val downloadProgress = _downloadProgress.asStateFlow()
+
+    private val versionMap = HashMap<String, String>()
 
     private suspend fun getAppLink(packageName: String): String {
         val searchResults = client.getHtml { url("$apkMirror/?post_type=app_release&searchtype=app&s=$packageName") }
@@ -80,8 +79,7 @@ class APKMirror(
         } ?: throw Exception("App isn't available for download")
     }
 
-    override suspend fun getAvailableVersionList(packageName: String, versionFilter: Set<String>) {
-        _availableApps.emit(emptyMap())
+    override fun getAvailableVersions(packageName: String, versionFilter: Set<String>) = flow {
 
         // Vanced music uses the same package name so we have to hardcode...
         val appCategory = if (packageName == "com.google.android.apps.youtube.music")
@@ -89,12 +87,11 @@ class APKMirror(
         else
             getAppLink(packageName).split("/")[3]
 
-        val versions = HashMap<String, String>()
         var page = 1
 
         while (
             if (versionFilter.isNotEmpty())
-                versions.filterKeys { it in versionFilter }.size < versionFilter.size && page <= 7
+                versionMap.filterKeys { it in versionFilter }.size < versionFilter.size && page <= 7
             else
                 page <= 1
         ) {
@@ -107,9 +104,8 @@ class APKMirror(
                     div {
                         withClass = "listWidget"
                         findFirst {
-                            children.forEach { element ->
+                            children.mapNotNull { element ->
                                 if (element.className.isEmpty()) {
-
                                     val version = element.div {
                                         withClass = "infoSlide"
                                         findFirst {
@@ -135,33 +131,22 @@ class APKMirror(
                                         }
                                     }
 
-                                    versions[version] = link
-                                }
+                                    versionMap[version] = link
+                                    version
+                                } else null
                             }
                         }
                     }
                 }
-            }
+            }.onEach { versions -> emit(versions) }
 
-            _availableApps.emit(
-                versions
-                    .let {
-                        if (versionFilter.isEmpty())
-                            it
-                        else
-                            it.filterKeys { version -> versionFilter.contains(version) }
-                    }
-                    .toMap()
-            )
-
-            page += 1
+            page++
         }
     }
 
     override suspend fun downloadApp(
-        link: String,
         version: String,
-        savePath: File,
+        saveDirectory: File,
         preferSplit: Boolean,
         preferUniversal: Boolean
     ): File {
@@ -169,7 +154,7 @@ class APKMirror(
 
         var isSplit = false
 
-        val appPage = client.getHtml { url(apkMirror + link) }
+        val appPage = client.getHtml { url(apkMirror + versionMap[version]) }
             .div {
                 withClass = "variants-table"
                 findFirst { // list of variants
@@ -235,29 +220,27 @@ class APKMirror(
             }
 
         val saveLocation = if (isSplit)
-            savePath.resolve(version).also { it.mkdirs() }
+            saveDirectory.resolve(version).also { it.mkdirs() }
         else
-            savePath.resolve("$version.apk")
+            saveDirectory.resolve("$version.apk")
 
         try {
-            (if (isSplit)
+            val downloadLocation = if (isSplit)
                 saveLocation.resolve("temp.zip")
             else
-                saveLocation).let {
+                saveLocation
 
-                client.download(saveLocation) {
-                    url(apkMirror + downloadLink)
-                    onDownload { bytesSentTotal, contentLength ->
-                        _downloadProgress.emit(bytesSentTotal.div(100000).toFloat().div(10) to contentLength.div(100000).toFloat().div(10))
-                    }
+            client.download(downloadLocation) {
+                url(apkMirror + downloadLink)
+                onDownload { bytesSentTotal, contentLength ->
+                    _downloadProgress.emit(bytesSentTotal.div(100000).toFloat().div(10) to contentLength.div(100000).toFloat().div(10))
                 }
-
             }
 
             if (isSplit) {
                 // TODO: Extract temp.zip
 
-                saveLocation.resolve("temp.zip").delete()
+                downloadLocation.delete()
             }
         } catch (e: Exception) {
             saveLocation.deleteRecursively()

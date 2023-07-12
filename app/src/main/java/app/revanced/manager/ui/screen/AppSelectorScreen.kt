@@ -47,9 +47,7 @@ fun AppSelectorScreen(
     val pickApkLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             uri?.let { apkUri ->
-                vm.loadSelectedFile(apkUri)?.let {
-                    onAppClick(it)
-                } ?: context.toast(context.getString(R.string.failed_to_load_apk))
+                vm.loadSelectedFile(apkUri)?.let(onAppClick) ?: context.toast(context.getString(R.string.failed_to_load_apk))
             }
         }
 
