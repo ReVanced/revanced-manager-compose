@@ -2,10 +2,7 @@ package app.revanced.manager.ui.screen
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -35,12 +32,6 @@ fun SourcesScreen(
             onLocalSubmit = { name, patches, integrations ->
                 showNewSourceDialog = false
                 vm.addLocal(name, patches, integrations)
-            },
-            onBackIcon = {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = null
-                )
             },
             topBarTitle = stringResource(R.string.import_bundle),
             onRemoteSubmit = { name, url ->

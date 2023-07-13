@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.ArrowRight
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
@@ -42,7 +43,6 @@ fun ImportBundleDialog(
     onDismissRequest: () -> Unit,
     onRemoteSubmit: (String, Url) -> Unit,
     onLocalSubmit: (String, Uri, Uri?) -> Unit,
-    onBackIcon: @Composable () -> Unit,
     topBarTitle: String,
     patchCount: Int = 0,
 ) {
@@ -73,7 +73,12 @@ fun ImportBundleDialog(
                 BundleTopBar(
                     title = topBarTitle,
                     onBackClick = onDismissRequest,
-                    onBackIcon = onBackIcon,
+                    onBackIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = null
+                        )
+                    },
                     actions = {
                         Text(
                             text = stringResource(R.string.import_),
