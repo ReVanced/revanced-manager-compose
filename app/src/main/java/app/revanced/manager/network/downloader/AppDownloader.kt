@@ -27,7 +27,6 @@ interface AppDownloader {
     suspend fun downloadApp(
         version: String,
         saveDirectory: File,
-        preferSplit: Boolean = false,
-        preferUniversal: Boolean = false
+        preferSplit: Boolean = false
     ): File
 }

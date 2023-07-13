@@ -67,15 +67,6 @@ fun DownloadsSettingsScreen(
                 }
             )
 
-            ListItem(
-                modifier = Modifier.clickable { prefs.preferUniversal = !prefs.preferUniversal },
-                headlineContent = { Text(stringResource(R.string.prefer_universal)) },
-                supportingContent = { Text(stringResource(R.string.prefer_universal_description)) },
-                trailingContent = {
-                    Switch(checked = prefs.preferUniversal, onCheckedChange = { prefs.preferUniversal = it })
-                }
-            )
-
             GroupHeader(stringResource(R.string.downloaded_apps))
 
             downloadedApps.forEach {

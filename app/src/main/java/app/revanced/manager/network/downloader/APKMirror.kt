@@ -20,6 +20,18 @@ import java.io.File
 class APKMirror(
     private val httpClient: HttpService
 ) : AppDownloader {
+
+    enum class APKType {
+        APK,
+        BUNDLE
+    }
+
+    data class Variant(
+        val apkType: APKType,
+        val arch: String,
+        val link: String
+    )
+
     private val _downloadProgress: MutableStateFlow<Pair<Float, Float>?> = MutableStateFlow(null)
     override val downloadProgress = _downloadProgress.asStateFlow()
 
@@ -147,48 +159,56 @@ class APKMirror(
     override suspend fun downloadApp(
         version: String,
         saveDirectory: File,
-        preferSplit: Boolean,
-        preferUniversal: Boolean
+        preferSplit: Boolean
     ): File {
-        var isSplit = false
+        //var isSplit = false
 
-        val appPage = httpClient.getHtml { url(apkMirror + versionMap[version]) }
+        val variants = httpClient.getHtml { url(apkMirror + versionMap[version]) }
             .div {
                 withClass = "variants-table"
                 findFirst { // list of variants
-
-                    val supportedArches = SUPPORTED_ABIS.toMutableList().apply {
-                        addAll(
-                            index = if (preferUniversal) 0 else 1,
-                            listOf("universal", "noarch")
+                    children.drop(1).map {
+                        Variant(
+                            apkType = it.div {
+                                findFirst {
+                                    span {
+                                        findFirst {
+                                            enumValueOf(text)
+                                        }
+                                    }
+                                }
+                            },
+                            arch = it.div {
+                                findSecond {
+                                    text
+                                }
+                            },
+                            link = it.div {
+                                findFirst {
+                                    a {
+                                        findFirst {
+                                            attribute("href")
+                                        }
+                                    }
+                                }
+                            }
                         )
                     }
-
-                    val variants = children.drop(1)
-                        .groupBy { if (it.text.contains("APK")) "full" else "split" }.let {
-
-                            if (preferSplit)
-                                it["split"]?.also { isSplit = true }
-                                    ?: it["full"]
-                            else
-                                it["full"]
-                                    ?: it["split"].also { isSplit = true }
-                        } ?: throw Exception("No variants, this should never happen")
-
-                    if (isSplit) TODO("\nSplit apks are not supported yet")
-
-                    supportedArches.firstNotNullOfOrNull { arch ->
-                        variants.find { it.text.contains(arch) }
-                    }?.a {
-                        findFirst {
-                            attribute("href")
-                        }
-                    } ?: throw Exception("No compatible variant found")
-
                 }
             }
 
-        val downloadPage = httpClient.getHtml { url(apkMirror + appPage) }
+        val orderedAPKTypes = mutableListOf(APKType.APK, APKType.BUNDLE)
+            .also { if (preferSplit) it.reverse() }
+
+        val variant = orderedAPKTypes.firstNotNullOfOrNull { apkType ->
+            supportedArches.firstNotNullOfOrNull { arch ->
+                variants.find { it.arch == arch && it.apkType == apkType }
+            }
+        } ?: throw Exception("No compatible variant found")
+
+        if (variant.apkType == APKType.BUNDLE) TODO("\nSplit apks are not supported yet")
+
+        val downloadPage = httpClient.getHtml { url(apkMirror + variant.link) }
             .a {
                 withClass = "downloadButton"
                 findFirst {
@@ -217,13 +237,13 @@ class APKMirror(
                 }
             }
 
-        val saveLocation = if (isSplit)
+        val saveLocation = if (variant.apkType == APKType.BUNDLE)
             saveDirectory.resolve(version).also { it.mkdirs() }
         else
             saveDirectory.resolve("$version.apk")
 
         try {
-            val downloadLocation = if (isSplit)
+            val downloadLocation = if (variant.apkType == APKType.BUNDLE)
                 saveLocation.resolve("temp.zip")
             else
                 saveLocation
@@ -235,7 +255,7 @@ class APKMirror(
                 }
             }
 
-            if (isSplit) {
+            if (variant.apkType == APKType.BUNDLE) {
                 // TODO: Extract temp.zip
 
                 downloadLocation.delete()
@@ -252,6 +272,8 @@ class APKMirror(
 
     companion object {
         const val apkMirror = "https://www.apkmirror.com"
+
+        val supportedArches = listOf("universal", "noarch") + SUPPORTED_ABIS
     }
 
 }
