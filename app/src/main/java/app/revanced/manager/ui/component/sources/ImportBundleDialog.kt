@@ -9,6 +9,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Topic
 import androidx.compose.material.icons.outlined.ArrowRight
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
@@ -49,8 +50,9 @@ fun ImportBundleDialog(
     var name by rememberSaveable { mutableStateOf("") }
     var remoteUrl by rememberSaveable { mutableStateOf("") }
     var checked by remember { mutableStateOf(true) }
-    val isLocal by rememberSaveable { mutableStateOf(false) }
-    val patchBundle by rememberSaveable { mutableStateOf<Uri?>(null) }
+    var isLocal by rememberSaveable { mutableStateOf(false) }
+    var patchBundle by rememberSaveable { mutableStateOf<Uri?>(null) }
+    var integrations by rememberSaveable { mutableStateOf<Uri?>(null) }
 
     val inputsAreValid by remember {
         derivedStateOf {
@@ -60,6 +62,7 @@ fun ImportBundleDialog(
             }
         }
     }
+
 
     Dialog(
         onDismissRequest = onDismissRequest,
@@ -109,6 +112,13 @@ fun ImportBundleDialog(
                         end = 24.dp,
                     )
                 ) {
+                    if (isLocal) {
+                        LocalBundleSelectors(
+                            onPatchesSelection = { patchBundle = it },
+                            onIntegrationsSelection = { integrations = it },
+                        )
+                    }
+
                     OutlinedTextField(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -119,17 +129,58 @@ fun ImportBundleDialog(
                             Text(stringResource(R.string.bundle_input_name))
                         }
                     )
+                    if (!isLocal) {
+                        OutlinedTextField(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 16.dp),
+                            value = remoteUrl,
+                            onValueChange = { remoteUrl = it },
+                            label = {
+                                Text(stringResource(R.string.bundle_input_source_url))
+                            }
+                        )
+                    } else {
+                        OutlinedTextField(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 16.dp),
+                            value = remoteUrl,
+                            onValueChange = { remoteUrl = it },
+                            label = {
+                                Text("Patches Source File")
+                            },
+                            trailingIcon = {
+                                IconButton(
+                                    onClick = {}
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Topic,
+                                        contentDescription = null
+                                    )
+                                }
+                            }
+                        )
 
-                    OutlinedTextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 16.dp),
-                        value = remoteUrl,
-                        onValueChange = { remoteUrl = it },
-                        label = {
-                            Text(stringResource(R.string.bundle_input_source_url))
-                        }
-                    )
+                        OutlinedTextField(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 16.dp),
+                            value = remoteUrl,
+                            onValueChange = { remoteUrl = it },
+                            label = {
+                                Text("Integrations Source File")
+                            },
+                            trailingIcon = {
+                                IconButton(onClick = {}) {
+                                    Icon(
+                                        imageVector = Icons.Default.Topic,
+                                        contentDescription = null
+                                    )
+                                }
+                            }
+                        )
+                    }
                 }
 
                 Column(
@@ -139,29 +190,35 @@ fun ImportBundleDialog(
                         end = 4.dp,
                     )
                 ) {
-                    BundleInfoListItem(
-                        headlineText = stringResource(R.string.automatically_update),
-                        supportingText = stringResource(R.string.automatically_update_description),
-                        trailingContent = {
-                            Switch(
-                                checked = checked,
-                                onCheckedChange = { checked = it }
-                            )
-                        }
-                    )
+                    if (!isLocal) {
+                        BundleInfoListItem(
+                            headlineText = stringResource(R.string.automatically_update),
+                            supportingText = stringResource(R.string.automatically_update_description),
+                            trailingContent = {
+                                Switch(
+                                    checked = checked,
+                                    onCheckedChange = { checked = it }
+                                )
+                            }
+                        )
+                    }
+
 
                     BundleInfoListItem(
                         headlineText = stringResource(R.string.bundle_type),
-                        supportingText = stringResource(R.string.bundle_type_description),
-                        trailingContent = {
-                            FilledTonalButton(
-                                onClick = { /* TODO */ },
-                                content = {
+                        supportingText = stringResource(R.string.bundle_type_description)
+                    ) {
+                        FilledTonalButton(
+                            onClick = { isLocal = !isLocal },
+                            content = {
+                                if (isLocal) {
+                                    Text("Local")
+                                } else {
                                     Text("Remote")
                                 }
-                            )
-                        }
-                    )
+                            }
+                        )
+                    }
 
                     Text(
                         text = "Information",
@@ -178,7 +235,7 @@ fun ImportBundleDialog(
                         supportingText = "No Patches available to view",
                         trailingContent = {
                             if (patchCount > 0) {
-                                IconButton(onClick = { }) {
+                                IconButton(onClick = {}) {
                                     Icon(
                                         Icons.Outlined.ArrowRight,
                                         stringResource(R.string.patches)
