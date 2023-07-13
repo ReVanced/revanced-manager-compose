@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -17,6 +18,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -25,9 +27,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -43,7 +48,7 @@ fun BundlePatchesDialog(
     onBackIcon: @Composable () -> Unit,
     source: Source,
 ) {
-    val informationCardVisible by remember { mutableStateOf(true) }
+    var informationCardVisible by remember { mutableStateOf(true) }
     val bundle by source.bundle.collectAsStateWithLifecycle()
 
     Dialog(
@@ -70,32 +75,17 @@ fun BundlePatchesDialog(
                     .verticalScroll(rememberScrollState())
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
                 ) {
                     AnimatedVisibility(visible = informationCardVisible) {
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                                .clip(RoundedCornerShape(28.dp))
-                                .background(MaterialTheme.colorScheme.secondaryContainer)
+                        NotificationCard(
+                            color = MaterialTheme.colorScheme.secondaryContainer,
+                            icon = Icons.Outlined.Lightbulb,
+                            text = "Tap on the patches to get more information about them"
                         ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(16.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Lightbulb,
-                                    contentDescription = null,
-                                )
-                                Text(
-                                    //text = "Tap on the patches to get more information about them",
-                                    text = "Tap on the patches to get",
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
+                            IconButton(onClick = { informationCardVisible = false }) {
                                 Icon(
                                     imageVector = Icons.Outlined.Close,
                                     contentDescription = null,
@@ -128,6 +118,43 @@ fun BundlePatchesDialog(
 
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun NotificationCard(
+    color: Color,
+    icon: ImageVector,
+    text: String,
+    action: @Composable () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(28.dp))
+            .background(color)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(
+                16.dp,
+                Alignment.Start
+            )
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+            )
+            Text(
+                modifier = Modifier.width(220.dp),
+                text = text,
+                style = MaterialTheme.typography.bodyMedium
+            )
+            action()
         }
     }
 }
