@@ -18,7 +18,7 @@ import kotlinx.coroutines.flow.flow
 import java.io.File
 
 class APKMirror(
-    private val client: HttpService
+    private val httpClient: HttpService
 ) : AppDownloader {
     private val _downloadProgress: MutableStateFlow<Pair<Float, Float>?> = MutableStateFlow(null)
     override val downloadProgress = _downloadProgress.asStateFlow()
@@ -26,7 +26,7 @@ class APKMirror(
     private val versionMap = HashMap<String, String>()
 
     private suspend fun getAppLink(packageName: String): String {
-        val searchResults = client.getHtml { url("$apkMirror/?post_type=app_release&searchtype=app&s=$packageName") }
+        val searchResults = httpClient.getHtml { url("$apkMirror/?post_type=app_release&searchtype=app&s=$packageName") }
             .div {
                 withId = "content"
                 findFirst {
@@ -57,7 +57,7 @@ class APKMirror(
             }
 
         return searchResults.find { url ->
-            client.getHtml { url(apkMirror + url) }
+            httpClient.getHtml { url(apkMirror + url) }
                 .div {
                     withId = "primary"
                     findFirst {
@@ -95,7 +95,7 @@ class APKMirror(
             else
                 page <= 1
         ) {
-            client.getHtml {
+            httpClient.getHtml {
                 url("$apkMirror/uploads/page/$page/")
                 parameter("appcategory", appCategory)
             }.div {
@@ -138,7 +138,7 @@ class APKMirror(
                         }
                     }
                 }
-            }.onEach { versions -> emit(versions) }
+            }.onEach { version -> emit(version) }
 
             page++
         }
@@ -150,11 +150,9 @@ class APKMirror(
         preferSplit: Boolean,
         preferUniversal: Boolean
     ): File {
-        _downloadProgress.emit(null)
-
         var isSplit = false
 
-        val appPage = client.getHtml { url(apkMirror + versionMap[version]) }
+        val appPage = httpClient.getHtml { url(apkMirror + versionMap[version]) }
             .div {
                 withClass = "variants-table"
                 findFirst { // list of variants
@@ -190,7 +188,7 @@ class APKMirror(
                 }
             }
 
-        val downloadPage = client.getHtml { url(apkMirror + appPage) }
+        val downloadPage = httpClient.getHtml { url(apkMirror + appPage) }
             .a {
                 withClass = "downloadButton"
                 findFirst {
@@ -198,7 +196,7 @@ class APKMirror(
                 }
             }
 
-        val downloadLink = client.getHtml { url(apkMirror + downloadPage) }
+        val downloadLink = httpClient.getHtml { url(apkMirror + downloadPage) }
             .form {
                 withId = "filedownload"
                 findFirst {
@@ -230,7 +228,7 @@ class APKMirror(
             else
                 saveLocation
 
-            client.download(downloadLocation) {
+            httpClient.download(downloadLocation) {
                 url(apkMirror + downloadLink)
                 onDownload { bytesSentTotal, contentLength ->
                     _downloadProgress.emit(bytesSentTotal.div(100000).toFloat().div(10) to contentLength.div(100000).toFloat().div(10))

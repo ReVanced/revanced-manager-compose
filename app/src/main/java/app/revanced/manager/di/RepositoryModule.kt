@@ -4,7 +4,6 @@ import app.revanced.manager.data.platform.FileSystem
 import app.revanced.manager.domain.repository.*
 import app.revanced.manager.domain.worker.WorkerRepository
 import app.revanced.manager.network.api.ManagerAPI
-import app.revanced.manager.network.downloader.APKMirror
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
@@ -17,6 +16,5 @@ val repositoryModule = module {
     singleOf(::PatchSelectionRepository)
     singleOf(::SourceRepository)
     singleOf(::WorkerRepository)
-    singleOf(::APKMirror)
     singleOf(::DownloadedAppRepository)
 }
