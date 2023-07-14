@@ -48,7 +48,6 @@ fun ImportBundleDialog(
     onDismissRequest: () -> Unit,
     onRemoteSubmit: (String, Url) -> Unit,
     onLocalSubmit: (String, Uri, Uri?) -> Unit,
-    topBarTitle: String,
     patchCount: Int = 0,
 ) {
     var name by rememberSaveable { mutableStateOf("") }
@@ -90,7 +89,7 @@ fun ImportBundleDialog(
         Scaffold(
             topBar = {
                 BundleTopBar(
-                    title = topBarTitle,
+                    title = stringResource(R.string.import_bundle),
                     onBackClick = onDismissRequest,
                     onBackIcon = {
                         Icon(

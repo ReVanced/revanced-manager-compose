@@ -33,7 +33,6 @@ fun SourcesScreen(
                 showNewSourceDialog = false
                 vm.addLocal(name, patches, integrations)
             },
-            topBarTitle = stringResource(R.string.import_bundle),
             onRemoteSubmit = { name, url ->
                 showNewSourceDialog = false
                 vm.addRemote(name, url)
