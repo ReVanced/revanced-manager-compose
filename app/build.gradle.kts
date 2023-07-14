@@ -82,7 +82,7 @@ dependencies {
     implementation(libs.accompanist.webview)
 
     // HTML Scraper
-    implementation("it.skrape:skrapeit:1.1.5") {
+    implementation(libs.skrapeit) {
         exclude(group = "xml-apis", module = "xml-apis")
     }
 
@@ -91,7 +91,7 @@ dependencies {
     implementation(libs.coil.appiconloader)
 
     // KotlinX
-    implementation(libs.kotlinx.serilization.json)
+    implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.collection.immutable)
 
     // Room

@@ -7,7 +7,7 @@ paging = "3.1.1"
 work-runtime = "2.8.1ō"
 compose-bom = "2023.06.01"
 accompanist = "0.30.1"
-srialization = "1.5.1"
+serialization = "1.5.1"
 collection = "0.3.5"
 room-version = "2.5.2"
 patcher = "11.0.4"
@@ -24,6 +24,7 @@ devToolsGradlePlugin = "1.8.21-1.0.11"
 aboutLibrariesGradlePlugin = "10.8.0"
 coil = "2.4.0"
 app-icon-loader-coil = "1.5.0"
+skrapeit = "1.1.5"
 [libraries]
 # AndroidX Core
 androidx-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "ktx" }
@@ -54,7 +55,7 @@ accompanist-systemuicontroller = { group = "com.google.accompanist", name = "acc
 accompanist-placeholder = { group = "com.google.accompanist", name = "accompanist-placeholder-material", version.ref = "accompanist" }
 
 # Kotlinx
-kotlinx-serilization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "srialization" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serialization" }
 kotlinx-collection-immutable = { group = "org.jetbrains.kotlinx", name = "kotlinx-collections-immutable", version.ref = "collection" }
 
 # Room
@@ -87,6 +88,8 @@ ktor-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.ref = "k
 ktor-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
 ktor-serialization = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
 
+# HTML Scraper
+skrapeit= { group = "it.skrape", name = "skrapeit", version.ref = "skrapeit" }
 # Markdown
 markdown = { group = "org.jetbrains", name = "markdown", version.ref = "markdown" }
 
