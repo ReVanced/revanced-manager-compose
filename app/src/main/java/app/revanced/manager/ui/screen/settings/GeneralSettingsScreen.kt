@@ -20,6 +20,7 @@ import app.revanced.manager.R
 import app.revanced.manager.domain.manager.PreferencesManager
 import app.revanced.manager.ui.component.AppTopBar
 import app.revanced.manager.ui.component.GroupHeader
+import app.revanced.manager.ui.component.settings.BooleanItem
 import app.revanced.manager.ui.theme.Theme
 import app.revanced.manager.ui.viewmodel.SettingsViewModel
 import kotlinx.coroutines.launch
@@ -74,21 +75,18 @@ fun GeneralSettingsScreen(
                 }
             )
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                val dynamicColor by prefs.dynamicColor.getAsState()
                 BooleanItem(
-                    value = dynamicColor,
-                    onValueChange = { coroutineScope.launch { prefs.dynamicColor.update(it) } },
+                    preference = prefs.dynamicColor,
+                    coroutineScope = coroutineScope,
                     headline = R.string.dynamic_color,
                     description = R.string.dynamic_color_description
                 )
             }
 
             GroupHeader(stringResource(R.string.patcher))
-
-            val allowExperimental by prefs.allowExperimental.getAsState()
             BooleanItem(
-                value = allowExperimental,
-                onValueChange = { coroutineScope.launch { prefs.allowExperimental.update(it) } },
+                preference = prefs.allowExperimental,
+                coroutineScope = coroutineScope,
                 headline = R.string.experimental_patches,
                 description = R.string.experimental_patches_description
             )
@@ -134,21 +132,3 @@ private fun ThemePicker(
         }
     )
 }
-
-@Composable
-private fun BooleanItem(
-    value: Boolean,
-    onValueChange: (Boolean) -> Unit,
-    @StringRes headline: Int,
-    @StringRes description: Int
-) = ListItem(
-    modifier = Modifier.clickable { onValueChange(!value) },
-    headlineContent = { Text(stringResource(headline)) },
-    supportingContent = { Text(stringResource(description)) },
-    trailingContent = {
-        Switch(
-            checked = value,
-            onCheckedChange = onValueChange,
-        )
-    }
-)

@@ -14,4 +14,6 @@ class PreferencesManager(
 
     val keystoreCommonName = stringPreference("keystore_cn", KeystoreManager.DEFAULT)
     val keystorePass = stringPreference("keystore_pass", KeystoreManager.DEFAULT)
+
+    val preferSplits = booleanPreference("prefer_splits", false)
 }
