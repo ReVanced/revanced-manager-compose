@@ -33,7 +33,7 @@ class AppDownloaderViewModel(
     private val sourceRepository: SourceRepository = get()
     private val pm: PM = get()
     private val prefs: PreferencesManager = get()
-    val appDownloader: AppDownloader = APKMirror(httpClient = get())
+    val appDownloader: AppDownloader = APKMirror()
 
     var isDownloading: Boolean by mutableStateOf(false)
         private set

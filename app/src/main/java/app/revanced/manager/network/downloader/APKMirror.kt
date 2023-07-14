@@ -15,11 +15,12 @@ import it.skrape.selects.html5.span
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
 import java.io.File
 
-class APKMirror(
-    private val httpClient: HttpService
-) : AppDownloader {
+class APKMirror : AppDownloader, KoinComponent {
+    private val httpClient: HttpService = get()
 
     enum class APKType {
         APK,
@@ -161,8 +162,6 @@ class APKMirror(
         saveDirectory: File,
         preferSplit: Boolean
     ): File {
-        //var isSplit = false
-
         val variants = httpClient.getHtml { url(apkMirror + versionMap[version]) }
             .div {
                 withClass = "variants-table"
