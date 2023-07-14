@@ -1,6 +1,8 @@
 package app.revanced.manager.ui.component.sources
 
 import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,6 +37,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import app.revanced.manager.R
 import app.revanced.manager.ui.component.BundleTopBar
+import app.revanced.manager.util.APK_MIMETYPE
+import app.revanced.manager.util.JAR_MIMETYPE
 import app.revanced.manager.util.parseUrlOrNull
 import io.ktor.http.Url
 
@@ -54,6 +58,9 @@ fun ImportBundleDialog(
     var patchBundle by rememberSaveable { mutableStateOf<Uri?>(null) }
     var integrations by rememberSaveable { mutableStateOf<Uri?>(null) }
 
+    val patchBundleText = if (patchBundle == null) "" else patchBundle.toString()
+    val integrationText = if (integrations == null) "" else integrations.toString()
+
     val inputsAreValid by remember {
         derivedStateOf {
             val nameSize = name.length
@@ -63,6 +70,15 @@ fun ImportBundleDialog(
         }
     }
 
+    val patchActivityLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+            uri?.let { patchBundle = it }
+        }
+
+    val integrationsActivityLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+            uri?.let { integrations = it }
+        }
 
     Dialog(
         onDismissRequest = onDismissRequest,
@@ -91,7 +107,11 @@ fun ImportBundleDialog(
                                 .padding(end = 16.dp)
                                 .clickable {
                                     if (inputsAreValid) {
-                                        onRemoteSubmit(name, remoteUrl.parseUrlOrNull()!!)
+                                        if (isLocal) {
+                                            onLocalSubmit(name, patchBundle!!, integrations)
+                                        } else {
+                                            onRemoteSubmit(name, remoteUrl.parseUrlOrNull()!!)
+                                        }
                                     }
                                 }
                         )
@@ -112,12 +132,6 @@ fun ImportBundleDialog(
                         end = 24.dp,
                     )
                 ) {
-                    if (isLocal) {
-                        LocalBundleSelectors(
-                            onPatchesSelection = { patchBundle = it },
-                            onIntegrationsSelection = { integrations = it },
-                        )
-                    }
 
                     OutlinedTextField(
                         modifier = Modifier
@@ -145,14 +159,16 @@ fun ImportBundleDialog(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(bottom = 16.dp),
-                            value = remoteUrl,
-                            onValueChange = { remoteUrl = it },
+                            value = patchBundleText,
+                            onValueChange = {},
                             label = {
                                 Text("Patches Source File")
                             },
                             trailingIcon = {
                                 IconButton(
-                                    onClick = {}
+                                    onClick = {
+                                        patchActivityLauncher.launch(JAR_MIMETYPE)
+                                    }
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Topic,
@@ -166,13 +182,16 @@ fun ImportBundleDialog(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(bottom = 16.dp),
-                            value = remoteUrl,
-                            onValueChange = { remoteUrl = it },
+                            value = integrationText,
+                            onValueChange = {},
                             label = {
                                 Text("Integrations Source File")
                             },
                             trailingIcon = {
-                                IconButton(onClick = {}) {
+                                IconButton(onClick = {
+                                    integrationsActivityLauncher.launch(APK_MIMETYPE)
+                                }
+                                ) {
                                     Icon(
                                         imageVector = Icons.Default.Topic,
                                         contentDescription = null
