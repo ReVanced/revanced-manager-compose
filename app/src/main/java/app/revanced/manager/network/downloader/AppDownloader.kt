@@ -21,7 +21,6 @@ interface AppDownloader {
      * @param version The version to download.
      * @param saveDirectory The folder where the downloaded app should be stored.
      * @param preferSplit Whether it should prefer a split or a full apk.
-     * @param preferUniversal Whether it should prefer an universal or an arch-specific apk.
      * @return the downloaded apk or the folder containing all split apks.
      */
     suspend fun downloadApp(
