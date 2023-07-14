@@ -83,9 +83,8 @@ dependencies {
     implementation(libs.accompanist.webview)
 
     // HTML Scraper
-    implementation(libs.skrapeit) {
-        exclude(group = "xml-apis", module = "xml-apis")
-    }
+    implementation(libs.skrapeit.dsl)
+    implementation(libs.skrapeit.parser)
 
     // Coil (async image loading, network image)
     implementation(libs.coil.compose)
