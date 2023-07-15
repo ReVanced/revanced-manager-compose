@@ -1,11 +1,18 @@
 name: "CodeQL"
 
 on:
+
   push:
     branches: [ "dev", "main" ]
   pull_request:
     # The branches below must be a subset of the branches above
     branches: [ "dev" ]
+    paths:
+      - '.github/workflows/codeql.yml'
+      - '**.kt'
+      - '**.kts'
+      - '**.xml'
+
   schedule:
     - cron: '0 0 * * 0'
 
@@ -40,10 +47,10 @@ jobs:
         distribution: 'zulu'
         cache: 'gradle'
 
-    - name: Build with Gradle
+    - name: Get Gradle dependencies
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: ./gradlew build
+      run: ./gradlew --refresh-dependencies
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
