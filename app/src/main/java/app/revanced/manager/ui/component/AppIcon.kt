@@ -1,5 +1,6 @@
 package app.revanced.manager.ui.component
 
+import android.content.pm.PackageInfo
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -10,16 +11,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.dp
-import app.revanced.manager.util.AppInfo
 import coil.compose.AsyncImage
 
 @Composable
 fun AppIcon(
-    app: AppInfo,
+    packageInfo: PackageInfo?,
     contentDescription: String?,
     modifier: Modifier = Modifier
 ) {
-    if (app.packageInfo == null) {
+    if (packageInfo == null) {
         val image = rememberVectorPainter(Icons.Default.Android)
         val colorFilter = ColorFilter.tint(LocalContentColor.current)
 
@@ -31,7 +31,7 @@ fun AppIcon(
         )
     } else {
         AsyncImage(
-            app.packageInfo,
+            packageInfo,
             contentDescription,
             Modifier.size(36.dp).then(modifier)
         )

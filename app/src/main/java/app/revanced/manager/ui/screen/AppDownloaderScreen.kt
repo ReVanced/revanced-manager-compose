@@ -32,13 +32,13 @@ import app.revanced.manager.R
 import app.revanced.manager.ui.component.AppTopBar
 import app.revanced.manager.ui.component.LoadingIndicator
 import app.revanced.manager.ui.viewmodel.AppDownloaderViewModel
-import app.revanced.manager.util.AppInfo
+import app.revanced.manager.util.AppMeta
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppDownloaderScreen(
     onBackClick: () -> Unit,
-    onApkClick: (AppInfo) -> Unit,
+    onApkClick: (AppMeta) -> Unit,
     viewModel: AppDownloaderViewModel
 ) {
     SideEffect {

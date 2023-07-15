@@ -12,7 +12,7 @@ import app.revanced.manager.domain.repository.DownloadedAppRepository
 import app.revanced.manager.domain.repository.SourceRepository
 import app.revanced.manager.network.downloader.APKMirror
 import app.revanced.manager.network.downloader.AppDownloader
-import app.revanced.manager.util.AppInfo
+import app.revanced.manager.util.AppMeta
 import app.revanced.manager.util.PM
 import app.revanced.manager.util.mutableStateSetOf
 import app.revanced.manager.util.simpleMessage
@@ -26,7 +26,7 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 
 class AppDownloaderViewModel(
-    private val selectedApp: AppInfo
+    private val selectedApp: AppMeta
 ) : ViewModel(), KoinComponent {
     private val app: Application = get()
     private val downloadedAppRepository: DownloadedAppRepository = get()
@@ -43,6 +43,8 @@ class AppDownloaderViewModel(
         private set
 
     val availableVersions = mutableStateSetOf<String>()
+
+    lateinit var onComplete: (AppMeta) -> Unit
 
     val compatibleVersions = sourceRepository.bundles.map { bundles ->
         var patchesWithoutVersions = 0
@@ -100,7 +102,6 @@ class AppDownloaderViewModel(
         }
     }
 
-    lateinit var onComplete: (AppInfo) -> Unit
 
     fun downloadApp(
         version: String

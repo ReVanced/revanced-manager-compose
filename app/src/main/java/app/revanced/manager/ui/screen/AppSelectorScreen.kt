@@ -30,15 +30,16 @@ import app.revanced.manager.ui.component.AppTopBar
 import app.revanced.manager.ui.component.LoadingIndicator
 import app.revanced.manager.ui.viewmodel.AppSelectorViewModel
 import app.revanced.manager.util.APK_MIMETYPE
-import app.revanced.manager.util.AppInfo
+import app.revanced.manager.util.AppMeta
+import app.revanced.manager.util.PackageMeta
 import app.revanced.manager.util.toast
 import org.koin.androidx.compose.getViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppSelectorScreen(
-    onAppClick: (AppInfo) -> Unit,
-    onDownloaderClick: (AppInfo) -> Unit,
+    onAppClick: (AppMeta) -> Unit,
+    onDownloaderClick: (AppMeta) -> Unit,
     onBackClick: () -> Unit,
     vm: AppSelectorViewModel = getViewModel()
 ) {
@@ -47,7 +48,8 @@ fun AppSelectorScreen(
     val pickApkLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             uri?.let { apkUri ->
-                vm.loadSelectedFile(apkUri)?.let(onAppClick) ?: context.toast(context.getString(R.string.failed_to_load_apk))
+                vm.loadSelectedFile(apkUri)?.let(onAppClick)
+                    ?: context.toast(context.getString(R.string.failed_to_load_apk))
             }
         }
 
@@ -56,20 +58,20 @@ fun AppSelectorScreen(
 
     val appList by vm.appList.collectAsStateWithLifecycle(initialValue = emptyList())
     val filteredAppList = rememberSaveable(appList, filterText) {
-        appList.filter { app ->
-            (vm.loadLabel(app.packageInfo)).contains(
+        appList.filter { (app, packageInfo) ->
+            vm.loadLabel(packageInfo).contains(
                 filterText,
                 true
             ) or app.packageName.contains(filterText, true)
         }
     }
 
-    var selectedApp: AppInfo? by rememberSaveable { mutableStateOf(null) }
+    var selectedPackage: PackageMeta? by rememberSaveable { mutableStateOf(null) }
 
-    selectedApp?.let {
+    selectedPackage?.let {
         VersionDialog(
-            selectedApp = it,
-            onDismissRequest = { selectedApp = null },
+            packageMeta = it,
+            onDismissRequest = { selectedPackage = null },
             onSelectVersionClick = onDownloaderClick,
             onContinueClick = onAppClick
         )
@@ -100,17 +102,29 @@ fun AppSelectorScreen(
                     if (appList.isNotEmpty()) {
                         items(
                             items = filteredAppList,
-                            key = { it.packageName }
-                        ) { app ->
+                            key = { it.app.packageName }
+                        ) { (app, packageInfo) ->
 
                             ListItem(
                                 modifier = Modifier.clickable {
-                                    app.packageInfo?.let { onAppClick(app) }
+                                    if (packageInfo != null) {
+                                        onAppClick(app)
+                                    }
                                 },
-                                leadingContent = { AppIcon(app, null) },
-                                headlineContent = { Text(vm.loadLabel(app.packageInfo)) },
+                                leadingContent = { AppIcon(packageInfo, null) },
+                                headlineContent = { Text(vm.loadLabel(packageInfo)) },
                                 supportingContent = { Text(app.packageName) },
-                                trailingContent = if (app.patches > 0) { { Text(pluralStringResource(R.plurals.patches_count, app.patches, app.patches)) } } else null
+                                trailingContent = if (app.patches > 0) {
+                                    {
+                                        Text(
+                                            pluralStringResource(
+                                                R.plurals.patches_count,
+                                                app.patches,
+                                                app.patches
+                                            )
+                                        )
+                                    }
+                                } else null
                             )
 
                         }
@@ -165,15 +179,26 @@ fun AppSelectorScreen(
             if (appList.isNotEmpty()) {
                 items(
                     items = appList,
-                    key = { it.packageName }
-                ) { app ->
+                    key = { it.app.packageName }
+                ) {
+                    val patches = it.app.patches
 
                     ListItem(
-                        modifier = Modifier.clickable { selectedApp = app },
-                        leadingContent = { AppIcon(app, null) },
-                        headlineContent = { Text(vm.loadLabel(app.packageInfo)) },
-                        supportingContent = { Text(app.packageName) },
-                        trailingContent = if (app.patches > 0) { { Text(pluralStringResource(R.plurals.patches_count, app.patches, app.patches)) } } else null
+                        modifier = Modifier.clickable { selectedPackage = it },
+                        leadingContent = { AppIcon(it.packageInfo, null) },
+                        headlineContent = { Text(vm.loadLabel(it.packageInfo)) },
+                        supportingContent = { Text(it.app.packageName) },
+                        trailingContent = if (patches > 0) {
+                            {
+                                Text(
+                                    pluralStringResource(
+                                        R.plurals.patches_count,
+                                        patches,
+                                        patches
+                                    )
+                                )
+                            }
+                        } else null
                     )
 
                 }
@@ -184,28 +209,36 @@ fun AppSelectorScreen(
     }
 }
 
+// TODO: split into two separate composable functions.
 @Composable
 fun VersionDialog(
-    selectedApp: AppInfo,
+    packageMeta: PackageMeta,
     onDismissRequest: () -> Unit,
-    onSelectVersionClick: (AppInfo) -> Unit,
-    onContinueClick: (AppInfo) -> Unit
-) = if (selectedApp.packageInfo != null) AlertDialog(
+    onSelectVersionClick: (AppMeta) -> Unit,
+    onContinueClick: (AppMeta) -> Unit
+) = if (packageMeta.packageInfo != null) AlertDialog(
     onDismissRequest = onDismissRequest,
     title = { Text(stringResource(R.string.continue_with_version)) },
-    text = { Text(stringResource(R.string.version_not_supported, selectedApp.packageInfo.versionName)) },
+    text = {
+        Text(
+            stringResource(
+                R.string.version_not_supported,
+                packageMeta.app.versionName
+            )
+        )
+    },
     confirmButton = {
         Column(
             horizontalAlignment = Alignment.End
         ) {
             TextButton(onClick = {
-                onSelectVersionClick(selectedApp)
+                onSelectVersionClick(packageMeta.app)
                 onDismissRequest()
             }) {
                 Text(stringResource(R.string.download_another_version))
             }
             TextButton(onClick = {
-                onContinueClick(selectedApp)
+                onContinueClick(packageMeta.app)
                 onDismissRequest()
             }) {
                 Text(stringResource(R.string.continue_anyways))
@@ -223,7 +256,7 @@ fun VersionDialog(
             Text(stringResource(R.string.cancel))
         }
         TextButton(onClick = {
-            onSelectVersionClick(selectedApp)
+            onSelectVersionClick(packageMeta.app)
             onDismissRequest()
         }) {
             Text(stringResource(R.string.download_app))

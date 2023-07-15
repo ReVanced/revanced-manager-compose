@@ -75,7 +75,7 @@ fun PatchesSelectorScreen(
 
     if (vm.compatibleVersions.isNotEmpty())
         UnsupportedDialog(
-            appVersion = vm.appInfo.packageInfo!!.versionName,
+            appVersion = vm.app.versionName,
             supportedVersions = vm.compatibleVersions,
             onDismissRequest = vm::dismissDialogs
         )

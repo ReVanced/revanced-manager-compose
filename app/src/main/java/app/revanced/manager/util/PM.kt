@@ -27,12 +27,14 @@ private const val byteArraySize = 1024 * 1024 // Because 1,048,576 is not readab
 
 @Immutable
 @Parcelize
-data class AppInfo(
+data class AppMeta(
     val packageName: String,
+    val versionName: String,
     val patches: Int,
-    val packageInfo: PackageInfo?,
     val path: File? = null
 ) : Parcelable
+
+data class PackageMeta(val app: AppMeta, val packageInfo: PackageInfo?)
 
 @SuppressLint("QueryPermissionsNeeded")
 @Suppress("DEPRECATION")
@@ -40,22 +42,26 @@ class PM(
     private val app: Application,
     private val sourceRepository: SourceRepository
 ) {
-    private val installedApps = MutableStateFlow(emptyList<AppInfo>())
-    private val compatibleApps = MutableStateFlow(emptyList<AppInfo>())
+    private val installedApps = MutableStateFlow(emptyList<PackageMeta>())
+    private val compatibleApps = MutableStateFlow(emptyList<PackageMeta>())
 
-    val appList: Flow<List<AppInfo>> = compatibleApps.combine(installedApps) { compatibleApps, installedApps ->
-        if (compatibleApps.isNotEmpty()) {
-            (compatibleApps + installedApps)
-                .distinctBy { it.packageName }
-                .sortedWith(
-                    compareByDescending<AppInfo> {
-                        it.patches
-                    }.thenBy { it.packageInfo?.applicationInfo?.loadLabel(app.packageManager).toString() }.thenBy { it.packageName }
-                )
-        } else {
-            emptyList()
+    val appList: Flow<List<PackageMeta>> =
+        compatibleApps.combine(installedApps) { compatibleApps, installedApps ->
+            if (compatibleApps.isNotEmpty()) {
+                (compatibleApps + installedApps)
+                    .distinctBy { it.app.packageName }
+                    .sortedWith(
+                        compareByDescending<PackageMeta> {
+                            it.app.patches
+                        }.thenBy {
+                            it.packageInfo?.applicationInfo?.loadLabel(app.packageManager)
+                                ?.toString()
+                        }.thenBy { it.app.packageName }
+                    )
+            } else {
+                emptyList()
+            }
         }
-    }
 
     suspend fun getCompatibleApps() {
         sourceRepository.bundles.collect { bundles ->
@@ -72,17 +78,23 @@ class PM(
                     compatiblePackages.keys.map { pkg ->
                         try {
                             val packageInfo = app.packageManager.getPackageInfo(pkg, 0)
-                            AppInfo(
-                                pkg,
-                                compatiblePackages[pkg] ?: 0,
-                                packageInfo,
-                                File(packageInfo.applicationInfo.sourceDir)
+                            PackageMeta(
+                                AppMeta(
+                                    pkg,
+                                    packageInfo.versionName,
+                                    compatiblePackages[pkg] ?: 0,
+                                    File(packageInfo.applicationInfo.sourceDir)
+                                ),
+                                packageInfo
                             )
                         } catch (e: PackageManager.NameNotFoundException) {
-                            AppInfo(
-                                pkg,
-                                compatiblePackages[pkg] ?: 0,
-                                null
+                            PackageMeta(
+                                AppMeta(
+                                    pkg,
+                                    "",
+                                    compatiblePackages[pkg] ?: 0,
+                                    null
+                                ), null
                             )
                         }
                     }
@@ -92,14 +104,18 @@ class PM(
     }
 
     suspend fun getInstalledApps() {
-        installedApps.emit(app.packageManager.getInstalledPackages(MATCH_UNINSTALLED_PACKAGES).map { packageInfo ->
-            AppInfo(
-                packageInfo.packageName,
-                0,
-                packageInfo,
-                File(packageInfo.applicationInfo.sourceDir)
-            )
-        })
+        installedApps.emit(
+            app.packageManager.getInstalledPackages(MATCH_UNINSTALLED_PACKAGES).map { packageInfo ->
+                PackageMeta(
+                    AppMeta(
+                        packageInfo.packageName,
+                        packageInfo.versionName,
+                        0,
+                        File(packageInfo.applicationInfo.sourceDir)
+                    ),
+                    packageInfo
+                )
+            })
     }
 
     suspend fun installApp(apks: List<File>) = withContext(Dispatchers.IO) {
@@ -121,10 +137,10 @@ class PM(
     }
 
     fun getApkInfo(apk: File) = app.packageManager.getPackageArchiveInfo(apk.path, 0)?.let {
-        AppInfo(
+        AppMeta(
             it.packageName,
+            it.versionName,
             0,
-            it,
             apk
         )
     }

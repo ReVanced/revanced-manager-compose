@@ -69,7 +69,7 @@ class InstallerViewModel(input: Destination.Installer) : ViewModel(), KoinCompon
     private val logger = ManagerLogger()
 
     init {
-        val (appInfo, patches, options) = input
+        val (appMeta, patches, options) = input
 
         _progress = MutableStateFlow(PatcherProgressManager.generateSteps(
             app,
@@ -78,12 +78,12 @@ class InstallerViewModel(input: Destination.Installer) : ViewModel(), KoinCompon
         patcherWorkerId =
             workerRepository.launchExpedited<PatcherWorker, PatcherWorker.Args>(
                 "patching", PatcherWorker.Args(
-                    appInfo.path!!.absolutePath,
+                    appMeta.path!!.absolutePath,
                     outputFile.path,
                     patches,
                     options,
                     packageName,
-                    appInfo.packageInfo!!.versionName,
+                    appMeta.versionName,
                     _progress,
                     logger
                 )
