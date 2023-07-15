@@ -40,6 +40,8 @@ jobs:
         distribution: 'zulu'
 
     - name: Build with Gradle
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: ./gradlew build
 
     - name: Perform CodeQL Analysis
