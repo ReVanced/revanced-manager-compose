@@ -50,7 +50,6 @@ fun SourceItem(
     val padding = PaddingValues(16.dp, 0.dp)
 
     val androidContext = LocalContext.current
-
     if (viewBundleDialogPage) {
         BundleInformationDialog(
             onDismissRequest = { viewBundleDialogPage = false },
@@ -77,7 +76,7 @@ fun SourceItem(
                         if (source is RemoteSource) source.update()
                     }
                 }
-            }
+            },
         )
     }
 
