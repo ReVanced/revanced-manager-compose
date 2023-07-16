@@ -12,16 +12,13 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Topic
-import androidx.compose.material.icons.outlined.ArrowRight
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -131,74 +128,21 @@ fun ImportBundleDialog(
                         end = 24.dp,
                     )
                 ) {
-
-                    OutlinedTextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 16.dp),
-                        value = name,
-                        onValueChange = { name = it },
-                        label = {
-                            Text(stringResource(R.string.bundle_input_name))
-                        }
+                    BundleTextContent(
+                        name = name,
+                        onNameChange = { name = it },
+                        isLocal = isLocal,
+                        remoteUrl = remoteUrl,
+                        onRemoteUrlChange = { remoteUrl = it },
+                        patchBundleText = patchBundleText,
+                        onPatchLauncherClick = {
+                            patchActivityLauncher.launch(JAR_MIMETYPE)
+                        },
+                        integrationText = integrationText,
+                        onIntegrationLauncherClick = {
+                            integrationsActivityLauncher.launch(APK_MIMETYPE)
+                        },
                     )
-                    if (!isLocal) {
-                        OutlinedTextField(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 16.dp),
-                            value = remoteUrl,
-                            onValueChange = { remoteUrl = it },
-                            label = {
-                                Text(stringResource(R.string.bundle_input_source_url))
-                            }
-                        )
-                    } else {
-                        OutlinedTextField(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 16.dp),
-                            value = patchBundleText,
-                            onValueChange = {},
-                            label = {
-                                Text("Patches Source File")
-                            },
-                            trailingIcon = {
-                                IconButton(
-                                    onClick = {
-                                        patchActivityLauncher.launch(JAR_MIMETYPE)
-                                    }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Topic,
-                                        contentDescription = null
-                                    )
-                                }
-                            }
-                        )
-
-                        OutlinedTextField(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 16.dp),
-                            value = integrationText,
-                            onValueChange = {},
-                            label = {
-                                Text("Integrations Source File")
-                            },
-                            trailingIcon = {
-                                IconButton(onClick = {
-                                    integrationsActivityLauncher.launch(APK_MIMETYPE)
-                                }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Topic,
-                                        contentDescription = null
-                                    )
-                                }
-                            }
-                        )
-                    }
                 }
 
                 Column(
@@ -208,76 +152,27 @@ fun ImportBundleDialog(
                         end = 4.dp,
                     )
                 ) {
-                    if (!isLocal) {
-                        BundleInfoListItem(
-                            headlineText = stringResource(R.string.automatically_update),
-                            supportingText = stringResource(R.string.automatically_update_description),
-                            trailingContent = {
-                                Switch(
-                                    checked = checked,
-                                    onCheckedChange = { checked = it }
-                                )
+                    BundleInfoContent(
+                        switchChecked = checked,
+                        onCheckedChange = { checked = it },
+                        patchInfoText = "No Patches available to view",
+                        patchCount = patchCount,
+                        onArrowClick = {},
+                        tonalButtonContent = {
+                            if (isLocal) {
+                                Text("Local")
+                            } else {
+                                Text("Remote")
                             }
-                        )
-                    }
-
-
-                    BundleInfoListItem(
-                        headlineText = stringResource(R.string.bundle_type),
-                        supportingText = stringResource(R.string.bundle_type_description)
-                    ) {
-                        FilledTonalButton(
-                            onClick = { isLocal = !isLocal },
-                            content = {
-                                if (isLocal) {
-                                    Text("Local")
-                                } else {
-                                    Text("Remote")
-                                }
-                            }
-                        )
-                    }
-
-                    Text(
-                        text = "Information",
-                        modifier = Modifier.padding(
-                            horizontal = 16.dp,
-                            vertical = 12.dp
-                        ),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-
-                    BundleInfoListItem(
-                        headlineText = stringResource(R.string.patches),
-                        supportingText = "No Patches available to view",
-                        trailingContent = {
-                            if (patchCount > 0) {
-                                IconButton(onClick = {}) {
-                                    Icon(
-                                        Icons.Outlined.ArrowRight,
-                                        stringResource(R.string.patches)
-                                    )
-                                }
-                            }
-                        }
-                    )
-
-                    BundleInfoListItem(
-                        headlineText = stringResource(R.string.patches_version),
-                        supportingText = "1.0.0",
-                    )
-
-                    BundleInfoListItem(
-                        headlineText = stringResource(R.string.integrations_version),
-                        supportingText = "1.0.0",
+                        },
+                        tonalButtonOnClick = { isLocal = !isLocal },
+                        isLocal = isLocal,
                     )
                 }
             }
         }
     }
 }
-
 @Composable
 fun BundleInfoListItem(
     headlineText: String,
@@ -300,4 +195,79 @@ fun BundleInfoListItem(
         },
         trailingContent = trailingContent,
     )
+}
+@Composable
+fun BundleTextContent(
+    name: String,
+    onNameChange: (String) -> Unit = {},
+    isLocal: Boolean,
+    remoteUrl: String,
+    onRemoteUrlChange: (String) -> Unit = {},
+    patchBundleText: String,
+    onPatchLauncherClick: () -> Unit = {},
+    integrationText: String = "",
+    onIntegrationLauncherClick: () -> Unit = {},
+) {
+    OutlinedTextField(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp),
+        value = name,
+        onValueChange = onNameChange,
+        label = {
+            Text(stringResource(R.string.bundle_input_name))
+        }
+    )
+    if (!isLocal) {
+        OutlinedTextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            value = remoteUrl,
+            onValueChange = onRemoteUrlChange,
+            label = {
+                Text(stringResource(R.string.bundle_input_source_url))
+            }
+        )
+    } else {
+        OutlinedTextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            value = patchBundleText,
+            onValueChange = {},
+            label = {
+                Text("Patches Source File")
+            },
+            trailingIcon = {
+                IconButton(
+                    onClick = onPatchLauncherClick
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Topic,
+                        contentDescription = null
+                    )
+                }
+            }
+        )
+
+        OutlinedTextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            value = integrationText,
+            onValueChange = {},
+            label = {
+                Text("Integrations Source File")
+            },
+            trailingIcon = {
+                IconButton(onClick = onIntegrationLauncherClick) {
+                    Icon(
+                        imageVector = Icons.Default.Topic,
+                        contentDescription = null
+                    )
+                }
+            }
+        )
+    }
 }

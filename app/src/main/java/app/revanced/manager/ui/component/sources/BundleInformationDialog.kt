@@ -1,6 +1,7 @@
 package app.revanced.manager.ui.component.sources
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -14,7 +15,6 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -29,6 +29,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import app.revanced.manager.R
+import app.revanced.manager.domain.sources.LocalSource
+import app.revanced.manager.domain.sources.RemoteSource
 import app.revanced.manager.domain.sources.Source
 import app.revanced.manager.ui.component.BundleTopBar
 
@@ -45,6 +47,10 @@ fun BundleInformationDialog(
 ) {
     var checked by remember { mutableStateOf(true) }
     var viewCurrentBundlePatches by remember { mutableStateOf(false) }
+    val isLocal = when(source) {
+            is RemoteSource -> false
+            is LocalSource -> true
+            }
 
     val patchInfoText = if (patchCount == 0) "No Patches available to view"
     else "$patchCount Patches available, tap to view"
@@ -80,7 +86,7 @@ fun BundleInformationDialog(
                                 "Delete"
                             )
                         }
-                        IconButton(onClick = { }) {
+                        IconButton(onClick = {}) {
                             Icon(
                                 Icons.Outlined.Refresh,
                                 "Refresh"
@@ -103,28 +109,14 @@ fun BundleInformationDialog(
                         end = 24.dp,
                     )
                 ) {
-                    OutlinedTextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 16.dp),
-                        value = source.name,
-                        onValueChange = {},
-                        label = {
-                            Text(stringResource(R.string.bundle_input_name))
-                        }
-                    )
-
-                    OutlinedTextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 16.dp),
-                        value = remoteName,
-                        onValueChange = {},
-                        label = {
-                            Text(stringResource(R.string.bundle_input_source_url))
-                        }
+                    BundleTextContent(
+                        name = source.name,
+                        isLocal = isLocal,
+                        remoteUrl = remoteName,
+                        patchBundleText = patchInfoText,
                     )
                 }
+
                 Column(
                     Modifier.padding(
                         start = 8.dp,
@@ -132,68 +124,93 @@ fun BundleInformationDialog(
                         end = 4.dp,
                     )
                 ) {
-                    BundleInfoListItem(
-                        headlineText = stringResource(R.string.automatically_update),
-                        supportingText = stringResource(R.string.automatically_update_description),
-                        trailingContent = {
-                            Switch(
-                                checked = checked,
-                                onCheckedChange = {
-                                    checked = it
-                                }
-                            )
-                        }
-                    )
-
-                    BundleInfoListItem(
-                        headlineText = stringResource(R.string.bundle_type),
-                        supportingText = stringResource(R.string.bundle_type_description),
-                        trailingContent = {
-                            FilledTonalButton(
-                                onClick = { /* TODO */ },
-                                content = {
-                                    Text("Remote")
-                                }
-                            )
-                        }
-                    )
-
-                    Text(
-                        text = "Information",
-                        modifier = Modifier.padding(
-                            horizontal = 16.dp,
-                            vertical = 12.dp
-                        ),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-
-                    BundleInfoListItem(
-                        headlineText = stringResource(R.string.patches),
-                        supportingText = patchInfoText,
-                        trailingContent = {
-                            if (patchCount > 0) {
-                                IconButton(onClick = { viewCurrentBundlePatches = true }) {
-                                    Icon(
-                                        Icons.Outlined.ArrowRight,
-                                        stringResource(R.string.patches)
-                                    )
-                                }
+                    BundleInfoContent(
+                        switchChecked = checked,
+                        onCheckedChange = { checked = it },
+                        patchInfoText = patchInfoText,
+                        patchCount = patchCount,
+                        isLocal = isLocal,
+                        onArrowClick = {
+                            viewCurrentBundlePatches = true
+                        },
+                        tonalButtonContent = {
+                            when(source) {
+                                is RemoteSource -> Text("Remote")
+                                is LocalSource -> Text("Local")
                             }
-                        }
-                    )
-
-                    BundleInfoListItem(
-                        headlineText = stringResource(R.string.patches_version),
-                        supportingText = "1.0.0",
-                    )
-
-                    BundleInfoListItem(
-                        headlineText = stringResource(R.string.integrations_version),
-                        supportingText = "1.0.0",
+                        },
                     )
                 }
             }
         }
     }
+}
+@Composable
+fun BundleInfoContent(
+    switchChecked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    patchInfoText: String,
+    patchCount: Int,
+    onArrowClick: () -> Unit,
+    isLocal: Boolean,
+    tonalButtonOnClick: () -> Unit = {},
+    tonalButtonContent: @Composable RowScope.() -> Unit,
+) {
+    if(!isLocal) {
+        BundleInfoListItem(
+            headlineText = stringResource(R.string.automatically_update),
+            supportingText = stringResource(R.string.automatically_update_description),
+            trailingContent = {
+                Switch(
+                    checked = switchChecked,
+                    onCheckedChange = onCheckedChange
+                )
+            }
+        )
+    }
+
+    BundleInfoListItem(
+        headlineText = stringResource(R.string.bundle_type),
+        supportingText = stringResource(R.string.bundle_type_description)
+    ) {
+        FilledTonalButton(
+            onClick = tonalButtonOnClick,
+            content = tonalButtonContent,
+        )
+    }
+
+    Text(
+        text = "Information",
+        modifier = Modifier.padding(
+            horizontal = 16.dp,
+            vertical = 12.dp
+        ),
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.primary,
+    )
+
+    BundleInfoListItem(
+        headlineText = stringResource(R.string.patches),
+        supportingText = patchInfoText,
+        trailingContent = {
+            if (patchCount > 0) {
+                IconButton(onClick = onArrowClick) {
+                    Icon(
+                        Icons.Outlined.ArrowRight,
+                        stringResource(R.string.patches)
+                    )
+                }
+            }
+        }
+    )
+
+    BundleInfoListItem(
+        headlineText = stringResource(R.string.patches_version),
+        supportingText = "1.0.0",
+    )
+
+    BundleInfoListItem(
+        headlineText = stringResource(R.string.integrations_version),
+        supportingText = "1.0.0",
+    )
 }
