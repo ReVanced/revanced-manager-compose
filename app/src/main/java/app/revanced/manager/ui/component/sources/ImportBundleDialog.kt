@@ -199,6 +199,7 @@ fun BundleInfoListItem(
 @Composable
 fun BundleTextContent(
     name: String,
+    isImportPage: Boolean = true,
     onNameChange: (String) -> Unit = {},
     isLocal: Boolean,
     remoteUrl: String,
@@ -230,44 +231,46 @@ fun BundleTextContent(
             }
         )
     } else {
-        OutlinedTextField(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            value = patchBundleText,
-            onValueChange = {},
-            label = {
-                Text("Patches Source File")
-            },
-            trailingIcon = {
-                IconButton(
-                    onClick = onPatchLauncherClick
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Topic,
-                        contentDescription = null
-                    )
+        if(isImportPage) {
+            OutlinedTextField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                value = patchBundleText,
+                onValueChange = {},
+                label = {
+                    Text("Patches Source File")
+                },
+                trailingIcon = {
+                    IconButton(
+                        onClick = onPatchLauncherClick
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Topic,
+                            contentDescription = null
+                        )
+                    }
                 }
-            }
-        )
+            )
 
-        OutlinedTextField(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            value = integrationText,
-            onValueChange = {},
-            label = {
-                Text("Integrations Source File")
-            },
-            trailingIcon = {
-                IconButton(onClick = onIntegrationLauncherClick) {
-                    Icon(
-                        imageVector = Icons.Default.Topic,
-                        contentDescription = null
-                    )
+            OutlinedTextField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                value = integrationText,
+                onValueChange = {},
+                label = {
+                    Text("Integrations Source File")
+                },
+                trailingIcon = {
+                    IconButton(onClick = onIntegrationLauncherClick) {
+                        Icon(
+                            imageVector = Icons.Default.Topic,
+                            contentDescription = null
+                        )
+                    }
                 }
-            }
-        )
+            )
+        }
     }
 }

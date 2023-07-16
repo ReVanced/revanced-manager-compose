@@ -44,6 +44,7 @@ fun BundleInformationDialog(
     source: Source,
     remoteName: String = "",
     patchCount: Int = 0,
+    onRefreshButton: () -> Unit,
 ) {
     var checked by remember { mutableStateOf(true) }
     var viewCurrentBundlePatches by remember { mutableStateOf(false) }
@@ -86,11 +87,13 @@ fun BundleInformationDialog(
                                 "Delete"
                             )
                         }
-                        IconButton(onClick = {}) {
-                            Icon(
-                                Icons.Outlined.Refresh,
-                                "Refresh"
-                            )
+                        if(!isLocal) {
+                            IconButton(onClick = onRefreshButton) {
+                                Icon(
+                                    Icons.Outlined.Refresh,
+                                    "Refresh"
+                                )
+                            }
                         }
                     }
                 )
@@ -111,6 +114,7 @@ fun BundleInformationDialog(
                 ) {
                     BundleTextContent(
                         name = source.name,
+                        isImportPage = false,
                         isLocal = isLocal,
                         remoteUrl = remoteName,
                         patchBundleText = patchInfoText,
