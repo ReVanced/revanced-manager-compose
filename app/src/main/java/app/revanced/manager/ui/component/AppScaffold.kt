@@ -59,35 +59,3 @@ fun AppTopBar(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun BundleTopBar(
-    title: String,
-    onBackClick: (() -> Unit)? = null,
-    actions: @Composable (RowScope.() -> Unit) = {},
-    scrollBehavior: TopAppBarScrollBehavior? = null,
-    onBackIcon: @Composable () -> Unit,
-) {
-    val containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.0.dp)
-
-    TopAppBar(
-        title = {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleLarge
-            )
-        },
-        scrollBehavior = scrollBehavior,
-        navigationIcon = {
-            if (onBackClick != null) {
-                IconButton(onClick = onBackClick) {
-                    onBackIcon()
-                }
-            }
-        },
-        actions = actions,
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = containerColor
-        )
-    )
-}

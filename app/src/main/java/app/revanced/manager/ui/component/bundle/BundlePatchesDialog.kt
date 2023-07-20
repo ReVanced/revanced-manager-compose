@@ -1,11 +1,10 @@
-package app.revanced.manager.ui.component.sources
+package app.revanced.manager.ui.component.bundle
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Lightbulb
@@ -28,7 +27,6 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.revanced.manager.domain.sources.Source
-import app.revanced.manager.ui.component.BundleTopBar
 import app.revanced.manager.ui.component.NotificationCard
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,7 +53,6 @@ fun BundlePatchesDialog(
                     title = topBarTitle,
                     onBackClick = onDismissRequest,
                     onBackIcon = onBackIcon,
-                    actions = {}
                 )
             },
         ) { paddingValues ->
@@ -63,41 +60,43 @@ fun BundlePatchesDialog(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(paddingValues)
-                    .verticalScroll(rememberScrollState())
             ) {
-                Column(
+                LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp)
                 ) {
-                    AnimatedVisibility(visible = informationCardVisible) {
-                        NotificationCard(
-                            color = MaterialTheme.colorScheme.secondaryContainer,
-                            icon = Icons.Outlined.Lightbulb,
-                            text = "Tap on the patches to get more information about them"
-                        ) {
-                            IconButton(onClick = { informationCardVisible = false }) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Close,
-                                    contentDescription = null,
-                                )
+                    item {
+                        AnimatedVisibility(visible = informationCardVisible) {
+                            NotificationCard(
+                                color = MaterialTheme.colorScheme.secondaryContainer,
+                                icon = Icons.Outlined.Lightbulb,
+                                text = "Tap on the patches to get more information about them"
+                            ) {
+                                IconButton(onClick = { informationCardVisible = false }) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Close,
+                                        contentDescription = null,
+                                    )
+                                }
                             }
                         }
                     }
 
-                    bundle.patches.forEach {
+                    items(bundle.patches.size) {
+                        val patch = bundle.patches[it]
                         ListItem(
                             headlineContent = {
                                 Text(
-                                    text = it.name,
+                                    text = patch.name,
                                     style = MaterialTheme.typography.bodyLarge,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                             },
                             supportingContent = {
-                                if (it.description != null) {
+                                if (patch.description != null) {
                                     Text(
-                                        text = it.description,
+                                        text = patch.description,
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -106,7 +105,6 @@ fun BundlePatchesDialog(
                         )
                         Divider()
                     }
-
                 }
             }
         }

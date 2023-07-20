@@ -1,4 +1,4 @@
-package app.revanced.manager.ui.component.sources
+package app.revanced.manager.ui.component.bundle
 
 import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement

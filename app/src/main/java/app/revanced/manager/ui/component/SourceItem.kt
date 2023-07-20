@@ -1,4 +1,5 @@
-package app.revanced.manager.ui.component.sources
+package app.revanced.manager.ui.component
+
 
 import android.net.Uri
 import androidx.annotation.StringRes
@@ -31,12 +32,13 @@ import app.revanced.manager.R
 import app.revanced.manager.domain.sources.LocalSource
 import app.revanced.manager.domain.sources.RemoteSource
 import app.revanced.manager.domain.sources.Source
+import app.revanced.manager.ui.component.bundle.BundleInformationDialog
+import app.revanced.manager.ui.component.bundle.LocalBundleSelectors
 import app.revanced.manager.ui.viewmodel.SourcesViewModel
 import app.revanced.manager.util.uiSafe
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.io.InputStream
-
 
 @Composable
 fun SourceItem(

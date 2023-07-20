@@ -1,22 +1,17 @@
-package app.revanced.manager.ui.component.sources
+package app.revanced.manager.ui.component.bundle
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowRight
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,7 +27,6 @@ import app.revanced.manager.R
 import app.revanced.manager.domain.sources.LocalSource
 import app.revanced.manager.domain.sources.RemoteSource
 import app.revanced.manager.domain.sources.Source
-import app.revanced.manager.ui.component.BundleTopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,13 +42,11 @@ fun BundleInformationDialog(
 ) {
     var checked by remember { mutableStateOf(true) }
     var viewCurrentBundlePatches by remember { mutableStateOf(false) }
-    val isLocal = when(source) {
-            is RemoteSource -> false
-            is LocalSource -> true
-            }
 
-    val patchInfoText = if (patchCount == 0) "No Patches available to view"
-    else "$patchCount Patches available, tap to view"
+    val isLocal = source is LocalSource
+
+    val patchInfoText = if (patchCount == 0) stringResource(R.string.No_patches_available_to_view)
+    else stringResource(R.string.Patches_available_tap_to_view, patchCount)
 
     if (viewCurrentBundlePatches) {
         BundlePatchesDialog(
@@ -84,14 +76,14 @@ fun BundleInformationDialog(
                         IconButton(onClick = onDeleteRequest) {
                             Icon(
                                 Icons.Outlined.DeleteOutline,
-                                "Delete"
+                                stringResource(R.string.delete)
                             )
                         }
                         if(!isLocal) {
                             IconButton(onClick = onRefreshButton) {
                                 Icon(
                                     Icons.Outlined.Refresh,
-                                    "Refresh"
+                                    stringResource(R.string.refresh)
                                 )
                             }
                         }
@@ -139,8 +131,8 @@ fun BundleInformationDialog(
                         },
                         tonalButtonContent = {
                             when(source) {
-                                is RemoteSource -> Text("Remote")
-                                is LocalSource -> Text("Local")
+                                is RemoteSource -> Text(stringResource(R.string.remote))
+                                is LocalSource -> Text(stringResource(R.string.local))
                             }
                         },
                     )
@@ -148,73 +140,4 @@ fun BundleInformationDialog(
             }
         }
     }
-}
-@Composable
-fun BundleInfoContent(
-    switchChecked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    patchInfoText: String,
-    patchCount: Int,
-    onArrowClick: () -> Unit,
-    isLocal: Boolean,
-    tonalButtonOnClick: () -> Unit = {},
-    tonalButtonContent: @Composable RowScope.() -> Unit,
-) {
-    if(!isLocal) {
-        BundleInfoListItem(
-            headlineText = stringResource(R.string.automatically_update),
-            supportingText = stringResource(R.string.automatically_update_description),
-            trailingContent = {
-                Switch(
-                    checked = switchChecked,
-                    onCheckedChange = onCheckedChange
-                )
-            }
-        )
-    }
-
-    BundleInfoListItem(
-        headlineText = stringResource(R.string.bundle_type),
-        supportingText = stringResource(R.string.bundle_type_description)
-    ) {
-        FilledTonalButton(
-            onClick = tonalButtonOnClick,
-            content = tonalButtonContent,
-        )
-    }
-
-    Text(
-        text = "Information",
-        modifier = Modifier.padding(
-            horizontal = 16.dp,
-            vertical = 12.dp
-        ),
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.primary,
-    )
-
-    BundleInfoListItem(
-        headlineText = stringResource(R.string.patches),
-        supportingText = patchInfoText,
-        trailingContent = {
-            if (patchCount > 0) {
-                IconButton(onClick = onArrowClick) {
-                    Icon(
-                        Icons.Outlined.ArrowRight,
-                        stringResource(R.string.patches)
-                    )
-                }
-            }
-        }
-    )
-
-    BundleInfoListItem(
-        headlineText = stringResource(R.string.patches_version),
-        supportingText = "1.0.0",
-    )
-
-    BundleInfoListItem(
-        headlineText = stringResource(R.string.integrations_version),
-        supportingText = "1.0.0",
-    )
 }

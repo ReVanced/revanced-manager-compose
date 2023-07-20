@@ -14,8 +14,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import app.revanced.manager.R
-import app.revanced.manager.ui.component.sources.ImportBundleDialog
-import app.revanced.manager.ui.component.sources.SourceItem
+import app.revanced.manager.ui.component.bundle.ImportBundleDialog
+import app.revanced.manager.ui.component.SourceItem
 import app.revanced.manager.ui.viewmodel.SourcesViewModel
 import org.koin.androidx.compose.getViewModel
 
