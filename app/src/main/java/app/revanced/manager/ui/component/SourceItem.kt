@@ -52,6 +52,9 @@ fun SourceItem(
     val padding = PaddingValues(16.dp, 0.dp)
 
     val androidContext = LocalContext.current
+
+    val remoteName = if(source is RemoteSource) source.remoteUrl.toString() else ""
+
     if (viewBundleDialogPage) {
         BundleInformationDialog(
             onDismissRequest = { viewBundleDialogPage = false },
@@ -68,6 +71,7 @@ fun SourceItem(
             topBarTitle = stringResource(R.string.bundle_information),
             source = source,
             patchCount = patchCount,
+            remoteName = remoteName,
             onRefreshButton = {
                 coroutineScope.launch {
                     uiSafe(
