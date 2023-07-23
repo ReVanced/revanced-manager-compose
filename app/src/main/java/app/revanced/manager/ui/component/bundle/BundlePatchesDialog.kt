@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Lightbulb
 import androidx.compose.material3.Divider
@@ -35,7 +36,6 @@ import app.revanced.manager.ui.component.NotificationCard
 fun BundlePatchesDialog(
     onDismissRequest: () -> Unit,
     topBarTitle: String,
-    onBackIcon: @Composable () -> Unit,
     source: Source,
 ) {
     var informationCardVisible by remember { mutableStateOf(true) }
@@ -53,7 +53,12 @@ fun BundlePatchesDialog(
                 BundleTopBar(
                     title = topBarTitle,
                     onBackClick = onDismissRequest,
-                    onBackIcon = onBackIcon,
+                    onBackIcon = {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = stringResource(R.string.back)
+                        )
+                    },
                 )
             },
         ) { paddingValues ->

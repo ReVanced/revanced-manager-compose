@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -33,7 +34,6 @@ import app.revanced.manager.domain.sources.Source
 fun BundleInformationDialog(
     onDismissRequest: () -> Unit,
     onDeleteRequest: () -> Unit,
-    onBackIcon: @Composable () -> Unit,
     source: Source,
     remoteName: String = "",
     patchCount: Int = 0,
@@ -49,7 +49,6 @@ fun BundleInformationDialog(
 
     if (viewCurrentBundlePatches) {
         BundlePatchesDialog(
-            onBackIcon = onBackIcon,
             onDismissRequest = {
                 viewCurrentBundlePatches = false
             },
@@ -70,7 +69,12 @@ fun BundleInformationDialog(
                 BundleTopBar(
                     title = stringResource(R.string.bundle_information),
                     onBackClick = onDismissRequest,
-                    onBackIcon = onBackIcon,
+                    onBackIcon = {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = stringResource(R.string.back)
+                        )
+                    },
                     actions = {
                         IconButton(onClick = onDeleteRequest) {
                             Icon(
