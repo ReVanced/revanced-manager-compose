@@ -35,7 +35,6 @@ import app.revanced.manager.ui.component.NotificationCard
 @Composable
 fun BundlePatchesDialog(
     onDismissRequest: () -> Unit,
-    topBarTitle: String,
     source: Source,
 ) {
     var informationCardVisible by remember { mutableStateOf(true) }
@@ -51,7 +50,7 @@ fun BundlePatchesDialog(
         Scaffold(
             topBar = {
                 BundleTopBar(
-                    title = topBarTitle,
+                    title = stringResource(R.string.bundle_patches),
                     onBackClick = onDismissRequest,
                     onBackIcon = {
                         Icon(

@@ -52,7 +52,6 @@ fun BundleInformationDialog(
             onDismissRequest = {
                 viewCurrentBundlePatches = false
             },
-            topBarTitle = stringResource(R.string.bundle_patches),
             source = source,
         )
     }
