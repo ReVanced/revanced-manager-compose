@@ -93,7 +93,7 @@ class SourceRepository(app: Application, private val persistenceRepo: SourcePers
 
     suspend fun createRemoteSource(name: String, apiUrl: Url) {
         val id = persistenceRepo.create(name, SourceLocation.Remote(apiUrl))
-        addSource(RemoteSource(name, apiUrl, id, directoryOf(id)))
+        addSource(RemoteSource(name, id, directoryOf(id)))
     }
 
     suspend fun redownloadRemoteSources() =

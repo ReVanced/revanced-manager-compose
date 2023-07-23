@@ -99,8 +99,8 @@
     <string name="source_replace_fail">Failed to load updated patch bundle: %s</string>
     <string name="source_replace_integrations_fail">Failed to update integrations: %s</string>
     <string name="no_patched_apps_found">No patched apps found</string>
-    <string name="No_patches_available_to_view">No patches available to view</string>
-    <string name="Patches_available_tap_to_view">%d Patches available, tap to view</string>
+    <string name="no_patches_txt">No patches available to view</string>
+    <string name="patches_available_d">%d Patches available, tap to view</string>
     <string name="unsupported_app">Unsupported app</string>
     <string name="unsupported_patches">Unsupported patches</string>
     <string name="universal_patches">Universal patches</string>

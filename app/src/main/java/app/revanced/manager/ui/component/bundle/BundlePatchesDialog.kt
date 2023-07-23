@@ -1,7 +1,6 @@
 package app.revanced.manager.ui.component.bundle
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -56,55 +55,50 @@ fun BundlePatchesDialog(
                 )
             },
         ) { paddingValues ->
-            Column(
+            LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(paddingValues)
+                    .padding(16.dp)
             ) {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                ) {
-                    item {
-                        AnimatedVisibility(visible = informationCardVisible) {
-                            NotificationCard(
-                                color = MaterialTheme.colorScheme.secondaryContainer,
-                                icon = Icons.Outlined.Lightbulb,
-                                text = "Tap on the patches to get more information about them"
-                            ) {
-                                IconButton(onClick = { informationCardVisible = false }) {
-                                    Icon(
-                                        imageVector = Icons.Outlined.Close,
-                                        contentDescription = null,
-                                    )
-                                }
+                item {
+                    AnimatedVisibility(visible = informationCardVisible) {
+                        NotificationCard(
+                            color = MaterialTheme.colorScheme.secondaryContainer,
+                            icon = Icons.Outlined.Lightbulb,
+                            text = "Tap on the patches to get more information about them"
+                        ) {
+                            IconButton(onClick = { informationCardVisible = false }) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Close,
+                                    contentDescription = null,
+                                )
                             }
                         }
                     }
+                }
 
-                    items(bundle.patches.size) {
-                        val patch = bundle.patches[it]
-                        ListItem(
-                            headlineContent = {
+                items(bundle.patches.size) { bundleIndex ->
+                    val patch = bundle.patches[bundleIndex]
+                    ListItem(
+                        headlineContent = {
+                            Text(
+                                text = patch.name,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        },
+                        supportingContent = {
+                            patch.description?.let {
                                 Text(
-                                    text = patch.name,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurface
+                                    text = it,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
-                            },
-                            supportingContent = {
-                                if (patch.description != null) {
-                                    Text(
-                                        text = patch.description,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
                             }
-                        )
-                        Divider()
-                    }
+                        }
+                    )
+                    Divider()
                 }
             }
         }

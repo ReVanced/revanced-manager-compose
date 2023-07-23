@@ -34,7 +34,6 @@ fun BundleInformationDialog(
     onDismissRequest: () -> Unit,
     onDeleteRequest: () -> Unit,
     onBackIcon: @Composable () -> Unit,
-    topBarTitle: String,
     source: Source,
     remoteName: String = "",
     patchCount: Int = 0,
@@ -45,8 +44,8 @@ fun BundleInformationDialog(
 
     val isLocal = source is LocalSource
 
-    val patchInfoText = if (patchCount == 0) stringResource(R.string.No_patches_available_to_view)
-    else stringResource(R.string.Patches_available_tap_to_view, patchCount)
+    val patchInfoText = if (patchCount == 0) stringResource(R.string.no_patches_txt)
+    else stringResource(R.string.patches_available_d, patchCount)
 
     if (viewCurrentBundlePatches) {
         BundlePatchesDialog(
@@ -69,7 +68,7 @@ fun BundleInformationDialog(
         Scaffold(
             topBar = {
                 BundleTopBar(
-                    title = topBarTitle,
+                    title = stringResource(R.string.bundle_information),
                     onBackClick = onDismissRequest,
                     onBackIcon = onBackIcon,
                     actions = {
@@ -106,10 +105,8 @@ fun BundleInformationDialog(
                 ) {
                     BundleTextContent(
                         name = source.name,
-                        isImportPage = false,
                         isLocal = isLocal,
                         remoteUrl = remoteName,
-                        patchBundleText = patchInfoText,
                     )
                 }
 

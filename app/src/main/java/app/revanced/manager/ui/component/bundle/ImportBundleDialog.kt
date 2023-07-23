@@ -11,10 +11,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Topic
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -72,6 +74,13 @@ fun ImportBundleDialog(
             uri?.let { integrations = it }
         }
 
+    val onPatchLauncherClick = {
+        patchActivityLauncher.launch(JAR_MIMETYPE)
+    }
+
+    val onIntegrationLauncherClick = {
+        integrationsActivityLauncher.launch(APK_MIMETYPE)
+    }
     Dialog(
         onDismissRequest = onDismissRequest,
         properties = DialogProperties(
@@ -130,15 +139,49 @@ fun ImportBundleDialog(
                         isLocal = isLocal,
                         remoteUrl = remoteUrl,
                         onRemoteUrlChange = { remoteUrl = it },
-                        patchBundleText = patchBundleText,
-                        onPatchLauncherClick = {
-                            patchActivityLauncher.launch(JAR_MIMETYPE)
-                        },
-                        integrationText = integrationText,
-                        onIntegrationLauncherClick = {
-                            integrationsActivityLauncher.launch(APK_MIMETYPE)
-                        },
                     )
+
+                    if(isLocal) {
+                        OutlinedTextField(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 16.dp),
+                            value = patchBundleText,
+                            onValueChange = {},
+                            label = {
+                                Text("Patches Source File")
+                            },
+                            trailingIcon = {
+                                IconButton(
+                                    onClick = onPatchLauncherClick
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Topic,
+                                        contentDescription = null
+                                    )
+                                }
+                            }
+                        )
+
+                        OutlinedTextField(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 16.dp),
+                            value = integrationText,
+                            onValueChange = {},
+                            label = {
+                                Text("Integrations Source File")
+                            },
+                            trailingIcon = {
+                                IconButton(onClick = onIntegrationLauncherClick) {
+                                    Icon(
+                                        imageVector = Icons.Default.Topic,
+                                        contentDescription = null
+                                    )
+                                }
+                            }
+                        )
+                    }
                 }
 
                 Column(
@@ -151,7 +194,7 @@ fun ImportBundleDialog(
                     BundleInfoContent(
                         switchChecked = checked,
                         onCheckedChange = { checked = it },
-                        patchInfoText = "No Patches available to view",
+                        patchInfoText = stringResource(R.string.no_patches_txt),
                         patchCount = patchCount,
                         onArrowClick = {},
                         tonalButtonContent = {
@@ -168,27 +211,4 @@ fun ImportBundleDialog(
             }
         }
     }
-}
-@Composable
-fun BundleInfoListItem(
-    headlineText: String,
-    supportingText: String = "",
-    trailingContent: @Composable (() -> Unit)? = null,
-) {
-    ListItem(
-        headlineContent = {
-            Text(
-                text = headlineText,
-                style = MaterialTheme.typography.titleLarge
-            )
-        },
-        supportingContent = {
-            Text(
-                text = supportingText,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.outline
-            )
-        },
-        trailingContent = trailingContent,
-    )
 }
