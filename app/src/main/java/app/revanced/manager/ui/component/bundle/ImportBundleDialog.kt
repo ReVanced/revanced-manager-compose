@@ -96,7 +96,7 @@ fun ImportBundleDialog(
                     onBackIcon = {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = null
+                            contentDescription = stringResource(R.string.close)
                         )
                     },
                     actions = {
@@ -194,14 +194,14 @@ fun ImportBundleDialog(
                     BundleInfoContent(
                         switchChecked = checked,
                         onCheckedChange = { checked = it },
-                        patchInfoText = stringResource(R.string.no_patches_txt),
+                        patchInfoText = stringResource(R.string.no_patches),
                         patchCount = patchCount,
                         onArrowClick = {},
                         tonalButtonContent = {
                             if (isLocal) {
-                                Text("Local")
+                                Text(stringResource(R.string.local))
                             } else {
-                                Text("Remote")
+                                Text(stringResource(R.string.remote))
                             }
                         },
                         tonalButtonOnClick = { isLocal = !isLocal },

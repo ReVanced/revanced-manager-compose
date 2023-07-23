@@ -21,10 +21,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.revanced.manager.R
 import app.revanced.manager.domain.sources.Source
 import app.revanced.manager.ui.component.NotificationCard
 
@@ -66,12 +68,12 @@ fun BundlePatchesDialog(
                         NotificationCard(
                             color = MaterialTheme.colorScheme.secondaryContainer,
                             icon = Icons.Outlined.Lightbulb,
-                            text = "Tap on the patches to get more information about them"
+                            text = stringResource(R.string.tap_on_patches)
                         ) {
                             IconButton(onClick = { informationCardVisible = false }) {
                                 Icon(
                                     imageVector = Icons.Outlined.Close,
-                                    contentDescription = null,
+                                    contentDescription = stringResource(R.string.close),
                                 )
                             }
                         }

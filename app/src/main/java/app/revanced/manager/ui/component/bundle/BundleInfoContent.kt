@@ -51,7 +51,7 @@ fun BundleInfoContent(
     }
 
     Text(
-        text = "Information",
+        text = stringResource(R.string.information),
         modifier = Modifier.padding(
             horizontal = 16.dp,
             vertical = 12.dp

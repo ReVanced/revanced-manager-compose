@@ -44,8 +44,8 @@ fun BundleInformationDialog(
 
     val isLocal = source is LocalSource
 
-    val patchInfoText = if (patchCount == 0) stringResource(R.string.no_patches_txt)
-    else stringResource(R.string.patches_available_d, patchCount)
+    val patchInfoText = if (patchCount == 0) stringResource(R.string.no_patches)
+    else stringResource(R.string.patches_available, patchCount)
 
     if (viewCurrentBundlePatches) {
         BundlePatchesDialog(

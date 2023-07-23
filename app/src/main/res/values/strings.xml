@@ -75,8 +75,10 @@
     <string name="help">Help</string>
     <string name="back">Back</string>
     <string name="add">Add</string>
+    <string name="close">Close</string>
     <string name="system">System</string>
     <string name="light">Light</string>
+    <string name="information">Information</string>
     <string name="dark">Dark</string>
     <string name="appearance">Appearance</string>
     <string name="device">Device</string>
@@ -99,8 +101,9 @@
     <string name="source_replace_fail">Failed to load updated patch bundle: %s</string>
     <string name="source_replace_integrations_fail">Failed to update integrations: %s</string>
     <string name="no_patched_apps_found">No patched apps found</string>
-    <string name="no_patches_txt">No patches available to view</string>
-    <string name="patches_available_d">%d Patches available, tap to view</string>
+    <string name="no_patches">No patches available to view</string>
+    <string name="patches_available">%d Patches available, tap to view</string>
+    <string name="tap_on_patches">Tap on the patches to get more information about them</string>
     <string name="unsupported_app">Unsupported app</string>
     <string name="unsupported_patches">Unsupported patches</string>
     <string name="universal_patches">Universal patches</string>
