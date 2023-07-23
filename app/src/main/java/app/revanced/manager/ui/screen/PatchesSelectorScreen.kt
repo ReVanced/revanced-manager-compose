@@ -1,5 +1,6 @@
 package app.revanced.manager.ui.screen
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -65,6 +66,8 @@ fun PatchesSelectorScreen(
     onBackClick: () -> Unit,
     vm: PatchesSelectorViewModel
 ) {
+    BackHandler(onBack = onBackClick)
+
     val pagerState = rememberPagerState()
     val composableScope = rememberCoroutineScope()
 
@@ -159,23 +162,28 @@ fun PatchesSelectorScreen(
                             horizontalArrangement = Arrangement.spacedBy(5.dp)
                         ) {
                             FilterChip(
-                                selected = vm.filter and SHOW_SUPPORTED != 0,
+                                selected = vm.filter and SHOW_SUPPORTED != 0 && bundle.supported.isNotEmpty(),
                                 onClick = { vm.toggleFlag(SHOW_SUPPORTED) },
-                                label = { Text(stringResource(R.string.supported)) }
+                                label = { Text(stringResource(R.string.supported)) },
+                                enabled = bundle.supported.isNotEmpty()
                             )
 
                             FilterChip(
-                                selected = vm.filter and SHOW_UNIVERSAL != 0,
+                                selected = vm.filter and SHOW_UNIVERSAL != 0 && bundle.universal.isNotEmpty(),
                                 onClick = { vm.toggleFlag(SHOW_UNIVERSAL) },
-                                label = { Text(stringResource(R.string.universal)) }
+                                label = { Text(stringResource(R.string.universal)) },
+                                enabled = bundle.universal.isNotEmpty()
                             )
 
                             FilterChip(
-                                selected = vm.filter and SHOW_UNSUPPORTED != 0,
+                                selected = vm.filter and SHOW_UNSUPPORTED != 0 && bundle.unsupported.isNotEmpty(),
                                 onClick = { vm.toggleFlag(SHOW_UNSUPPORTED) },
-                                label = { Text(stringResource(R.string.unsupported)) }
+                                label = { Text(stringResource(R.string.unsupported)) },
+                                enabled = bundle.unsupported.isNotEmpty()
                             )
                         }
+
+                        val allowExperimental by vm.allowExperimental.getAsState()
 
                         LazyColumn(
                             modifier = Modifier.fillMaxSize()
@@ -231,7 +239,7 @@ fun PatchesSelectorScreen(
                             patchList(
                                 patches = bundle.unsupported,
                                 filterFlag = SHOW_UNSUPPORTED,
-                                supported = vm.allowExperimental
+                                supported = allowExperimental
                             ) {
                                 ListHeader(
                                     title = stringResource(R.string.unsupported_patches),

@@ -5,9 +5,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import app.revanced.manager.domain.manager.PreferencesManager
 import app.revanced.manager.ui.destination.Destination
+import app.revanced.manager.ui.screen.AppDownloaderScreen
 import app.revanced.manager.ui.screen.AppSelectorScreen
 import app.revanced.manager.ui.screen.DashboardScreen
 import app.revanced.manager.ui.screen.InstallerScreen
@@ -22,15 +24,15 @@ import dev.olshevski.navigation.reimagined.AnimatedNavHost
 import dev.olshevski.navigation.reimagined.NavBackHandler
 import dev.olshevski.navigation.reimagined.navigate
 import dev.olshevski.navigation.reimagined.pop
-import dev.olshevski.navigation.reimagined.popAll
+import dev.olshevski.navigation.reimagined.popUpTo
 import dev.olshevski.navigation.reimagined.rememberNavController
 import me.zhanghai.android.appiconloader.coil.AppIconFetcher
 import me.zhanghai.android.appiconloader.coil.AppIconKeyer
 import org.koin.android.ext.android.get
 import org.koin.androidx.compose.getViewModel
-import org.koin.androidx.viewmodel.ext.android.getViewModel as getActivityViewModel
 import org.koin.core.parameter.parametersOf
 import kotlin.math.roundToInt
+import org.koin.androidx.viewmodel.ext.android.getViewModel as getActivityViewModel
 
 class MainActivity : ComponentActivity() {
     private val prefs: PreferencesManager = get()
@@ -55,9 +57,12 @@ class MainActivity : ComponentActivity() {
         )
 
         setContent {
+            val theme by prefs.theme.getAsState()
+            val dynamicColor by prefs.dynamicColor.getAsState()
+
             ReVancedManagerTheme(
-                darkTheme = prefs.theme == Theme.SYSTEM && isSystemInDarkTheme() || prefs.theme == Theme.DARK,
-                dynamicColor = prefs.dynamicColor
+                darkTheme = theme == Theme.SYSTEM && isSystemInDarkTheme() || theme == Theme.DARK,
+                dynamicColor = dynamicColor
             ) {
                 val navController =
                     rememberNavController<Destination>(startDestination = Destination.Dashboard)
@@ -79,11 +84,18 @@ class MainActivity : ComponentActivity() {
 
                         is Destination.AppSelector -> AppSelectorScreen(
                             onAppClick = { navController.navigate(Destination.PatchesSelector(it)) },
+                            onDownloaderClick = { navController.navigate(Destination.AppDownloader(it)) },
                             onBackClick = { navController.pop() }
                         )
 
-                        is Destination.PatchesSelector -> PatchesSelectorScreen(
+                        is Destination.AppDownloader -> AppDownloaderScreen(
                             onBackClick = { navController.pop() },
+                            onApkClick = { navController.navigate(Destination.PatchesSelector(it)) },
+                            viewModel = getViewModel { parametersOf(destination.app) }
+                        )
+
+                        is Destination.PatchesSelector -> PatchesSelectorScreen(
+                            onBackClick = { navController.popUpTo { it is Destination.AppSelector } },
                             onPatchClick = { patches, options ->
                                 navController.navigate(
                                     Destination.Installer(
@@ -97,12 +109,7 @@ class MainActivity : ComponentActivity() {
                         )
 
                         is Destination.Installer -> InstallerScreen(
-                            onBackClick = {
-                                with(navController) {
-                                    popAll()
-                                    navigate(Destination.Dashboard)
-                                }
-                            },
+                            onBackClick = { navController.popUpTo { it is Destination.Dashboard } },
                             vm = getViewModel { parametersOf(destination) }
                         )
                     }

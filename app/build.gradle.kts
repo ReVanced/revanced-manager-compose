@@ -1,10 +1,9 @@
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("com.google.devtools.ksp")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.devtools)
     id("kotlin-parcelize")
-    kotlin("plugin.serialization") version "1.8.21"
-    id("com.mikepenz.aboutlibraries.plugin") version "10.8.0"
+    kotlin("plugin.serialization") version "1.8.22"
 }
 
 android {
@@ -18,6 +17,9 @@ android {
         targetSdk = 33
         versionCode = 1
         versionName = "0.0.1"
+        resourceConfigurations.addAll(listOf(
+            "en",
+        ))
 
         vectorDrawables.useSupportLibrary = true
     }
@@ -35,9 +37,22 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
     packaging {
-        resources {
-            excludes += "/prebuilt/**"
+        resources.excludes.addAll(listOf(
+            "/prebuilt/**",
+            "META-INF/DEPENDENCIES",
+            "META-INF/**.version",
+            "DebugProbesKt.bin",
+            "kotlin-tooling-metadata.json",
+            "org/bouncycastle/pqc/**.properties",
+            "org/bouncycastle/x509/**.properties",
+        ))
+        jniLibs {
+            useLegacyPackaging = true
         }
     }
 
@@ -51,7 +66,7 @@ android {
 
     buildFeatures.compose = true
 
-    composeOptions.kotlinCompilerExtensionVersion = "1.4.7"
+    composeOptions.kotlinCompilerExtensionVersion = "1.4.8"
 }
 
 kotlin {
@@ -61,74 +76,70 @@ kotlin {
 dependencies {
 
     // AndroidX Core
-    implementation("androidx.core:core-ktx:1.10.1")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.6.1")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
-    implementation("androidx.core:core-splashscreen:1.0.1")
-    implementation("androidx.activity:activity-compose:1.7.2")
-    implementation("androidx.paging:paging-common-ktx:3.1.1")
-    implementation("androidx.work:work-runtime-ktx:2.8.1")
+    implementation(libs.androidx.ktx)
+    implementation(libs.runtime.ktx)
+    implementation(libs.runtime.compose)
+    implementation(libs.splash.screen)
+    implementation(libs.compose.activity)
+    implementation(libs.paging.common.ktx)
+    implementation(libs.work.runtime.ktx)
+    implementation(libs.preferences.datastore)
 
     // Compose
-    implementation(platform("androidx.compose:compose-bom:2023.06.01"))
-    implementation("androidx.compose.ui:ui")
-    implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.compose.runtime:runtime-livedata")
-    implementation("androidx.compose.material:material-icons-extended")
-    implementation("androidx.compose.material3:material3")
+    implementation(platform(libs.compose.bom))
+    implementation(libs.compose.ui)
+    implementation(libs.compose.ui.preview)
+    implementation(libs.compose.livedata)
+    implementation(libs.compose.material.icons.extended)
+    implementation(libs.compose.material3)
 
     // Accompanist
-    val accompanistVersion = "0.30.1"
-    //implementation("com.google.accompanist:accompanist-systemuicontroller:$accompanistVersion")
-    //implementation("com.google.accompanist:accompanist-placeholder-material:$accompanistVersion")
-    implementation("com.google.accompanist:accompanist-drawablepainter:$accompanistVersion")
-    implementation("com.google.accompanist:accompanist-webview:$accompanistVersion")
-    //implementation("com.google.accompanist:accompanist-flowlayout:$accompanistVersion")
-    //implementation("com.google.accompanist:accompanist-permissions:$accompanistVersion")
+    implementation(libs.accompanist.drawablepainter)
+    implementation(libs.accompanist.webview)
+
+    // HTML Scraper
+    implementation(libs.skrapeit.dsl)
+    implementation(libs.skrapeit.parser)
 
     // Coil (async image loading, network image)
-    implementation("io.coil-kt:coil-compose:2.4.0")
-    implementation("me.zhanghai.android.appiconloader:appiconloader-coil:1.5.0")
+    implementation(libs.coil.compose)
+    implementation(libs.coil.appiconloader)
 
     // KotlinX
-    val serializationVersion = "1.5.1"
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$serializationVersion")
-    implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5")
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.kotlinx.collection.immutable)
 
     // Room
-    val roomVersion = "2.5.2"
-    implementation("androidx.room:room-runtime:$roomVersion")
-    implementation("androidx.room:room-ktx:$roomVersion")
-    annotationProcessor("androidx.room:room-compiler:$roomVersion")
-    ksp("androidx.room:room-compiler:$roomVersion")
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    annotationProcessor(libs.room.compiler)
+    ksp(libs.room.compiler)
 
     // ReVanced
-    implementation("app.revanced:revanced-patcher:11.0.4")
+    implementation(libs.patcher)
 
     // Signing
-    implementation("com.android.tools.build:apksig:8.2.0-alpha10")
-    implementation("org.bouncycastle:bcpkix-jdk15on:1.70")
+    implementation(libs.apksign)
+    implementation(libs.bcpkix.jdk18on)
 
     // Koin
-    val koinVersion = "3.4.2"
-    implementation("io.insert-koin:koin-android:$koinVersion")
-    implementation("io.insert-koin:koin-androidx-compose:3.4.5")
-    implementation("io.insert-koin:koin-androidx-workmanager:$koinVersion")
+    implementation(libs.koin.android)
+    implementation(libs.koin.compose)
+    implementation(libs.koin.workmanager)
 
     // Compose Navigation
-    implementation("dev.olshevski.navigation:reimagined:1.4.0")
+    implementation(libs.reimagined.navigation)
 
     // Licenses
-    implementation("com.mikepenz:aboutlibraries-compose:10.8.0")
+    implementation(libs.about.libraries)
 
     // Ktor
-    val ktorVersion = "2.3.2"
-    implementation("io.ktor:ktor-client-core:$ktorVersion")
-    implementation("io.ktor:ktor-client-logging:$ktorVersion")
-    implementation("io.ktor:ktor-client-okhttp:$ktorVersion")
-    implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
+    implementation(libs.ktor.core)
+    implementation(libs.ktor.logging)
+    implementation(libs.ktor.okhttp)
+    implementation(libs.ktor.content.negotiation)
+    implementation(libs.ktor.serialization)
 
     // Markdown to HTML
-    implementation("org.jetbrains:markdown:0.4.1")
+    implementation(libs.markdown)
 }
