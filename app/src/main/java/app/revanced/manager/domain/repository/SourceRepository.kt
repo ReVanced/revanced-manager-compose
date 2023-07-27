@@ -27,9 +27,14 @@ class SourceRepository(app: Application, private val persistenceRepo: SourcePers
     val sources = _sources.map { it.values.toList() }
 
     val bundles = sources.flatMapLatestAndCombine(
-        combiner = { it.toMap() }
+        combiner = {
+            it.mapNotNull { (uid, state) ->
+                val bundle = state.bundleOrNull() ?: return@mapNotNull null
+                uid to bundle
+            }.toMap()
+        }
     ) {
-        it.bundle.map { bundle -> it.uid to bundle }
+        it.bundle.map { state -> it.uid to state }
     }
 
     /**
@@ -39,7 +44,7 @@ class SourceRepository(app: Application, private val persistenceRepo: SourcePers
 
     private fun SourceEntity.load(dir: File) = when (location) {
         is SourceLocation.Local -> LocalSource(name, uid, dir)
-        is SourceLocation.Remote -> RemoteSource(name, uid, dir)
+        is SourceLocation.Remote -> RemoteSource(name, uid, dir, location.url.toString())
     }
 
     suspend fun loadSources() = withContext(Dispatchers.Default) {
@@ -93,7 +98,7 @@ class SourceRepository(app: Application, private val persistenceRepo: SourcePers
 
     suspend fun createRemoteSource(name: String, apiUrl: Url) {
         val id = persistenceRepo.create(name, SourceLocation.Remote(apiUrl))
-        addSource(RemoteSource(name, id, directoryOf(id)))
+        addSource(RemoteSource(name, id, directoryOf(id), apiUrl.toString()))
     }
 
     suspend fun redownloadRemoteSources() =

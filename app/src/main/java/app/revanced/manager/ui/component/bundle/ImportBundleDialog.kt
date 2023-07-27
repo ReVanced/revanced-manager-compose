@@ -42,12 +42,11 @@ import io.ktor.http.Url
 fun ImportBundleDialog(
     onDismissRequest: () -> Unit,
     onRemoteSubmit: (String, Url) -> Unit,
-    onLocalSubmit: (String, Uri, Uri?) -> Unit,
-    patchCount: Int = 0,
+    onLocalSubmit: (String, Uri, Uri?) -> Unit
 ) {
     var name by rememberSaveable { mutableStateOf("") }
     var remoteUrl by rememberSaveable { mutableStateOf("") }
-    var checked by remember { mutableStateOf(true) }
+    var autoUpdate by remember { mutableStateOf(true) }
     var isLocal by rememberSaveable { mutableStateOf(false) }
     var patchBundle by rememberSaveable { mutableStateOf<Uri?>(null) }
     var integrations by rememberSaveable { mutableStateOf<Uri?>(null) }
@@ -68,19 +67,11 @@ fun ImportBundleDialog(
         rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             uri?.let { patchBundle = it }
         }
-
     val integrationsActivityLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             uri?.let { integrations = it }
         }
 
-    val onPatchLauncherClick = {
-        patchActivityLauncher.launch(JAR_MIMETYPE)
-    }
-
-    val onIntegrationLauncherClick = {
-        integrationsActivityLauncher.launch(APK_MIMETYPE)
-    }
     Dialog(
         onDismissRequest = onDismissRequest,
         properties = DialogProperties(
@@ -120,92 +111,64 @@ fun ImportBundleDialog(
                 )
             },
         ) { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(paddingValues)
-                    .verticalScroll(rememberScrollState())
+            BaseBundleDialog(
+                modifier = Modifier.padding(paddingValues),
+                name = name,
+                onNameChange = { name = it },
+                remoteUrl = remoteUrl.takeUnless { isLocal },
+                onRemoteUrlChange = { remoteUrl = it },
+                patchCount = 0,
+                version = null,
+                autoUpdate = autoUpdate,
+                onAutoUpdateChange = { autoUpdate = it },
+                onPatchesClick = {},
+                onBundleTypeClick = { isLocal = !isLocal },
             ) {
-                Column(
-                    modifier = Modifier.padding(
-                        start = 24.dp,
-                        top = 16.dp,
-                        end = 24.dp,
-                    )
-                ) {
-                    BundleTextContent(
-                        name = name,
-                        onNameChange = { name = it },
-                        isLocal = isLocal,
-                        remoteUrl = remoteUrl,
-                        onRemoteUrlChange = { remoteUrl = it },
-                    )
-
-                    if(isLocal) {
-                        OutlinedTextField(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 16.dp),
-                            value = patchBundleText,
-                            onValueChange = {},
-                            label = {
-                                Text("Patches Source File")
-                            },
-                            trailingIcon = {
-                                IconButton(
-                                    onClick = onPatchLauncherClick
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Topic,
-                                        contentDescription = null
-                                    )
-                                }
-                            }
-                        )
-
-                        OutlinedTextField(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 16.dp),
-                            value = integrationText,
-                            onValueChange = {},
-                            label = {
-                                Text("Integrations Source File")
-                            },
-                            trailingIcon = {
-                                IconButton(onClick = onIntegrationLauncherClick) {
-                                    Icon(
-                                        imageVector = Icons.Default.Topic,
-                                        contentDescription = null
-                                    )
-                                }
-                            }
-                        )
-                    }
-                }
-
-                Column(
-                    Modifier.padding(
-                        start = 8.dp,
-                        top = 8.dp,
-                        end = 4.dp,
-                    )
-                ) {
-                    BundleInfoContent(
-                        switchChecked = checked,
-                        onCheckedChange = { checked = it },
-                        patchInfoText = stringResource(R.string.no_patches),
-                        patchCount = patchCount,
-                        onArrowClick = {},
-                        tonalButtonContent = {
-                            if (isLocal) {
-                                Text(stringResource(R.string.local))
-                            } else {
-                                Text(stringResource(R.string.remote))
-                            }
+                if (isLocal) {
+                    OutlinedTextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                        value = patchBundleText,
+                        onValueChange = {},
+                        label = {
+                            Text("Patches Source File")
                         },
-                        tonalButtonOnClick = { isLocal = !isLocal },
-                        isLocal = isLocal,
+                        trailingIcon = {
+                            IconButton(
+                                onClick = {
+                                    patchActivityLauncher.launch(JAR_MIMETYPE)
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Topic,
+                                    contentDescription = null
+                                )
+                            }
+                        }
+                    )
+
+                    OutlinedTextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                        value = integrationText,
+                        onValueChange = {},
+                        label = {
+                            Text("Integrations Source File")
+                        },
+                        trailingIcon = {
+                            IconButton(
+                                onClick = {
+                                    integrationsActivityLauncher.launch(APK_MIMETYPE)
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Topic,
+                                    contentDescription = null
+                                )
+                            }
+                        }
                     )
                 }
             }

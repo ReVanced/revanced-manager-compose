@@ -13,7 +13,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -24,6 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.revanced.manager.R
 import app.revanced.manager.domain.sources.LocalSource
 import app.revanced.manager.domain.sources.RemoteSource
@@ -35,17 +35,12 @@ fun BundleInformationDialog(
     onDismissRequest: () -> Unit,
     onDeleteRequest: () -> Unit,
     source: Source,
-    remoteName: String = "",
-    patchCount: Int = 0,
     onRefreshButton: () -> Unit,
 ) {
-    var checked by remember { mutableStateOf(true) }
+    var autoUpdate by remember { mutableStateOf(true) }
     var viewCurrentBundlePatches by remember { mutableStateOf(false) }
-
     val isLocal = source is LocalSource
-
-    val patchInfoText = if (patchCount == 0) stringResource(R.string.no_patches)
-    else stringResource(R.string.patches_available, patchCount)
+    val version by source.version().collectAsStateWithLifecycle(initialValue = null)
 
     if (viewCurrentBundlePatches) {
         BundlePatchesDialog(
@@ -81,7 +76,7 @@ fun BundleInformationDialog(
                                 stringResource(R.string.delete)
                             )
                         }
-                        if(!isLocal) {
+                        if (!isLocal) {
                             IconButton(onClick = onRefreshButton) {
                                 Icon(
                                     Icons.Outlined.Refresh,
@@ -93,51 +88,18 @@ fun BundleInformationDialog(
                 )
             },
         ) { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(paddingValues)
-                    .verticalScroll(rememberScrollState())
-            ) {
-                Column(
-                    modifier = Modifier.padding(
-                        start = 24.dp,
-                        top = 16.dp,
-                        end = 24.dp,
-                    )
-                ) {
-                    BundleTextContent(
-                        name = source.name,
-                        isLocal = isLocal,
-                        remoteUrl = remoteName,
-                    )
-                }
-
-                Column(
-                    Modifier.padding(
-                        start = 8.dp,
-                        top = 8.dp,
-                        end = 4.dp,
-                    )
-                ) {
-                    BundleInfoContent(
-                        switchChecked = checked,
-                        onCheckedChange = { checked = it },
-                        patchInfoText = patchInfoText,
-                        patchCount = patchCount,
-                        isLocal = isLocal,
-                        onArrowClick = {
-                            viewCurrentBundlePatches = true
-                        },
-                        tonalButtonContent = {
-                            when(source) {
-                                is RemoteSource -> Text(stringResource(R.string.remote))
-                                is LocalSource -> Text(stringResource(R.string.local))
-                            }
-                        },
-                    )
-                }
-            }
+            BaseBundleDialog(
+                modifier = Modifier.padding(paddingValues),
+                name = source.name,
+                remoteUrl = (source as? RemoteSource)?.apiUrl,
+                patchCount = 21,
+                version = version,
+                autoUpdate = autoUpdate,
+                onAutoUpdateChange = { autoUpdate = it },
+                onPatchesClick = {
+                    viewCurrentBundlePatches = true
+                },
+            )
         }
     }
 }

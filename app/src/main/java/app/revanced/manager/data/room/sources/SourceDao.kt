@@ -1,6 +1,7 @@
 package app.revanced.manager.data.room.sources
 
 import androidx.room.*
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface SourceDao {
@@ -8,7 +9,7 @@ interface SourceDao {
     suspend fun all(): List<SourceEntity>
 
     @Query("SELECT version, integrations_version FROM $sourcesTableName WHERE uid = :uid")
-    suspend fun getVersionById(uid: Int): VersionInfo
+    fun getVersionById(uid: Int): Flow<VersionInfo>
 
     @Query("UPDATE $sourcesTableName SET version=:patches, integrations_version=:integrations WHERE uid=:uid")
     suspend fun updateVersion(uid: Int, patches: String, integrations: String)

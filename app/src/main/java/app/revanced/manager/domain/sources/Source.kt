@@ -1,30 +1,22 @@
 package app.revanced.manager.domain.sources
 
-import android.util.Log
 import androidx.compose.runtime.Stable
 import app.revanced.manager.patcher.patch.PatchBundle
-import app.revanced.manager.domain.repository.SourcePersistenceRepository
-import app.revanced.manager.util.tag
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 import java.io.File
 
 /**
  * A [PatchBundle] source.
  */
 @Stable
-sealed class Source(val name: String, val uid: Int, directory: File) : KoinComponent {
-    private val configRepository: SourcePersistenceRepository by inject()
+sealed class Source(val name: String, val uid: Int, directory: File) {
     protected companion object {
         /**
          * A placeholder [PatchBundle].
          */
         val emptyPatchBundle = PatchBundle(emptyList(), null)
-        fun logError(err: Throwable) {
-            Log.e(tag, "Failed to load bundle", err)
-        }
     }
 
     protected val patchesJar = directory.resolve("patches.jar")
@@ -32,22 +24,33 @@ sealed class Source(val name: String, val uid: Int, directory: File) : KoinCompo
 
     /**
      * Returns true if the bundle has been downloaded to local storage.
+     *
+     * TODO: delete this?
      */
     fun hasInstalled() = patchesJar.exists()
+    abstract fun version(): Flow<String?>
 
-    protected suspend fun getVersion() = configRepository.getVersion(uid)
-    protected suspend fun saveVersion(patches: String, integrations: String) =
-        configRepository.updateVersion(uid, patches, integrations)
+    protected fun load(): State {
+        if (!hasInstalled()) return State.Missing
 
-    // TODO: Communicate failure states better.
-    protected fun loadBundle(onFail: (Throwable) -> Unit = ::logError) = if (!hasInstalled()) emptyPatchBundle
-    else try {
-        PatchBundle(patchesJar, integrations.takeIf { it.exists() })
-    } catch (err: Throwable) {
-        onFail(err)
-        emptyPatchBundle
+        return try {
+            State.Loaded(PatchBundle(patchesJar, integrations.takeIf(File::exists)))
+        } catch (t: Throwable) {
+            State.Failed(t)
+        }
     }
 
-    protected val _bundle = MutableStateFlow(loadBundle())
+    // TODO: consider renaming
+    protected val _bundle = MutableStateFlow(load())
     val bundle = _bundle.asStateFlow()
+
+    sealed interface State {
+        fun bundleOrNull(): PatchBundle? = null
+
+        object Missing : State
+        data class Failed(val throwable: Throwable) : State
+        data class Loaded(val bundle: PatchBundle) : State {
+            override fun bundleOrNull() = bundle
+        }
+    }
 }

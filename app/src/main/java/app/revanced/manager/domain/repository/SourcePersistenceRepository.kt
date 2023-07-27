@@ -7,6 +7,7 @@ import app.revanced.manager.data.room.sources.SourceLocation
 import app.revanced.manager.data.room.sources.VersionInfo
 import app.revanced.manager.util.apiURL
 import io.ktor.http.*
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 class SourcePersistenceRepository(db: AppDatabase) {
     private val dao = db.sourceDao()
@@ -51,5 +52,5 @@ class SourcePersistenceRepository(db: AppDatabase) {
     suspend fun updateVersion(uid: Int, patches: String, integrations: String) =
         dao.updateVersion(uid, patches, integrations)
 
-    suspend fun getVersion(id: Int) = dao.getVersionById(id).let { it.patches to it.integrations }
+    fun getVersion(id: Int) = dao.getVersionById(id).distinctUntilChanged()
 }

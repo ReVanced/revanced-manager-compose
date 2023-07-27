@@ -30,6 +30,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.revanced.manager.R
 import app.revanced.manager.domain.sources.Source
 import app.revanced.manager.ui.component.NotificationCard
+import kotlinx.coroutines.flow.map
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,7 +39,7 @@ fun BundlePatchesDialog(
     source: Source,
 ) {
     var informationCardVisible by remember { mutableStateOf(true) }
-    val bundle by source.bundle.collectAsStateWithLifecycle()
+    val state by source.bundle.collectAsStateWithLifecycle()
 
     Dialog(
         onDismissRequest = onDismissRequest,
@@ -84,27 +85,29 @@ fun BundlePatchesDialog(
                     }
                 }
 
-                items(bundle.patches.size) { bundleIndex ->
-                    val patch = bundle.patches[bundleIndex]
-                    ListItem(
-                        headlineContent = {
-                            Text(
-                                text = patch.name,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        },
-                        supportingContent = {
-                            patch.description?.let {
+                state.bundleOrNull()?.let { bundle ->
+                    items(bundle.patches.size) { bundleIndex ->
+                        val patch = bundle.patches[bundleIndex]
+                        ListItem(
+                            headlineContent = {
                                 Text(
-                                    text = it,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    text = patch.name,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
+                            },
+                            supportingContent = {
+                                patch.description?.let {
+                                    Text(
+                                        text = it,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
                             }
-                        }
-                    )
-                    Divider()
+                        )
+                        Divider()
+                    }
                 }
             }
         }

@@ -1,6 +1,8 @@
 package app.revanced.manager.domain.sources
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.InputStream
@@ -18,6 +20,8 @@ class LocalSource(name: String, id: Int, directory: File) : Source(name, id, dir
             }
         }
 
-        _bundle.emit(loadBundle { throw it })
+        _bundle.emit(load())
     }
+
+    override fun version() = flowOf(null)
 }

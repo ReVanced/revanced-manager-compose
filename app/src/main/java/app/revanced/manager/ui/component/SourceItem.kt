@@ -1,21 +1,24 @@
 package app.revanced.manager.ui.component
 
-
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ErrorOutline
+import androidx.compose.material.icons.outlined.Warning
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
@@ -32,14 +35,16 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun SourceItem(
-    source: Source, onDelete: () -> Unit,
+    source: Source,
+    onDelete: () -> Unit,
     coroutineScope: CoroutineScope,
 ) {
     var viewBundleDialogPage by rememberSaveable { mutableStateOf(false) }
+    val state by source.bundle.collectAsStateWithLifecycle()
 
-    val bundle by source.bundle.collectAsStateWithLifecycle()
-    val patchCount = bundle.patches.size
-    val padding = PaddingValues(16.dp, 0.dp)
+    val version by remember {
+        source.version()
+    }.collectAsStateWithLifecycle(null)
 
     val androidContext = LocalContext.current
 
@@ -51,7 +56,6 @@ fun SourceItem(
                 onDelete()
             },
             source = source,
-            patchCount = patchCount,
             onRefreshButton = {
                 coroutineScope.launch {
                     uiSafe(
@@ -66,31 +70,57 @@ fun SourceItem(
         )
     }
 
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
+    ListItem(
         modifier = Modifier
             .height(64.dp)
             .fillMaxWidth()
             .clickable {
                 viewBundleDialogPage = true
+            },
+        headlineContent = {
+            Text(
+                text = source.name,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        },
+        supportingContent = {
+            state.bundleOrNull()?.patches?.size?.let { patchCount ->
+                Text(
+                    text = pluralStringResource(R.plurals.patches_count, patchCount, patchCount),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
-    ) {
-        Text(
-            text = source.name,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(padding)
-        )
+        },
+        trailingContent = {
+            Row {
+                val icon = remember(state) {
+                    when (state) {
+                        is Source.State.Failed -> Icons.Outlined.ErrorOutline
+                        is Source.State.Missing -> Icons.Outlined.Warning
+                        is Source.State.Loaded -> null
+                    }
+                }
 
-        Spacer(
-            modifier = Modifier.weight(1f)
-        )
+                icon?.let { vector ->
+                    // TODO: set contentDescription
+                    Icon(
+                        imageVector = vector,
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp),
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
 
-        Text(
-            text = pluralStringResource(R.plurals.patches_count, patchCount, patchCount),
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(padding)
-        )
-    }
+                version?.let { txt ->
+                    Text(
+                        text = txt,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        },
+    )
 }

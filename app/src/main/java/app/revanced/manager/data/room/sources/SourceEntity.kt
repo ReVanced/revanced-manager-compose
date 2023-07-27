@@ -28,4 +28,5 @@ data class SourceEntity(
     @ColumnInfo(name = "name") val name: String,
     @Embedded val versionInfo: VersionInfo,
     @ColumnInfo(name = "location") val location: SourceLocation,
+    // @ColumnInfo(name = "auto_update") val autoUpdate: Boolean
 )
