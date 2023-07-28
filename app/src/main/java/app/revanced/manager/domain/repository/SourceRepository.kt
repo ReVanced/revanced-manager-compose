@@ -113,6 +113,7 @@ class SourceRepository(app: Application, private val persistenceRepo: SourcePers
         getRemoteSources().forEach {
             launch {
                 if (!it.props().first().autoUpdate) return@launch
+                Log.d(tag, "Updating source: ${it.name}")
                 it.update()
             }
         }
