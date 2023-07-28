@@ -17,7 +17,8 @@ class SourcePersistenceRepository(db: AppDatabase) {
             uid = generateUid(),
             name = "Official",
             versionInfo = VersionInfo("", ""),
-            location = SourceLocation.Remote(Url(apiURL))
+            location = SourceLocation.Remote(Url(apiURL)),
+            autoUpdate = false
         )
     }
 
@@ -33,7 +34,7 @@ class SourcePersistenceRepository(db: AppDatabase) {
 
     suspend fun clear() = dao.purge()
 
-    suspend fun create(name: String, location: SourceLocation): Int {
+    suspend fun create(name: String, location: SourceLocation, autoUpdate: Boolean = false): Int {
         val uid = generateUid()
         dao.add(
             SourceEntity(
@@ -41,6 +42,7 @@ class SourcePersistenceRepository(db: AppDatabase) {
                 name = name,
                 versionInfo = VersionInfo("", ""),
                 location = location,
+                autoUpdate = autoUpdate
             )
         )
 
@@ -51,6 +53,7 @@ class SourcePersistenceRepository(db: AppDatabase) {
 
     suspend fun updateVersion(uid: Int, patches: String, integrations: String) =
         dao.updateVersion(uid, patches, integrations)
+    suspend fun setAutoUpdate(uid: Int, value: Boolean) = dao.setAutoUpdate(uid, value)
 
-    fun getVersion(id: Int) = dao.getVersionById(id).distinctUntilChanged()
+    fun getProps(id: Int) = dao.getPropsById(id).distinctUntilChanged()
 }

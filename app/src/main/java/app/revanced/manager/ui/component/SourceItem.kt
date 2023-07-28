@@ -4,7 +4,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ErrorOutline
@@ -29,8 +28,11 @@ import app.revanced.manager.domain.sources.RemoteSource
 import app.revanced.manager.domain.sources.Source
 import app.revanced.manager.ui.component.bundle.BundleInformationDialog
 import app.revanced.manager.ui.viewmodel.SourcesViewModel
+import app.revanced.manager.util.propsFlow
 import app.revanced.manager.util.uiSafe
+import app.revanced.manager.util.version
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 @Composable
@@ -42,8 +44,8 @@ fun SourceItem(
     var viewBundleDialogPage by rememberSaveable { mutableStateOf(false) }
     val state by source.bundle.collectAsStateWithLifecycle()
 
-    val version by remember {
-        source.version()
+    val version by remember(source) {
+        source.propsFlow().map { props -> props?.version }
     }.collectAsStateWithLifecycle(null)
 
     val androidContext = LocalContext.current

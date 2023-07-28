@@ -2,7 +2,6 @@ package app.revanced.manager.domain.sources
 
 import androidx.compose.runtime.Stable
 import app.revanced.manager.patcher.patch.PatchBundle
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.io.File
@@ -28,7 +27,6 @@ sealed class Source(val name: String, val uid: Int, directory: File) {
      * TODO: delete this?
      */
     fun hasInstalled() = patchesJar.exists()
-    abstract fun version(): Flow<String?>
 
     protected fun load(): State {
         if (!hasInstalled()) return State.Missing

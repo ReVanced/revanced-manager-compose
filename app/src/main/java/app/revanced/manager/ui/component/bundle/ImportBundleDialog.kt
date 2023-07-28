@@ -4,11 +4,8 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Topic
@@ -41,12 +38,12 @@ import io.ktor.http.Url
 @Composable
 fun ImportBundleDialog(
     onDismissRequest: () -> Unit,
-    onRemoteSubmit: (String, Url) -> Unit,
+    onRemoteSubmit: (String, Url, Boolean) -> Unit,
     onLocalSubmit: (String, Uri, Uri?) -> Unit
 ) {
     var name by rememberSaveable { mutableStateOf("") }
     var remoteUrl by rememberSaveable { mutableStateOf("") }
-    var autoUpdate by remember { mutableStateOf(true) }
+    var autoUpdate by rememberSaveable { mutableStateOf(true) }
     var isLocal by rememberSaveable { mutableStateOf(false) }
     var patchBundle by rememberSaveable { mutableStateOf<Uri?>(null) }
     var integrations by rememberSaveable { mutableStateOf<Uri?>(null) }
@@ -98,12 +95,16 @@ fun ImportBundleDialog(
                             modifier = Modifier
                                 .padding(end = 16.dp)
                                 .clickable {
-                                    if (inputsAreValid) {
-                                        if (isLocal) {
-                                            onLocalSubmit(name, patchBundle!!, integrations)
-                                        } else {
-                                            onRemoteSubmit(name, remoteUrl.parseUrlOrNull()!!)
-                                        }
+                                    if (!inputsAreValid) return@clickable
+
+                                    if (isLocal) {
+                                        onLocalSubmit(name, patchBundle!!, integrations)
+                                    } else {
+                                        onRemoteSubmit(
+                                            name,
+                                            remoteUrl.parseUrlOrNull()!!,
+                                            autoUpdate
+                                        )
                                     }
                                 }
                         )

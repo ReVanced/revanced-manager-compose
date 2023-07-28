@@ -33,9 +33,9 @@ fun SourcesScreen(
                 showNewSourceDialog = false
                 vm.addLocal(name, patches, integrations)
             },
-            onRemoteSubmit = { name, url ->
+            onRemoteSubmit = { name, url, autoUpdate ->
                 showNewSourceDialog = false
-                vm.addRemote(name, url)
+                vm.addRemote(name, url, autoUpdate)
             },
         )
     }

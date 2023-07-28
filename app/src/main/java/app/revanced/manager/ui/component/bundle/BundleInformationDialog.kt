@@ -1,10 +1,6 @@
 package app.revanced.manager.ui.component.bundle
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.DeleteOutline
@@ -17,10 +13,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -28,6 +24,10 @@ import app.revanced.manager.R
 import app.revanced.manager.domain.sources.LocalSource
 import app.revanced.manager.domain.sources.RemoteSource
 import app.revanced.manager.domain.sources.Source
+import app.revanced.manager.util.propsFlow
+import app.revanced.manager.util.version
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,10 +37,15 @@ fun BundleInformationDialog(
     source: Source,
     onRefreshButton: () -> Unit,
 ) {
-    var autoUpdate by remember { mutableStateOf(true) }
+    val composableScope = rememberCoroutineScope()
     var viewCurrentBundlePatches by remember { mutableStateOf(false) }
     val isLocal = source is LocalSource
-    val version by source.version().collectAsStateWithLifecycle(initialValue = null)
+    val patchCount by remember(source) {
+        source.bundle.map { it.bundleOrNull()?.patches?.size ?: 0 }
+    }.collectAsStateWithLifecycle(0)
+    val props by remember(source) {
+        source.propsFlow()
+    }.collectAsStateWithLifecycle(null)
 
     if (viewCurrentBundlePatches) {
         BundlePatchesDialog(
@@ -92,10 +97,14 @@ fun BundleInformationDialog(
                 modifier = Modifier.padding(paddingValues),
                 name = source.name,
                 remoteUrl = (source as? RemoteSource)?.apiUrl,
-                patchCount = 21,
-                version = version,
-                autoUpdate = autoUpdate,
-                onAutoUpdateChange = { autoUpdate = it },
+                patchCount = patchCount,
+                version = props?.version,
+                autoUpdate = props?.autoUpdate ?: false,
+                onAutoUpdateChange = {
+                    composableScope.launch {
+                        (source as? RemoteSource)?.setAutoUpdate(it)
+                    }
+                },
                 onPatchesClick = {
                     viewCurrentBundlePatches = true
                 },

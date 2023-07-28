@@ -12,10 +12,13 @@ import app.revanced.manager.util.flatMapLatestAndCombine
 import app.revanced.manager.util.tag
 import io.ktor.http.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.InputStream
@@ -96,11 +99,22 @@ class SourceRepository(app: Application, private val persistenceRepo: SourcePers
         source.replace(patches, integrations)
     }
 
-    suspend fun createRemoteSource(name: String, apiUrl: Url) {
-        val id = persistenceRepo.create(name, SourceLocation.Remote(apiUrl))
+    suspend fun createRemoteSource(name: String, apiUrl: Url, autoUpdate: Boolean) {
+        val id = persistenceRepo.create(name, SourceLocation.Remote(apiUrl), autoUpdate)
         addSource(RemoteSource(name, id, directoryOf(id), apiUrl.toString()))
     }
 
-    suspend fun redownloadRemoteSources() =
-        sources.first().filterIsInstance<RemoteSource>().forEach { it.downloadLatest() }
+    private suspend fun getRemoteSources() = sources.first().filterIsInstance<RemoteSource>()
+
+    suspend fun redownloadRemoteSources() = getRemoteSources().forEach { it.downloadLatest() }
+
+    suspend fun updateCheck() = supervisorScope {
+        // TODO: check network state before attempting this
+        getRemoteSources().forEach {
+            launch {
+                if (!it.props().first().autoUpdate) return@launch
+                it.update()
+            }
+        }
+    }
 }

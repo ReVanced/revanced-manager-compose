@@ -15,12 +15,17 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import app.revanced.manager.data.room.sources.SourceProperties
+import app.revanced.manager.domain.sources.RemoteSource
+import app.revanced.manager.domain.sources.Source
 import io.ktor.http.Url
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -109,3 +114,6 @@ val Color.hexCode: String
         val b: Int = (blue * 255).toInt()
         return java.lang.String.format(Locale.getDefault(), "%02X%02X%02X%02X", r, g, b, a)
     }
+
+fun Source.propsFlow() = (this as? RemoteSource)?.props() ?: flowOf(null)
+val SourceProperties.version get() = versionInfo.patches.takeUnless { it.isEmpty() }

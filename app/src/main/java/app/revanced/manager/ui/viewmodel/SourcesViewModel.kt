@@ -40,8 +40,8 @@ class SourcesViewModel(
         }
     }
 
-    fun addRemote(name: String, apiUrl: Url) =
-        viewModelScope.launch { sourceRepository.createRemoteSource(name, apiUrl) }
+    fun addRemote(name: String, apiUrl: Url, autoUpdate: Boolean) =
+        viewModelScope.launch { sourceRepository.createRemoteSource(name, apiUrl, autoUpdate) }
 
     fun delete(source: Source) = viewModelScope.launch { sourceRepository.remove(source) }
 

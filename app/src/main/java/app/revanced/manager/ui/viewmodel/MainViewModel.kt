@@ -13,8 +13,9 @@ class MainViewModel(
 ) : ViewModel() {
     init {
         with(viewModelScope) {
-            launch {
+            launch(Dispatchers.Default) {
                 sourceRepository.loadSources()
+                sourceRepository.updateCheck()
             }
             launch {
                 pm.getCompatibleApps()

@@ -5,7 +5,6 @@ import app.revanced.manager.domain.repository.SourcePersistenceRepository
 import app.revanced.manager.network.api.ManagerAPI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
@@ -18,7 +17,7 @@ class RemoteSource(name: String, id: Int, directory: File, val apiUrl: String) :
     private val configRepository: SourcePersistenceRepository by inject()
     private val api: ManagerAPI = get()
 
-    private suspend fun currentVersion() = configRepository.getVersion(uid).first()
+    private suspend fun currentVersion() = configRepository.getProps(uid).first().versionInfo
     private suspend fun saveVersion(patches: String, integrations: String) =
         configRepository.updateVersion(uid, patches, integrations)
 
@@ -39,6 +38,7 @@ class RemoteSource(name: String, id: Int, directory: File, val apiUrl: String) :
         } else false
     }
 
-    override fun version() = configRepository.getVersion(uid)
-        .map { versionInfo -> versionInfo.patches.takeUnless { it.isEmpty() } }
+    fun props() = configRepository.getProps(uid) // .map { props -> props.autoUpdate to props.versionInfo.patches.takeUnless { it.isEmpty() } }
+
+    suspend fun setAutoUpdate(value: Boolean) = configRepository.setAutoUpdate(uid, value)
 }

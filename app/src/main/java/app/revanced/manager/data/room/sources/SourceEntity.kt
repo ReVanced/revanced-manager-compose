@@ -28,5 +28,10 @@ data class SourceEntity(
     @ColumnInfo(name = "name") val name: String,
     @Embedded val versionInfo: VersionInfo,
     @ColumnInfo(name = "location") val location: SourceLocation,
-    // @ColumnInfo(name = "auto_update") val autoUpdate: Boolean
+    @ColumnInfo(name = "auto_update") val autoUpdate: Boolean
+)
+
+data class SourceProperties(
+    @Embedded val versionInfo: VersionInfo,
+    @ColumnInfo(name = "auto_update") val autoUpdate: Boolean
 )

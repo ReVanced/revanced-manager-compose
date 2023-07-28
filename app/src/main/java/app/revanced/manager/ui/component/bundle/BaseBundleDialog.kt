@@ -80,8 +80,8 @@ inline fun BaseBundleDialog(
             top = 8.dp,
             end = 4.dp,
         )
-    ) content@{
-        if (remoteUrl == null) {
+    ) Info@{
+        if (remoteUrl != null) {
             BundleInfoListItem(
                 headlineText = stringResource(R.string.automatically_update),
                 supportingText = stringResource(R.string.automatically_update_description),
@@ -101,16 +101,16 @@ inline fun BaseBundleDialog(
             FilledTonalButton(
                 onClick = onBundleTypeClick,
                 content = {
-                    if (remoteUrl != null) {
-                        Text(stringResource(R.string.remote))
-                    } else {
+                    if (remoteUrl == null) {
                         Text(stringResource(R.string.local))
+                    } else {
+                        Text(stringResource(R.string.remote))
                     }
                 }
             )
         }
 
-        if (version == null && patchCount < 1) return@content
+        if (version == null && patchCount < 1) return@Info
 
         Text(
             text = stringResource(R.string.information),
@@ -138,7 +138,7 @@ inline fun BaseBundleDialog(
             }
         )
 
-        if (version == null) return@content
+        if (version == null) return@Info
 
         BundleInfoListItem(
             headlineText = stringResource(R.string.version),
