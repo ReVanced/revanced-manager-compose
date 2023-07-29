@@ -50,8 +50,8 @@ fun VersionSelectorScreen(
                 .sortedWith(
                     compareByDescending<SelectedApp> {
                         it is SelectedApp.Local
-                    }.thenByDescending { compatibleVersions[it.packageName] }
-                        .thenByDescending { it.packageName }
+                    }.thenByDescending { compatibleVersions[it.version] }
+                        .thenByDescending { it.version }
                 )
         }
     }
@@ -80,7 +80,7 @@ fun VersionSelectorScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             when {
-                !viewModel.isDownloading && viewModel.downloadableVersions.isNotEmpty() -> {
+                !viewModel.isDownloading && list.isNotEmpty() -> {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
