@@ -112,5 +112,6 @@ val Color.hexCode: String
         return java.lang.String.format(Locale.getDefault(), "%02X%02X%02X%02X", r, g, b, a)
     }
 
+val Source.isDefault get() = uid == 0
 fun Source.propsOrNullFlow() = (this as? RemoteSource)?.propsFlow() ?: flowOf(null)
 val SourceProperties.version get() = versionInfo.patches.takeUnless { it.isEmpty() }

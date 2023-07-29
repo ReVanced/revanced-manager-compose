@@ -24,6 +24,7 @@ import app.revanced.manager.R
 import app.revanced.manager.domain.sources.LocalSource
 import app.revanced.manager.domain.sources.RemoteSource
 import app.revanced.manager.domain.sources.Source
+import app.revanced.manager.util.isDefault
 import app.revanced.manager.util.propsOrNullFlow
 import app.revanced.manager.util.version
 import kotlinx.coroutines.flow.map
@@ -76,7 +77,7 @@ fun BundleInformationDialog(
                     },
                     actions = {
                         // TODO: add the ability to disable sources
-                        if (source.uid != 0) {
+                        if (!source.isDefault) {
                             IconButton(onClick = onDeleteRequest) {
                                 Icon(
                                     Icons.Outlined.DeleteOutline,
@@ -98,7 +99,7 @@ fun BundleInformationDialog(
         ) { paddingValues ->
             BaseBundleDialog(
                 modifier = Modifier.padding(paddingValues),
-                isDefault = source.uid == 0,
+                isDefault = source.isDefault,
                 name = source.name,
                 remoteUrl = (source as? RemoteSource)?.apiUrl,
                 patchCount = patchCount,
