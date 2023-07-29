@@ -14,11 +14,14 @@ import androidx.core.content.ContextCompat
 import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
 import app.revanced.manager.R
+import app.revanced.manager.domain.manager.PreferencesManager
+import app.revanced.manager.domain.repository.DownloadedAppRepository
 import app.revanced.manager.domain.repository.SourceRepository
 import app.revanced.manager.domain.worker.Worker
 import app.revanced.manager.domain.worker.WorkerRepository
 import app.revanced.manager.patcher.Session
 import app.revanced.manager.patcher.aapt.Aapt
+import app.revanced.manager.ui.model.SelectedApp
 import app.revanced.manager.util.Options
 import app.revanced.manager.util.PatchesSelection
 import app.revanced.manager.util.tag
@@ -34,14 +37,18 @@ import org.koin.core.component.inject
 import java.io.File
 import java.io.FileNotFoundException
 
-class PatcherWorker(context: Context, parameters: WorkerParameters) :
-    Worker<PatcherWorker.Args>(context, parameters),
-    KoinComponent {
+class PatcherWorker(
+    private val context: Context,
+    parameters: WorkerParameters
+) : Worker<PatcherWorker.Args>(context, parameters), KoinComponent {
+
     private val sourceRepository: SourceRepository by inject()
     private val workerRepository: WorkerRepository by inject()
+    private val prefs: PreferencesManager by inject()
+    private val downloadedAppRepository: DownloadedAppRepository by inject()
 
     data class Args(
-        val input: String,
+        val input: SelectedApp,
         val output: String,
         val selectedPatches: PatchesSelection,
         val options: Options,
@@ -118,8 +125,10 @@ class PatcherWorker(context: Context, parameters: WorkerParameters) :
         val bundles = sourceRepository.bundles.first()
         val integrations = bundles.mapNotNull { (_, bundle) -> bundle.integrations }
 
+        val downloadProgress = MutableStateFlow<Pair<Float, Float>?>(null)
+
         val progressManager =
-            PatcherProgressManager(applicationContext, args.selectedPatches.flatMap { it.value })
+            PatcherProgressManager(applicationContext, args.selectedPatches.flatMap { it.value }, args.input, downloadProgress)
 
         val progressFlow = args.progress
 
@@ -155,6 +164,29 @@ class PatcherWorker(context: Context, parameters: WorkerParameters) :
             // Ensure they are in the correct order so we can track progress properly.
             progressManager.replacePatchesList(patches.map { it.patchName })
 
+            @Suppress("DEPRECATION")
+            val inputFile = when (args.input) {
+                is SelectedApp.Download -> {
+                    updateProgress(Progress.Downloading)
+
+                    val savePath = context.filesDir.resolve("downloaded-apps").resolve(args.input.packageName).also { it.mkdirs() }
+
+                    args.input.app.download(
+                        savePath,
+                        prefs.preferSplits.get(),
+                        onDownload = { downloadProgress.emit(it) }
+                    ).also {
+                        downloadedAppRepository.add(
+                            args.input.packageName,
+                            args.input.version,
+                            it
+                        )
+                    }
+                }
+                is SelectedApp.Local -> args.input.file
+                is SelectedApp.Installed -> File(context.packageManager.getPackageInfo(args.input.packageName, 0).applicationInfo.sourceDir)
+            }
+
             updateProgress(Progress.Unpacking)
 
             Session(
@@ -162,10 +194,9 @@ class PatcherWorker(context: Context, parameters: WorkerParameters) :
                 frameworkPath,
                 aaptPath,
                 args.logger,
-                File(args.input)
-            ) {
-                updateProgress(it)
-            }.use { session ->
+                inputFile,
+                onProgress = { updateProgress(it) }
+            ).use { session ->
                 session.run(File(args.output), patches, integrations)
             }
 
@@ -173,7 +204,7 @@ class PatcherWorker(context: Context, parameters: WorkerParameters) :
             progressManager.success()
             Result.success()
         } catch (e: Exception) {
-            Log.e(tag, "Got exception while patching".logFmt(), e)
+            Log.e(tag, "Exception while patching".logFmt(), e)
             progressManager.failure(e)
             Result.failure()
         } finally {
