@@ -17,8 +17,16 @@ interface SourceDao {
     @Query("UPDATE $sourcesTableName SET auto_update=:value WHERE uid=:uid")
     suspend fun setAutoUpdate(uid: Int, value: Boolean)
 
-    @Query("DELETE FROM $sourcesTableName")
-    suspend fun purge()
+    @Query("DELETE FROM $sourcesTableName WHERE uid!=0")
+    suspend fun purgeCustomSources()
+    @Query("UPDATE $sourcesTableName SET version='', integrations_version='' WHERE uid=0")
+    suspend fun resetMainSource()
+
+    @Transaction
+    suspend fun reset() {
+        purgeCustomSources()
+        resetMainSource()
+    }
 
     @Query("DELETE FROM $sourcesTableName WHERE uid=:uid")
     suspend fun remove(uid: Int)

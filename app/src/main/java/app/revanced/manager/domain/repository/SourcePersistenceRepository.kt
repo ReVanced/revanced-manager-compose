@@ -14,7 +14,7 @@ class SourcePersistenceRepository(db: AppDatabase) {
 
     private companion object {
         val defaultSource = SourceEntity(
-            uid = generateUid(),
+            uid = 0,
             name = "Official",
             versionInfo = VersionInfo("", ""),
             location = SourceLocation.Remote(Url(apiURL)),
@@ -32,7 +32,7 @@ class SourcePersistenceRepository(db: AppDatabase) {
         return all
     }
 
-    suspend fun clear() = dao.purge()
+    suspend fun reset() = dao.reset()
 
     suspend fun create(name: String, location: SourceLocation, autoUpdate: Boolean = false): Int {
         val uid = generateUid()

@@ -66,7 +66,7 @@ class SourceRepository(app: Application, private val persistenceRepo: SourcePers
     }
 
     suspend fun resetConfig() = withContext(Dispatchers.Default) {
-        persistenceRepo.clear()
+        persistenceRepo.reset()
         _sources.emit(emptyMap())
         sourcesDir.apply {
             deleteRecursively()
@@ -109,7 +109,10 @@ class SourceRepository(app: Application, private val persistenceRepo: SourcePers
     suspend fun redownloadRemoteSources() = getRemoteSources().forEach { it.downloadLatest() }
 
     suspend fun updateCheck() = supervisorScope {
-        if (!networkInfo.isSafe()) return@supervisorScope
+        if (!networkInfo.isSafe()) {
+            Log.d(tag, "Skipping update check because the network is unsafe.")
+            return@supervisorScope
+        }
 
         getRemoteSources().forEach {
             launch {

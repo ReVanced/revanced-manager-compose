@@ -75,11 +75,14 @@ fun BundleInformationDialog(
                         )
                     },
                     actions = {
-                        IconButton(onClick = onDeleteRequest) {
-                            Icon(
-                                Icons.Outlined.DeleteOutline,
-                                stringResource(R.string.delete)
-                            )
+                        // TODO: add the ability to disable sources
+                        if (source.uid != 0) {
+                            IconButton(onClick = onDeleteRequest) {
+                                Icon(
+                                    Icons.Outlined.DeleteOutline,
+                                    stringResource(R.string.delete)
+                                )
+                            }
                         }
                         if (!isLocal) {
                             IconButton(onClick = onRefreshButton) {
