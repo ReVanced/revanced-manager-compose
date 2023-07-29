@@ -40,7 +40,7 @@ fun VersionSelectorScreen(
     onAppClick: (SelectedApp) -> Unit,
     viewModel: VersionSelectorViewModel
 ) {
-    val compatibleVersions by viewModel.compatibleVersions.collectAsStateWithLifecycle(emptyMap())
+    val supportedVersions by viewModel.supportedVersions.collectAsStateWithLifecycle(emptyMap())
     val downloadedVersions by viewModel.downloadedVersions.collectAsStateWithLifecycle(emptyList())
 
     val list by remember {
@@ -50,7 +50,7 @@ fun VersionSelectorScreen(
                 .sortedWith(
                     compareByDescending<SelectedApp> {
                         it is SelectedApp.Local
-                    }.thenByDescending { compatibleVersions[it.version] }
+                    }.thenByDescending { supportedVersions[it.version] }
                         .thenByDescending { it.version }
                 )
         }
@@ -94,7 +94,7 @@ fun VersionSelectorScreen(
                                     if (selectedApp is SelectedApp.Local) {
                                         { Text(stringResource(R.string.already_downloaded)) }
                                     } else null,
-                                trailingContent = compatibleVersions[selectedApp.version]?.let { {
+                                trailingContent = supportedVersions[selectedApp.version]?.let { {
                                         Text(
                                             pluralStringResource(
                                                 R.plurals.patches_count,

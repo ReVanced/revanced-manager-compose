@@ -38,7 +38,7 @@ class VersionSelectorViewModel(
 
     val downloadableVersions = mutableStateSetOf<SelectedApp.Download>()
 
-    val compatibleVersions = sourceRepository.bundles.map { bundles ->
+    val supportedVersions = sourceRepository.bundles.map { bundles ->
         var patchesWithoutVersions = 0
 
         bundles.flatMap { (_, bundle) ->
@@ -65,7 +65,7 @@ class VersionSelectorViewModel(
     init {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val compatibleVersions = compatibleVersions.first()
+                val compatibleVersions = supportedVersions.first()
 
                 appDownloader.getAvailableVersions(
                     packageName,
