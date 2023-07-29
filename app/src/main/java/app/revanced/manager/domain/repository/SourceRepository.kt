@@ -3,6 +3,7 @@ package app.revanced.manager.domain.repository
 import android.app.Application
 import android.content.Context
 import android.util.Log
+import app.revanced.manager.data.platform.NetworkInfo
 import app.revanced.manager.data.room.sources.SourceEntity
 import app.revanced.manager.data.room.sources.SourceLocation
 import app.revanced.manager.domain.sources.LocalSource
@@ -22,7 +23,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.InputStream
 
-class SourceRepository(app: Application, private val persistenceRepo: SourcePersistenceRepository) {
+class SourceRepository(app: Application, private val persistenceRepo: SourcePersistenceRepository, private val networkInfo: NetworkInfo) {
     private val sourcesDir = app.getDir("sources", Context.MODE_PRIVATE)
 
     private val _sources: MutableStateFlow<Map<Int, Source>> = MutableStateFlow(emptyMap())
@@ -108,7 +109,8 @@ class SourceRepository(app: Application, private val persistenceRepo: SourcePers
     suspend fun redownloadRemoteSources() = getRemoteSources().forEach { it.downloadLatest() }
 
     suspend fun updateCheck() = supervisorScope {
-        // TODO: check network state before attempting this
+        if (!networkInfo.isSafe()) return@supervisorScope
+
         getRemoteSources().forEach {
             launch {
                 if (!it.propsFlow().first().autoUpdate) return@launch
