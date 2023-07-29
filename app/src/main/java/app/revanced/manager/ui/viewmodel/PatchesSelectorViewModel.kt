@@ -47,7 +47,7 @@ class PatchesSelectorViewModel(
         combiner = { it.filterNotNull() }
     ) { source ->
         // Regenerate bundle information whenever this source updates.
-        source.bundle.map { state ->
+        source.state.map { state ->
             val bundle = state.bundleOrNull() ?: return@map null
 
             val supported = mutableListOf<PatchInfo>()

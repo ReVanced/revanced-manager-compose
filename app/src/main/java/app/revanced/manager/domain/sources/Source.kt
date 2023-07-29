@@ -11,20 +11,11 @@ import java.io.File
  */
 @Stable
 sealed class Source(val name: String, val uid: Int, directory: File) {
-    protected companion object {
-        /**
-         * A placeholder [PatchBundle].
-         */
-        val emptyPatchBundle = PatchBundle(emptyList(), null)
-    }
-
     protected val patchesJar = directory.resolve("patches.jar")
     protected val integrations = directory.resolve("integrations.apk")
 
     /**
      * Returns true if the bundle has been downloaded to local storage.
-     *
-     * TODO: delete this?
      */
     fun hasInstalled() = patchesJar.exists()
 
@@ -38,9 +29,8 @@ sealed class Source(val name: String, val uid: Int, directory: File) {
         }
     }
 
-    // TODO: consider renaming
-    protected val _bundle = MutableStateFlow(load())
-    val bundle = _bundle.asStateFlow()
+    protected val _state = MutableStateFlow(load())
+    val state = _state.asStateFlow()
 
     sealed interface State {
         fun bundleOrNull(): PatchBundle? = null

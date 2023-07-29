@@ -1,8 +1,6 @@
 package app.revanced.manager.util
 
-import android.app.Activity
 import android.content.Context
-import android.content.ContextWrapper
 import android.content.Intent
 import android.content.pm.PackageManager.NameNotFoundException
 import android.graphics.drawable.Drawable
@@ -25,7 +23,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -115,5 +112,5 @@ val Color.hexCode: String
         return java.lang.String.format(Locale.getDefault(), "%02X%02X%02X%02X", r, g, b, a)
     }
 
-fun Source.propsFlow() = (this as? RemoteSource)?.props() ?: flowOf(null)
+fun Source.propsOrNullFlow() = (this as? RemoteSource)?.propsFlow() ?: flowOf(null)
 val SourceProperties.version get() = versionInfo.patches.takeUnless { it.isEmpty() }

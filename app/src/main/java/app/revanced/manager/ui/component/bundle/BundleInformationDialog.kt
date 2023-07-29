@@ -24,7 +24,7 @@ import app.revanced.manager.R
 import app.revanced.manager.domain.sources.LocalSource
 import app.revanced.manager.domain.sources.RemoteSource
 import app.revanced.manager.domain.sources.Source
-import app.revanced.manager.util.propsFlow
+import app.revanced.manager.util.propsOrNullFlow
 import app.revanced.manager.util.version
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -41,10 +41,10 @@ fun BundleInformationDialog(
     var viewCurrentBundlePatches by remember { mutableStateOf(false) }
     val isLocal = source is LocalSource
     val patchCount by remember(source) {
-        source.bundle.map { it.bundleOrNull()?.patches?.size ?: 0 }
+        source.state.map { it.bundleOrNull()?.patches?.size ?: 0 }
     }.collectAsStateWithLifecycle(0)
     val props by remember(source) {
-        source.propsFlow()
+        source.propsOrNullFlow()
     }.collectAsStateWithLifecycle(null)
 
     if (viewCurrentBundlePatches) {

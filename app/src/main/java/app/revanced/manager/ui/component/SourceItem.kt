@@ -21,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.revanced.manager.R
@@ -28,7 +29,7 @@ import app.revanced.manager.domain.sources.RemoteSource
 import app.revanced.manager.domain.sources.Source
 import app.revanced.manager.ui.component.bundle.BundleInformationDialog
 import app.revanced.manager.ui.viewmodel.SourcesViewModel
-import app.revanced.manager.util.propsFlow
+import app.revanced.manager.util.propsOrNullFlow
 import app.revanced.manager.util.uiSafe
 import app.revanced.manager.util.version
 import kotlinx.coroutines.CoroutineScope
@@ -42,10 +43,10 @@ fun SourceItem(
     coroutineScope: CoroutineScope,
 ) {
     var viewBundleDialogPage by rememberSaveable { mutableStateOf(false) }
-    val state by source.bundle.collectAsStateWithLifecycle()
+    val state by source.state.collectAsStateWithLifecycle()
 
     val version by remember(source) {
-        source.propsFlow().map { props -> props?.version }
+        source.propsOrNullFlow().map { props -> props?.version }
     }.collectAsStateWithLifecycle(null)
 
     val androidContext = LocalContext.current
@@ -99,17 +100,16 @@ fun SourceItem(
             Row {
                 val icon = remember(state) {
                     when (state) {
-                        is Source.State.Failed -> Icons.Outlined.ErrorOutline
-                        is Source.State.Missing -> Icons.Outlined.Warning
+                        is Source.State.Failed -> Icons.Outlined.ErrorOutline to R.string.bundle_error
+                        is Source.State.Missing -> Icons.Outlined.Warning to R.string.bundle_missing
                         is Source.State.Loaded -> null
                     }
                 }
 
-                icon?.let { vector ->
-                    // TODO: set contentDescription
+                icon?.let { (vector, description) ->
                     Icon(
                         imageVector = vector,
-                        contentDescription = null,
+                        contentDescription = stringResource(description),
                         modifier = Modifier.size(24.dp),
                         tint = MaterialTheme.colorScheme.error
                     )

@@ -18,6 +18,6 @@ class LocalSource(name: String, id: Int, directory: File) : Source(name, id, dir
             }
         }
 
-        _bundle.emit(load())
+        _state.emit(load())
     }
 }

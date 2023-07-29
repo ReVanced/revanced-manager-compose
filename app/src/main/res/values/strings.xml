@@ -16,6 +16,9 @@
     <string name="bundle_information">Bundle information</string>
     <string name="bundle_patches">Bundle patches</string>
 
+    <string name="bundle_missing">Missing</string>
+    <string name="bundle_error">Error</string>
+
     <string name="select_version">Select version</string>
 
     <string name="general">General</string>

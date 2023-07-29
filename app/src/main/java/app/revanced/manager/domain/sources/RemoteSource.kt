@@ -7,7 +7,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.get
 import org.koin.core.component.inject
 import java.io.File
 
@@ -15,7 +14,7 @@ import java.io.File
 class RemoteSource(name: String, id: Int, directory: File, val apiUrl: String) :
     Source(name, id, directory), KoinComponent {
     private val configRepository: SourcePersistenceRepository by inject()
-    private val api: ManagerAPI = get()
+    private val api: ManagerAPI by inject()
 
     private suspend fun currentVersion() = configRepository.getProps(uid).first().versionInfo
     private suspend fun saveVersion(patches: String, integrations: String) =
@@ -24,7 +23,7 @@ class RemoteSource(name: String, id: Int, directory: File, val apiUrl: String) :
     suspend fun downloadLatest() = withContext(Dispatchers.IO) {
         api.downloadBundle(apiUrl, patchesJar, integrations).also { (patchesVer, integrationsVer) ->
             saveVersion(patchesVer, integrationsVer)
-            _bundle.emit(load())
+            _state.emit(load())
         }
 
         return@withContext
@@ -38,7 +37,7 @@ class RemoteSource(name: String, id: Int, directory: File, val apiUrl: String) :
         } else false
     }
 
-    fun props() = configRepository.getProps(uid) // .map { props -> props.autoUpdate to props.versionInfo.patches.takeUnless { it.isEmpty() } }
+    fun propsFlow() = configRepository.getProps(uid)
 
     suspend fun setAutoUpdate(value: Boolean) = configRepository.setAutoUpdate(uid, value)
 }

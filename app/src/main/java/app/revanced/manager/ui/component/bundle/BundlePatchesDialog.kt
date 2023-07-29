@@ -30,7 +30,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.revanced.manager.R
 import app.revanced.manager.domain.sources.Source
 import app.revanced.manager.ui.component.NotificationCard
-import kotlinx.coroutines.flow.map
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,7 +38,7 @@ fun BundlePatchesDialog(
     source: Source,
 ) {
     var informationCardVisible by remember { mutableStateOf(true) }
-    val state by source.bundle.collectAsStateWithLifecycle()
+    val state by source.state.collectAsStateWithLifecycle()
 
     Dialog(
         onDismissRequest = onDismissRequest,

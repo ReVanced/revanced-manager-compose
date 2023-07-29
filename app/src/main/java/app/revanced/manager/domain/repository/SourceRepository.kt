@@ -12,7 +12,6 @@ import app.revanced.manager.util.flatMapLatestAndCombine
 import app.revanced.manager.util.tag
 import io.ktor.http.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -37,7 +36,7 @@ class SourceRepository(app: Application, private val persistenceRepo: SourcePers
             }.toMap()
         }
     ) {
-        it.bundle.map { state -> it.uid to state }
+        it.state.map { state -> it.uid to state }
     }
 
     /**
@@ -112,7 +111,7 @@ class SourceRepository(app: Application, private val persistenceRepo: SourcePers
         // TODO: check network state before attempting this
         getRemoteSources().forEach {
             launch {
-                if (!it.props().first().autoUpdate) return@launch
+                if (!it.propsFlow().first().autoUpdate) return@launch
                 Log.d(tag, "Updating source: ${it.name}")
                 it.update()
             }
