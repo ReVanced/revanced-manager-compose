@@ -95,7 +95,7 @@ class MainActivity : ComponentActivity() {
                         )
 
                         is Destination.PatchesSelector -> PatchesSelectorScreen(
-                            onBackClick = { navController.popUpTo { it is Destination.AppSelector } },
+                            onBackClick = { navController.pop() },
                             onPatchClick = { patches, options ->
                                 navController.navigate(
                                     Destination.Installer(

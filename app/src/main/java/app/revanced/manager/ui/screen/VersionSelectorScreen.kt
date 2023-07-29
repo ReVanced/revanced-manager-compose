@@ -46,7 +46,7 @@ fun VersionSelectorScreen(
     val list by remember {
         derivedStateOf {
             (downloadedVersions + viewModel.downloadableVersions)
-                .distinct()
+                .distinctBy { it.version }
                 .sortedWith(
                     compareByDescending<SelectedApp> {
                         it is SelectedApp.Local
