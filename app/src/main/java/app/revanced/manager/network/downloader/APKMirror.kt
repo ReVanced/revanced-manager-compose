@@ -215,7 +215,7 @@ class APKMirror : AppDownloader, KoinComponent {
                 }
             } ?: throw Exception("No compatible variant found")
 
-            if (variant.apkType == APKType.BUNDLE) TODO("\nSplit apks are not supported yet")
+            if (variant.apkType == APKType.BUNDLE) throw Exception("Split apks are not supported yet") // TODO
 
             val downloadPage = httpClient.getHtml { url(apkMirror + variant.link) }
                 .a {
