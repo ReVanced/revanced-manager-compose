@@ -1,18 +1,19 @@
 package app.revanced.manager.domain.repository
 
+import app.revanced.manager.domain.manager.PreferencesManager
 import app.revanced.manager.network.api.MissingAssetException
 import app.revanced.manager.network.dto.Asset
 import app.revanced.manager.network.dto.ReVancedReleases
 import app.revanced.manager.network.service.ReVancedService
 import app.revanced.manager.network.utils.getOrThrow
-import app.revanced.manager.util.apiURL
 
 class ReVancedRepository(
-    private val service: ReVancedService
+    private val service: ReVancedService,
+    private val prefs: PreferencesManager
 ) {
-    suspend fun getContributors() = service.getContributors(apiURL)
+    suspend fun getContributors() = service.getContributors(prefs.api.get())
 
-    suspend fun getAssets(api: String = apiURL) = Assets(service.getAssets(api).getOrThrow())
+    suspend fun getAssets(api: String? = null) = Assets(service.getAssets(api ?: prefs.api.get()).getOrThrow())
 }
 
 class Assets(private val releases: ReVancedReleases): List<Asset> by releases.tools {

@@ -93,6 +93,11 @@
     <string name="dark">Dark</string>
     <string name="appearance">Appearance</string>
     <string name="downloaded_apps">Downloaded apps</string>
+    <string name="api_url">API URL</string>
+    <string name="api_url_dialog_title">Set custom API URL</string>
+    <string name="api_url_dialog_description">You may have issues with features when using a custom API URL.</string>
+    <string name="api_url_dialog_warning">Never use an API that you do not trust.</string>
+    <string name="api_url_dialog_save">Set</string>
     <string name="device">Device</string>
     <string name="device_android_version">Android version</string>
     <string name="device_model">Model</string>

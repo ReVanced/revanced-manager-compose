@@ -5,7 +5,6 @@ import app.revanced.manager.data.room.AppDatabase.Companion.generateUid
 import app.revanced.manager.data.room.sources.SourceEntity
 import app.revanced.manager.data.room.sources.SourceLocation
 import app.revanced.manager.data.room.sources.VersionInfo
-import app.revanced.manager.util.apiURL
 import io.ktor.http.*
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -15,9 +14,9 @@ class SourcePersistenceRepository(db: AppDatabase) {
     private companion object {
         val defaultSource = SourceEntity(
             uid = 0,
-            name = "Official",
+            name = "Main",
             versionInfo = VersionInfo("", ""),
-            location = SourceLocation.Remote(Url(apiURL)),
+            location = SourceLocation.Remote(Url("manager://api")),
             autoUpdate = false
         )
     }

@@ -24,6 +24,7 @@ import app.revanced.manager.R
 @Composable
 inline fun BaseBundleDialog(
     modifier: Modifier = Modifier,
+    isDefault: Boolean,
     name: String,
     noinline onNameChange: (String) -> Unit = {},
     remoteUrl: String?,
@@ -58,7 +59,7 @@ inline fun BaseBundleDialog(
                 Text(stringResource(R.string.bundle_input_name))
             }
         )
-        remoteUrl?.let {
+        remoteUrl?.takeUnless { isDefault }?.let {
             OutlinedTextField(
                 modifier = Modifier
                     .fillMaxWidth()

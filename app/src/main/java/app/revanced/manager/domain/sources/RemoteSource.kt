@@ -23,7 +23,7 @@ class RemoteSource(name: String, id: Int, directory: File, val apiUrl: String) :
     suspend fun downloadLatest() = withContext(Dispatchers.IO) {
         api.downloadBundle(apiUrl, patchesJar, integrations).also { (patchesVer, integrationsVer) ->
             saveVersion(patchesVer, integrationsVer)
-            _state.emit(load())
+            reload()
         }
 
         return@withContext
@@ -35,6 +35,11 @@ class RemoteSource(name: String, id: Int, directory: File, val apiUrl: String) :
             downloadLatest()
             true
         } else false
+    }
+
+    suspend fun deleteLocalFiles() = withContext(Dispatchers.IO) {
+        arrayOf(patchesJar, integrations).forEach(File::delete)
+        reload()
     }
 
     fun propsFlow() = configRepository.getProps(uid)

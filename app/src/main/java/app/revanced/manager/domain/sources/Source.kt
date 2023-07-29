@@ -19,7 +19,7 @@ sealed class Source(val name: String, val uid: Int, directory: File) {
      */
     fun hasInstalled() = patchesJar.exists()
 
-    protected fun load(): State {
+    private fun load(): State {
         if (!hasInstalled()) return State.Missing
 
         return try {
@@ -28,8 +28,11 @@ sealed class Source(val name: String, val uid: Int, directory: File) {
             State.Failed(t)
         }
     }
+    fun reload() {
+        _state.value = load()
+    }
 
-    protected val _state = MutableStateFlow(load())
+    private val _state = MutableStateFlow(load())
     val state = _state.asStateFlow()
 
     sealed interface State {

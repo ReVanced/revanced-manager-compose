@@ -8,6 +8,7 @@ val viewModelModule = module {
     viewModelOf(::MainViewModel)
     viewModelOf(::PatchesSelectorViewModel)
     viewModelOf(::SettingsViewModel)
+    viewModelOf(::AdvancedSettingsViewModel)
     viewModelOf(::AppSelectorViewModel)
     viewModelOf(::AppDownloaderViewModel)
     viewModelOf(::SourcesViewModel)

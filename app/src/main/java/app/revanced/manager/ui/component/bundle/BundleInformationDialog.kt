@@ -98,6 +98,7 @@ fun BundleInformationDialog(
         ) { paddingValues ->
             BaseBundleDialog(
                 modifier = Modifier.padding(paddingValues),
+                isDefault = source.uid == 0,
                 name = source.name,
                 remoteUrl = (source as? RemoteSource)?.apiUrl,
                 patchCount = patchCount,

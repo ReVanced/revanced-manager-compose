@@ -6,6 +6,7 @@ import android.util.Log
 import app.revanced.manager.data.platform.NetworkInfo
 import app.revanced.manager.data.room.sources.SourceEntity
 import app.revanced.manager.data.room.sources.SourceLocation
+import app.revanced.manager.domain.manager.PreferencesManager
 import app.revanced.manager.domain.sources.LocalSource
 import app.revanced.manager.domain.sources.RemoteSource
 import app.revanced.manager.domain.sources.Source
@@ -23,7 +24,12 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.InputStream
 
-class SourceRepository(app: Application, private val persistenceRepo: SourcePersistenceRepository, private val networkInfo: NetworkInfo) {
+class SourceRepository(
+    app: Application,
+    private val persistenceRepo: SourcePersistenceRepository,
+    private val networkInfo: NetworkInfo,
+    private val prefs: PreferencesManager
+) {
     private val sourcesDir = app.getDir("sources", Context.MODE_PRIVATE)
 
     private val _sources: MutableStateFlow<Map<Int, Source>> = MutableStateFlow(emptyMap())
@@ -45,9 +51,14 @@ class SourceRepository(app: Application, private val persistenceRepo: SourcePers
      */
     private fun directoryOf(uid: Int) = sourcesDir.resolve(uid.toString()).also { it.mkdirs() }
 
-    private fun SourceEntity.load(dir: File) = when (location) {
+    private suspend fun SourceEntity.load(dir: File) = when (location) {
         is SourceLocation.Local -> LocalSource(name, uid, dir)
-        is SourceLocation.Remote -> RemoteSource(name, uid, dir, location.url.toString())
+        is SourceLocation.Remote -> RemoteSource(
+            name,
+            uid,
+            dir,
+            if (uid != 0) location.url.toString() else prefs.api.get()
+        )
     }
 
     suspend fun loadSources() = withContext(Dispatchers.Default) {
@@ -105,6 +116,11 @@ class SourceRepository(app: Application, private val persistenceRepo: SourcePers
     }
 
     private suspend fun getRemoteSources() = sources.first().filterIsInstance<RemoteSource>()
+
+    suspend fun onApiUrlChange() {
+        _sources.value[0]?.let { it as? RemoteSource }?.deleteLocalFiles()
+        loadSources()
+    }
 
     suspend fun redownloadRemoteSources() = getRemoteSources().forEach { it.downloadLatest() }
 

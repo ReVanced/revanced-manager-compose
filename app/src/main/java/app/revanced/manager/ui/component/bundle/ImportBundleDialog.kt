@@ -114,6 +114,7 @@ fun ImportBundleDialog(
         ) { paddingValues ->
             BaseBundleDialog(
                 modifier = Modifier.padding(paddingValues),
+                isDefault = false,
                 name = name,
                 onNameChange = { name = it },
                 remoteUrl = remoteUrl.takeUnless { isLocal },

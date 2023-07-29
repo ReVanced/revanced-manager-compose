@@ -11,24 +11,22 @@ interface SourceDao {
     @Query("SELECT version, integrations_version, auto_update FROM $sourcesTableName WHERE uid = :uid")
     fun getPropsById(uid: Int): Flow<SourceProperties>
 
-    @Query("UPDATE $sourcesTableName SET version=:patches, integrations_version=:integrations WHERE uid=:uid")
+    @Query("UPDATE $sourcesTableName SET version = :patches, integrations_version = :integrations WHERE uid = :uid")
     suspend fun updateVersion(uid: Int, patches: String, integrations: String)
 
-    @Query("UPDATE $sourcesTableName SET auto_update=:value WHERE uid=:uid")
+    @Query("UPDATE $sourcesTableName SET auto_update = :value WHERE uid = :uid")
     suspend fun setAutoUpdate(uid: Int, value: Boolean)
 
-    @Query("DELETE FROM $sourcesTableName WHERE uid!=0")
+    @Query("DELETE FROM $sourcesTableName WHERE uid != 0")
     suspend fun purgeCustomSources()
-    @Query("UPDATE $sourcesTableName SET version='', integrations_version='' WHERE uid=0")
-    suspend fun resetMainSource()
 
     @Transaction
     suspend fun reset() {
         purgeCustomSources()
-        resetMainSource()
+        updateVersion(0, "", "") // Reset the main source
     }
 
-    @Query("DELETE FROM $sourcesTableName WHERE uid=:uid")
+    @Query("DELETE FROM $sourcesTableName WHERE uid = :uid")
     suspend fun remove(uid: Int)
 
     @Insert
