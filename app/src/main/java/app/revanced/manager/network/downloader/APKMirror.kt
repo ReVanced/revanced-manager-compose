@@ -88,7 +88,7 @@ class APKMirror : AppDownloader, KoinComponent {
         } ?: throw Exception("App isn't available for download")
     }
 
-    override fun getAvailableVersions(packageName: String, versionFilter: Set<String>) = flow {
+    override fun getAvailableVersions(packageName: String, versionFilter: Set<String>) = flow<AppDownloader.App> {
 
         // Vanced music uses the same package name so we have to hardcode...
         val appCategory = if (packageName == "com.google.android.apps.youtube.music")
@@ -160,7 +160,7 @@ class APKMirror : AppDownloader, KoinComponent {
     }
 
     @Parcelize
-    class APKMirrorApp(
+    private class APKMirrorApp(
         override val packageName: String,
         override val version: String,
         private val downloadLink: String,
