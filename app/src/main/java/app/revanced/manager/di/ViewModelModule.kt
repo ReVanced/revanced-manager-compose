@@ -11,7 +11,7 @@ val viewModelModule = module {
     viewModelOf(::SettingsViewModel)
     viewModelOf(::AdvancedSettingsViewModel)
     viewModelOf(::AppSelectorViewModel)
-    viewModelOf(::AppDownloaderViewModel)
+    viewModelOf(::VersionSelectorViewModel)
     viewModelOf(::BundlesViewModel)
     viewModelOf(::InstallerViewModel)
     viewModelOf(::UpdateProgressViewModel)
