@@ -1,4 +1,4 @@
-package app.revanced.manager.ui.component
+package app.revanced.manager.ui.component.bundle
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
@@ -27,8 +27,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.revanced.manager.R
 import app.revanced.manager.domain.sources.RemoteSource
 import app.revanced.manager.domain.sources.Source
-import app.revanced.manager.ui.component.bundle.BundleInformationDialog
-import app.revanced.manager.ui.viewmodel.SourcesViewModel
+import app.revanced.manager.ui.viewmodel.BundlesViewModel
 import app.revanced.manager.util.propsOrNullFlow
 import app.revanced.manager.util.uiSafe
 import app.revanced.manager.util.version
@@ -37,7 +36,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 @Composable
-fun SourceItem(
+fun BundleItem(
     source: Source,
     onDelete: () -> Unit,
     coroutineScope: CoroutineScope,
@@ -64,7 +63,7 @@ fun SourceItem(
                     uiSafe(
                         androidContext,
                         R.string.source_download_fail,
-                        SourcesViewModel.failLogMsg
+                        BundlesViewModel.failLogMsg
                     ) {
                         if (source is RemoteSource) source.update()
                     }

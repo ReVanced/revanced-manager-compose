@@ -108,7 +108,7 @@
     <string name="signing">Signing</string>
     <string name="storage">Storage</string>
     <string name="tab_apps">Apps</string>
-    <string name="tab_sources">Sources</string>
+    <string name="tab_bundles">Bundles</string>
     <string name="delete">Delete</string>
     <string name="refresh">Refresh</string>
     <string name="remote">Remote</string>

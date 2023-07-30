@@ -19,7 +19,7 @@ import app.revanced.manager.domain.sources.Source
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SourceSelector(sources: List<Source>, onFinish: (Source?) -> Unit) {
+fun BundleSelector(sources: List<Source>, onFinish: (Source?) -> Unit) {
     LaunchedEffect(sources) {
         if (sources.size == 1) {
             onFinish(sources[0])
