@@ -23,6 +23,7 @@ import app.revanced.manager.patcher.Session
 import app.revanced.manager.patcher.aapt.Aapt
 import app.revanced.manager.ui.model.SelectedApp
 import app.revanced.manager.util.Options
+import app.revanced.manager.util.PM
 import app.revanced.manager.util.PatchesSelection
 import app.revanced.manager.util.tag
 import app.revanced.patcher.extensions.PatchExtensions.options
@@ -46,6 +47,7 @@ class PatcherWorker(
     private val workerRepository: WorkerRepository by inject()
     private val prefs: PreferencesManager by inject()
     private val downloadedAppRepository: DownloadedAppRepository by inject()
+    private val pm: PM by inject()
 
     data class Args(
         val input: SelectedApp,
@@ -164,14 +166,13 @@ class PatcherWorker(
             // Ensure they are in the correct order so we can track progress properly.
             progressManager.replacePatchesList(patches.map { it.patchName })
 
-            @Suppress("DEPRECATION")
-            val inputFile = when (args.input) {
+            val inputFile = when (val selectedApp = args.input) {
                 is SelectedApp.Download -> {
                     updateProgress(Progress.Downloading)
 
                     val savePath = applicationContext.filesDir.resolve("downloaded-apps").resolve(args.input.packageName).also { it.mkdirs() }
 
-                    args.input.app.download(
+                    selectedApp.app.download(
                         savePath,
                         prefs.preferSplits.get(),
                         onDownload = { downloadProgress.emit(it) }
@@ -183,8 +184,8 @@ class PatcherWorker(
                         )
                     }
                 }
-                is SelectedApp.Local -> args.input.file
-                is SelectedApp.Installed -> File(applicationContext.packageManager.getPackageInfo(args.input.packageName, 0).applicationInfo.sourceDir)
+                is SelectedApp.Local -> selectedApp.file
+                is SelectedApp.Installed -> File(pm.getPackageInfo(selectedApp.packageName)!!.applicationInfo.sourceDir)
             }
 
             updateProgress(Progress.Unpacking)

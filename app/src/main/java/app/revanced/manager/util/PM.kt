@@ -93,6 +93,13 @@ class PM(
         } else { emptyList() }
     }.flowOn(Dispatchers.IO)
 
+    fun getPackageInfo(packageName: String): PackageInfo? =
+        try {
+            app.packageManager.getPackageInfo(packageName, 0)
+        } catch (e: NameNotFoundException) {
+            null
+        }
+
     suspend fun installApp(apks: List<File>) = withContext(Dispatchers.IO) {
         val packageInstaller = app.packageManager.packageInstaller
         packageInstaller.openSession(packageInstaller.createSession(sessionParams)).use { session ->
