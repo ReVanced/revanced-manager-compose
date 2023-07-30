@@ -108,7 +108,7 @@ fun AdvancedSettingsScreen(
 
 @Composable
 private fun APIUrlDialog(currentUrl: String, onSubmit: (String?) -> Unit) {
-    var url by rememberSaveable { mutableStateOf(currentUrl) }
+    var url by rememberSaveable(currentUrl) { mutableStateOf(currentUrl) }
 
     AlertDialog(
         onDismissRequest = { onSubmit(null) },
