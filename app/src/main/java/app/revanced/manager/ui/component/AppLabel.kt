@@ -32,15 +32,9 @@ fun AppLabel(
     var label: String? by rememberSaveable { mutableStateOf(null) }
 
     LaunchedEffect(packageInfo) {
-        withContext(Dispatchers.IO) {
-            packageInfo?.applicationInfo?.loadLabel(context.packageManager)
-                ?.also {
-                    withContext(Dispatchers.Main) {
-                        label = it.toString()
-                    }
-                } ?: withContext(Dispatchers.Main) {
-                    label = defaultText
-                }
+        label = withContext(Dispatchers.IO) {
+            packageInfo?.applicationInfo?.loadLabel(context.packageManager)?.toString()
+                ?: defaultText
         }
     }
 
