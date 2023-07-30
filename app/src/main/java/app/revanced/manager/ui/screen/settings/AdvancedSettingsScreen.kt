@@ -1,7 +1,6 @@
 package app.revanced.manager.ui.screen.settings
 
 import android.app.ActivityManager
-import android.content.Context
 import android.os.Build
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -27,7 +26,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -55,11 +53,12 @@ fun AdvancedSettingsScreen(
             activityManager.largeMemoryClass
         )
     }
-    var apiUrlDialog: String? by rememberSaveable { mutableStateOf(null) }
+    val apiUrl by vm.apiUrl.getAsState()
+    var showApiUrlDialog by rememberSaveable { mutableStateOf(false) }
 
-    apiUrlDialog?.let { currentUrl ->
-        APIUrlDialog(currentUrl) {
-            apiUrlDialog = null
+    if (showApiUrlDialog) {
+        APIUrlDialog(apiUrl) {
+            showApiUrlDialog = false
             it?.let(vm::setApiUrl)
         }
     }
@@ -78,13 +77,11 @@ fun AdvancedSettingsScreen(
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
         ) {
-            val apiUrl by vm.apiUrl.getAsState()
-
             ListItem(
                 headlineContent = { Text(stringResource(R.string.api_url)) },
                 supportingContent = { Text(apiUrl) },
                 modifier = Modifier.clickable {
-                    apiUrlDialog = apiUrl
+                    showApiUrlDialog = true
                 }
             )
 
