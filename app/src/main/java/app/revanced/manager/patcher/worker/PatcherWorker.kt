@@ -38,7 +38,7 @@ import java.io.File
 import java.io.FileNotFoundException
 
 class PatcherWorker(
-    private val context: Context,
+    context: Context,
     parameters: WorkerParameters
 ) : Worker<PatcherWorker.Args>(context, parameters), KoinComponent {
 
@@ -169,7 +169,7 @@ class PatcherWorker(
                 is SelectedApp.Download -> {
                     updateProgress(Progress.Downloading)
 
-                    val savePath = context.filesDir.resolve("downloaded-apps").resolve(args.input.packageName).also { it.mkdirs() }
+                    val savePath = applicationContext.filesDir.resolve("downloaded-apps").resolve(args.input.packageName).also { it.mkdirs() }
 
                     args.input.app.download(
                         savePath,
@@ -184,7 +184,7 @@ class PatcherWorker(
                     }
                 }
                 is SelectedApp.Local -> args.input.file
-                is SelectedApp.Installed -> File(context.packageManager.getPackageInfo(args.input.packageName, 0).applicationInfo.sourceDir)
+                is SelectedApp.Installed -> File(applicationContext.packageManager.getPackageInfo(args.input.packageName, 0).applicationInfo.sourceDir)
             }
 
             updateProgress(Progress.Unpacking)

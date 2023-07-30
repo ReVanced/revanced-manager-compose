@@ -189,9 +189,9 @@ fun InstallStep(step: Step) {
                                 messageExpanded = !messageExpanded
                             }
                         } else {
-                            downloadProgress?.value?.let {
+                            downloadProgress?.value?.let { (downloaded, total) ->
                                 Text(
-                                    "${it.first}MB/${it.second}MB",
+                                    "$downloaded/$total MB",
                                     style = MaterialTheme.typography.labelSmall
                                 )
                             }
@@ -231,9 +231,9 @@ fun StepIcon(status: State, downloadProgress: Pair<Float, Float>? = null, size: 
         )
 
         State.WAITING ->
-            downloadProgress?.let {
+            downloadProgress?.let { (downloaded, total) ->
                 CircularProgressIndicator(
-                    progress = it.first / it.second,
+                    progress = downloaded / total,
                     strokeWidth = strokeWidth,
                     modifier = stringResource(R.string.step_running).let { description ->
                         Modifier
