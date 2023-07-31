@@ -28,14 +28,14 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.revanced.manager.R
-import app.revanced.manager.domain.bundles.BundleSource
+import app.revanced.manager.domain.bundles.PatchBundleSource
 import app.revanced.manager.ui.component.NotificationCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BundlePatchesDialog(
     onDismissRequest: () -> Unit,
-    bundle: BundleSource,
+    bundle: PatchBundleSource,
 ) {
     var informationCardVisible by remember { mutableStateOf(true) }
     val state by bundle.state.collectAsStateWithLifecycle()

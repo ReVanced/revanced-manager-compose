@@ -15,7 +15,7 @@ import app.revanced.manager.domain.manager.KeystoreManager
 import app.revanced.manager.domain.repository.PatchSelectionRepository
 import app.revanced.manager.domain.repository.SerializedSelection
 import app.revanced.manager.domain.repository.PatchBundleRepository
-import app.revanced.manager.domain.bundles.BundleSource
+import app.revanced.manager.domain.bundles.PatchBundleSource
 import app.revanced.manager.util.JSON_MIMETYPE
 import app.revanced.manager.util.toast
 import app.revanced.manager.util.uiSafe
@@ -41,7 +41,7 @@ class ImportExportViewModel(
 ) : ViewModel() {
     private val contentResolver = app.contentResolver
     val sources = patchBundleRepository.sources
-    var selectedBundle by mutableStateOf<BundleSource?>(null)
+    var selectedBundle by mutableStateOf<PatchBundleSource?>(null)
         private set
     var selectionAction by mutableStateOf<SelectionAction?>(null)
         private set
@@ -114,7 +114,7 @@ class ImportExportViewModel(
         action.execute(source.uid, target)
     }
 
-    fun selectBundle(bundle: BundleSource) {
+    fun selectBundle(bundle: PatchBundleSource) {
         selectedBundle = bundle
     }
 

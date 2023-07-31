@@ -10,7 +10,7 @@ import java.io.File
  * A [PatchBundle] source.
  */
 @Stable
-sealed class BundleSource(val name: String, val uid: Int, directory: File) {
+sealed class PatchBundleSource(val name: String, val uid: Int, directory: File) {
     protected val patchesJar = directory.resolve("patches.jar")
     protected val integrations = directory.resolve("integrations.apk")
 

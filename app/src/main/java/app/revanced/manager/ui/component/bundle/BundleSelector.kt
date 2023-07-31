@@ -15,11 +15,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import app.revanced.manager.domain.bundles.BundleSource
+import app.revanced.manager.domain.bundles.PatchBundleSource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BundleSelector(bundles: List<BundleSource>, onFinish: (BundleSource?) -> Unit) {
+fun BundleSelector(bundles: List<PatchBundleSource>, onFinish: (PatchBundleSource?) -> Unit) {
     LaunchedEffect(bundles) {
         if (bundles.size == 1) {
             onFinish(bundles[0])

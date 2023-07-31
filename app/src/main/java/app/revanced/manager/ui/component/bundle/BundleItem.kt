@@ -25,8 +25,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.revanced.manager.R
-import app.revanced.manager.domain.bundles.RemoteBundle
-import app.revanced.manager.domain.bundles.BundleSource
+import app.revanced.manager.domain.bundles.RemotePatchBundle
+import app.revanced.manager.domain.bundles.PatchBundleSource
 import app.revanced.manager.util.propsOrNullFlow
 import app.revanced.manager.util.uiSafe
 import app.revanced.manager.util.version
@@ -36,7 +36,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun BundleItem(
-    bundle: BundleSource,
+    bundle: PatchBundleSource,
     onDelete: () -> Unit,
     coroutineScope: CoroutineScope,
 ) {
@@ -62,9 +62,9 @@ fun BundleItem(
                     uiSafe(
                         androidContext,
                         R.string.source_download_fail,
-                        RemoteBundle.updateFailMsg
+                        RemotePatchBundle.updateFailMsg
                     ) {
-                        if (bundle is RemoteBundle) bundle.update()
+                        if (bundle is RemotePatchBundle) bundle.update()
                     }
                 }
             },
@@ -98,9 +98,9 @@ fun BundleItem(
             Row {
                 val icon = remember(state) {
                     when (state) {
-                        is BundleSource.State.Failed -> Icons.Outlined.ErrorOutline to R.string.bundle_error
-                        is BundleSource.State.Missing -> Icons.Outlined.Warning to R.string.bundle_missing
-                        is BundleSource.State.Loaded -> null
+                        is PatchBundleSource.State.Failed -> Icons.Outlined.ErrorOutline to R.string.bundle_error
+                        is PatchBundleSource.State.Missing -> Icons.Outlined.Warning to R.string.bundle_missing
+                        is PatchBundleSource.State.Loaded -> null
                     }
                 }
 

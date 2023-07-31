@@ -11,8 +11,8 @@ import org.koin.core.component.inject
 import java.io.File
 
 @Stable
-class RemoteBundle(name: String, id: Int, directory: File, val apiUrl: String) :
-    BundleSource(name, id, directory), KoinComponent {
+class RemotePatchBundle(name: String, id: Int, directory: File, val apiUrl: String) :
+    PatchBundleSource(name, id, directory), KoinComponent {
     private val configRepository: PatchBundlePersistenceRepository by inject()
     private val api: ManagerAPI by inject()
 

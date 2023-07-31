@@ -22,8 +22,8 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.revanced.manager.R
 import app.revanced.manager.domain.bundles.LocalPatchBundle
-import app.revanced.manager.domain.bundles.RemoteBundle
-import app.revanced.manager.domain.bundles.BundleSource
+import app.revanced.manager.domain.bundles.RemotePatchBundle
+import app.revanced.manager.domain.bundles.PatchBundleSource
 import app.revanced.manager.util.isDefault
 import app.revanced.manager.util.propsOrNullFlow
 import app.revanced.manager.util.version
@@ -35,7 +35,7 @@ import kotlinx.coroutines.launch
 fun BundleInformationDialog(
     onDismissRequest: () -> Unit,
     onDeleteRequest: () -> Unit,
-    bundle: BundleSource,
+    bundle: PatchBundleSource,
     onRefreshButton: () -> Unit,
 ) {
     val composableScope = rememberCoroutineScope()
@@ -100,13 +100,13 @@ fun BundleInformationDialog(
                 modifier = Modifier.padding(paddingValues),
                 isDefault = bundle.isDefault,
                 name = bundle.name,
-                remoteUrl = (bundle as? RemoteBundle)?.apiUrl,
+                remoteUrl = (bundle as? RemotePatchBundle)?.apiUrl,
                 patchCount = patchCount,
                 version = props?.version,
                 autoUpdate = props?.autoUpdate ?: false,
                 onAutoUpdateChange = {
                     composableScope.launch {
-                        (bundle as? RemoteBundle)?.setAutoUpdate(it)
+                        (bundle as? RemotePatchBundle)?.setAutoUpdate(it)
                     }
                 },
                 onPatchesClick = {

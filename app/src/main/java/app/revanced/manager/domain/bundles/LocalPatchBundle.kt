@@ -7,7 +7,7 @@ import java.io.InputStream
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 
-class LocalPatchBundle(name: String, id: Int, directory: File) : BundleSource(name, id, directory) {
+class LocalPatchBundle(name: String, id: Int, directory: File) : PatchBundleSource(name, id, directory) {
     suspend fun replace(patches: InputStream? = null, integrations: InputStream? = null) {
         withContext(Dispatchers.IO) {
             patches?.let {

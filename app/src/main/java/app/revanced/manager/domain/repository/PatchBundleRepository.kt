@@ -8,8 +8,8 @@ import app.revanced.manager.data.room.bundles.PatchBundleEntity
 import app.revanced.manager.data.room.bundles.Source as SourceInfo
 import app.revanced.manager.domain.manager.PreferencesManager
 import app.revanced.manager.domain.bundles.LocalPatchBundle
-import app.revanced.manager.domain.bundles.RemoteBundle
-import app.revanced.manager.domain.bundles.BundleSource
+import app.revanced.manager.domain.bundles.RemotePatchBundle
+import app.revanced.manager.domain.bundles.PatchBundleSource
 import app.revanced.manager.util.flatMapLatestAndCombine
 import app.revanced.manager.util.tag
 import io.ktor.http.*
@@ -32,7 +32,7 @@ class PatchBundleRepository(
 ) {
     private val bundlesDir = app.getDir("patch_bundles", Context.MODE_PRIVATE)
 
-    private val _sources: MutableStateFlow<Map<Int, BundleSource>> = MutableStateFlow(emptyMap())
+    private val _sources: MutableStateFlow<Map<Int, PatchBundleSource>> = MutableStateFlow(emptyMap())
     val sources = _sources.map { it.values.toList() }
 
     val bundles = sources.flatMapLatestAndCombine(
@@ -47,13 +47,13 @@ class PatchBundleRepository(
     }
 
     /**
-     * Get the directory of the [BundleSource] with the specified [uid], creating it if needed.
+     * Get the directory of the [PatchBundleSource] with the specified [uid], creating it if needed.
      */
     private fun directoryOf(uid: Int) = bundlesDir.resolve(uid.toString()).also { it.mkdirs() }
 
     private suspend fun PatchBundleEntity.load(dir: File) = when (source) {
         is SourceInfo.Local -> LocalPatchBundle(name, uid, dir)
-        is SourceInfo.Remote -> RemoteBundle(
+        is SourceInfo.Remote -> RemotePatchBundle(
             name,
             uid,
             dir,
@@ -85,7 +85,7 @@ class PatchBundleRepository(
         load()
     }
 
-    suspend fun remove(bundle: BundleSource) = withContext(Dispatchers.Default) {
+    suspend fun remove(bundle: PatchBundleSource) = withContext(Dispatchers.Default) {
         persistenceRepo.delete(bundle.uid)
         directoryOf(bundle.uid).deleteRecursively()
 
@@ -96,7 +96,7 @@ class PatchBundleRepository(
         }
     }
 
-    private fun addBundle(patchBundle: BundleSource) =
+    private fun addBundle(patchBundle: PatchBundleSource) =
         _sources.update { it.toMutableMap().apply { put(patchBundle.uid, patchBundle) } }
 
     suspend fun createLocal(name: String, patches: InputStream, integrations: InputStream?) {
@@ -110,13 +110,13 @@ class PatchBundleRepository(
 
     suspend fun createRemote(name: String, apiUrl: Url, autoUpdate: Boolean) {
         val id = persistenceRepo.create(name, SourceInfo.Remote(apiUrl), autoUpdate)
-        addBundle(RemoteBundle(name, id, directoryOf(id), apiUrl.toString()))
+        addBundle(RemotePatchBundle(name, id, directoryOf(id), apiUrl.toString()))
     }
 
-    private suspend fun getRemoteBundles() = sources.first().filterIsInstance<RemoteBundle>()
+    private suspend fun getRemoteBundles() = sources.first().filterIsInstance<RemotePatchBundle>()
 
     suspend fun onApiUrlChange() {
-        _sources.value[0]?.let { it as? RemoteBundle }?.deleteLocalFiles()
+        _sources.value[0]?.let { it as? RemotePatchBundle }?.deleteLocalFiles()
         load()
     }
 

@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import app.revanced.manager.R
 import app.revanced.manager.domain.manager.PreferencesManager
 import app.revanced.manager.domain.repository.PatchBundleRepository
-import app.revanced.manager.domain.bundles.RemoteBundle
+import app.revanced.manager.domain.bundles.RemotePatchBundle
 import app.revanced.manager.util.uiSafe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -26,7 +26,7 @@ class AdvancedSettingsViewModel(
     }
 
     fun redownloadBundles() = viewModelScope.launch {
-        uiSafe(app, R.string.source_download_fail, RemoteBundle.updateFailMsg) {
+        uiSafe(app, R.string.source_download_fail, RemotePatchBundle.updateFailMsg) {
             patchBundleRepository.redownloadRemoteBundles()
         }
     }
