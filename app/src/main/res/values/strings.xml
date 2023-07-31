@@ -110,6 +110,7 @@
     <string name="patching">Patching</string>
     <string name="signing">Signing</string>
     <string name="storage">Storage</string>
+    <string name="patches_unavailable">No patches are available. Check your bundles</string>
     <string name="tab_apps">Apps</string>
     <string name="tab_bundles">Patch bundles</string>
     <string name="delete">Delete</string>

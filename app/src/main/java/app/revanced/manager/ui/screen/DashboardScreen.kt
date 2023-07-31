@@ -30,12 +30,15 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.revanced.manager.R
 import app.revanced.manager.ui.component.AppTopBar
 import app.revanced.manager.ui.component.bundle.ImportBundleDialog
 import app.revanced.manager.ui.viewmodel.DashboardViewModel
+import app.revanced.manager.util.toast
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.getViewModel
 
@@ -56,6 +59,8 @@ fun DashboardScreen(
 ) {
     var showImportBundleDialog by rememberSaveable { mutableStateOf(false) }
     val pages: Array<DashboardPage> = DashboardPage.values()
+    val availablePatches by vm.availablePatches.collectAsStateWithLifecycle(0)
+    val androidContext = LocalContext.current
 
     val pagerState = rememberPagerState()
     val composableScope = rememberCoroutineScope()
@@ -96,7 +101,20 @@ fun DashboardScreen(
             FloatingActionButton(
                 onClick = {
                     when (pagerState.currentPage) {
-                        DashboardPage.DASHBOARD.ordinal -> onAppSelectorClick()
+                        DashboardPage.DASHBOARD.ordinal -> {
+                            if (availablePatches < 1) {
+                                androidContext.toast(androidContext.getString(R.string.patches_unavailable))
+                                composableScope.launch {
+                                    pagerState.animateScrollToPage(
+                                        DashboardPage.BUNDLES.ordinal
+                                    )
+                                }
+                                return@FloatingActionButton
+                            }
+
+                            onAppSelectorClick()
+                        }
+
                         DashboardPage.BUNDLES.ordinal -> {
                             showImportBundleDialog = true
                         }
