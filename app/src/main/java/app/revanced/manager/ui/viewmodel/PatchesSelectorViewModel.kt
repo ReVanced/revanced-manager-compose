@@ -15,7 +15,7 @@ import androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi
 import androidx.lifecycle.viewmodel.compose.saveable
 import app.revanced.manager.domain.manager.PreferencesManager
 import app.revanced.manager.domain.repository.PatchSelectionRepository
-import app.revanced.manager.domain.repository.SourceRepository
+import app.revanced.manager.domain.repository.PatchBundleRepository
 import app.revanced.manager.patcher.patch.PatchInfo
 import app.revanced.manager.ui.model.SelectedApp
 import app.revanced.manager.util.Options
@@ -43,12 +43,12 @@ class PatchesSelectorViewModel(
     private val savedStateHandle: SavedStateHandle = get()
 
     val allowExperimental = get<PreferencesManager>().allowExperimental
-    val bundlesFlow = get<SourceRepository>().sources.flatMapLatestAndCombine(
+    val bundlesFlow = get<PatchBundleRepository>().sources.flatMapLatestAndCombine(
         combiner = { it.filterNotNull() }
     ) { source ->
         // Regenerate bundle information whenever this source updates.
         source.state.map { state ->
-            val bundle = state.bundleOrNull() ?: return@map null
+            val bundle = state.patchBundleOrNull() ?: return@map null
 
             val supported = mutableListOf<PatchInfo>()
             val unsupported = mutableListOf<PatchInfo>()

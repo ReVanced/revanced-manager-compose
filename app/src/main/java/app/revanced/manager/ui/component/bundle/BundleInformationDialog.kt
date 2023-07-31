@@ -21,9 +21,9 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.revanced.manager.R
-import app.revanced.manager.domain.sources.LocalSource
-import app.revanced.manager.domain.sources.RemoteSource
-import app.revanced.manager.domain.sources.Source
+import app.revanced.manager.domain.bundles.LocalPatchBundle
+import app.revanced.manager.domain.bundles.RemoteBundle
+import app.revanced.manager.domain.bundles.BundleSource
 import app.revanced.manager.util.isDefault
 import app.revanced.manager.util.propsOrNullFlow
 import app.revanced.manager.util.version
@@ -35,17 +35,17 @@ import kotlinx.coroutines.launch
 fun BundleInformationDialog(
     onDismissRequest: () -> Unit,
     onDeleteRequest: () -> Unit,
-    source: Source,
+    bundle: BundleSource,
     onRefreshButton: () -> Unit,
 ) {
     val composableScope = rememberCoroutineScope()
     var viewCurrentBundlePatches by remember { mutableStateOf(false) }
-    val isLocal = source is LocalSource
-    val patchCount by remember(source) {
-        source.state.map { it.bundleOrNull()?.patches?.size ?: 0 }
+    val isLocal = bundle is LocalPatchBundle
+    val patchCount by remember(bundle) {
+        bundle.state.map { it.patchBundleOrNull()?.patches?.size ?: 0 }
     }.collectAsStateWithLifecycle(0)
-    val props by remember(source) {
-        source.propsOrNullFlow()
+    val props by remember(bundle) {
+        bundle.propsOrNullFlow()
     }.collectAsStateWithLifecycle(null)
 
     if (viewCurrentBundlePatches) {
@@ -53,7 +53,7 @@ fun BundleInformationDialog(
             onDismissRequest = {
                 viewCurrentBundlePatches = false
             },
-            source = source,
+            bundle = bundle,
         )
     }
 
@@ -76,8 +76,7 @@ fun BundleInformationDialog(
                         )
                     },
                     actions = {
-                        // TODO: add the ability to disable sources
-                        if (!source.isDefault) {
+                        if (!bundle.isDefault) {
                             IconButton(onClick = onDeleteRequest) {
                                 Icon(
                                     Icons.Outlined.DeleteOutline,
@@ -99,15 +98,15 @@ fun BundleInformationDialog(
         ) { paddingValues ->
             BaseBundleDialog(
                 modifier = Modifier.padding(paddingValues),
-                isDefault = source.isDefault,
-                name = source.name,
-                remoteUrl = (source as? RemoteSource)?.apiUrl,
+                isDefault = bundle.isDefault,
+                name = bundle.name,
+                remoteUrl = (bundle as? RemoteBundle)?.apiUrl,
                 patchCount = patchCount,
                 version = props?.version,
                 autoUpdate = props?.autoUpdate ?: false,
                 onAutoUpdateChange = {
                     composableScope.launch {
-                        (source as? RemoteSource)?.setAutoUpdate(it)
+                        (bundle as? RemoteBundle)?.setAutoUpdate(it)
                     }
                 },
                 onPatchesClick = {

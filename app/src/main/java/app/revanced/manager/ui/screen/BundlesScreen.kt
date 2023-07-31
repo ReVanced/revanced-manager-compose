@@ -23,7 +23,7 @@ fun BundlesScreen(
     ) {
         sources.forEach {
             BundleItem(
-                source = it,
+                bundle = it,
                 onDelete = {
                     vm.delete(it)
                 },

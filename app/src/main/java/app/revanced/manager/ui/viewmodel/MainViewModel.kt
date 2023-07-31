@@ -2,17 +2,17 @@ package app.revanced.manager.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import app.revanced.manager.domain.repository.SourceRepository
+import app.revanced.manager.domain.repository.PatchBundleRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class MainViewModel(
-    sourceRepository: SourceRepository
+    patchBundleRepository: PatchBundleRepository
 ) : ViewModel() {
     init {
         viewModelScope.launch(Dispatchers.Default) {
-            sourceRepository.loadSources()
-            sourceRepository.updateCheck()
+            patchBundleRepository.load()
+            patchBundleRepository.updateCheck()
         }
     }
 }

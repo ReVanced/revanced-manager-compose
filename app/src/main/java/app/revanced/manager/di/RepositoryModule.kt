@@ -14,9 +14,9 @@ val repositoryModule = module {
     singleOf(::ManagerAPI)
     singleOf(::FileSystem)
     singleOf(::NetworkInfo)
-    singleOf(::SourcePersistenceRepository)
+    singleOf(::PatchBundlePersistenceRepository)
     singleOf(::PatchSelectionRepository)
-    singleOf(::SourceRepository)
+    singleOf(::PatchBundleRepository)
     singleOf(::WorkerRepository)
     singleOf(::DownloadedAppRepository)
 }

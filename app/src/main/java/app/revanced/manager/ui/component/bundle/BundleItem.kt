@@ -25,8 +25,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.revanced.manager.R
-import app.revanced.manager.domain.sources.RemoteSource
-import app.revanced.manager.domain.sources.Source
+import app.revanced.manager.domain.bundles.RemoteBundle
+import app.revanced.manager.domain.bundles.BundleSource
 import app.revanced.manager.util.propsOrNullFlow
 import app.revanced.manager.util.uiSafe
 import app.revanced.manager.util.version
@@ -36,15 +36,15 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun BundleItem(
-    source: Source,
+    bundle: BundleSource,
     onDelete: () -> Unit,
     coroutineScope: CoroutineScope,
 ) {
     var viewBundleDialogPage by rememberSaveable { mutableStateOf(false) }
-    val state by source.state.collectAsStateWithLifecycle()
+    val state by bundle.state.collectAsStateWithLifecycle()
 
-    val version by remember(source) {
-        source.propsOrNullFlow().map { props -> props?.version }
+    val version by remember(bundle) {
+        bundle.propsOrNullFlow().map { props -> props?.version }
     }.collectAsStateWithLifecycle(null)
 
     val androidContext = LocalContext.current
@@ -56,15 +56,15 @@ fun BundleItem(
                 viewBundleDialogPage = false
                 onDelete()
             },
-            source = source,
+            bundle = bundle,
             onRefreshButton = {
                 coroutineScope.launch {
                     uiSafe(
                         androidContext,
                         R.string.source_download_fail,
-                        RemoteSource.updateFailMsg
+                        RemoteBundle.updateFailMsg
                     ) {
-                        if (source is RemoteSource) source.update()
+                        if (bundle is RemoteBundle) bundle.update()
                     }
                 }
             },
@@ -80,13 +80,13 @@ fun BundleItem(
             },
         headlineContent = {
             Text(
-                text = source.name,
+                text = bundle.name,
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurface
             )
         },
         supportingContent = {
-            state.bundleOrNull()?.patches?.size?.let { patchCount ->
+            state.patchBundleOrNull()?.patches?.size?.let { patchCount ->
                 Text(
                     text = pluralStringResource(R.plurals.patches_count, patchCount, patchCount),
                     style = MaterialTheme.typography.bodyMedium,
@@ -98,9 +98,9 @@ fun BundleItem(
             Row {
                 val icon = remember(state) {
                     when (state) {
-                        is Source.State.Failed -> Icons.Outlined.ErrorOutline to R.string.bundle_error
-                        is Source.State.Missing -> Icons.Outlined.Warning to R.string.bundle_missing
-                        is Source.State.Loaded -> null
+                        is BundleSource.State.Failed -> Icons.Outlined.ErrorOutline to R.string.bundle_error
+                        is BundleSource.State.Missing -> Icons.Outlined.Warning to R.string.bundle_missing
+                        is BundleSource.State.Loaded -> null
                     }
                 }
 

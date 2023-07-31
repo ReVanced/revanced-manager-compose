@@ -1,18 +1,16 @@
-package app.revanced.manager.data.room.sources
+package app.revanced.manager.data.room.bundles
 
 import androidx.room.*
 import io.ktor.http.*
 
-const val sourcesTableName = "sources"
-
-sealed class SourceLocation {
-    object Local : SourceLocation() {
+sealed class Source {
+    object Local : Source() {
         const val SENTINEL = "local"
 
         override fun toString() = SENTINEL
     }
 
-    data class Remote(val url: Url) : SourceLocation() {
+    data class Remote(val url: Url) : Source() {
         override fun toString() = url.toString()
     }
 }
@@ -22,16 +20,16 @@ data class VersionInfo(
     @ColumnInfo(name = "integrations_version") val integrations: String,
 )
 
-@Entity(tableName = sourcesTableName, indices = [Index(value = ["name"], unique = true)])
-data class SourceEntity(
+@Entity(tableName = "patch_bundles", indices = [Index(value = ["name"], unique = true)])
+data class PatchBundleEntity(
     @PrimaryKey val uid: Int,
     @ColumnInfo(name = "name") val name: String,
     @Embedded val versionInfo: VersionInfo,
-    @ColumnInfo(name = "location") val location: SourceLocation,
+    @ColumnInfo(name = "source") val source: Source,
     @ColumnInfo(name = "auto_update") val autoUpdate: Boolean
 )
 
-data class SourceProperties(
+data class BundleProperties(
     @Embedded val versionInfo: VersionInfo,
     @ColumnInfo(name = "auto_update") val autoUpdate: Boolean
 )

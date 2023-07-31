@@ -1,4 +1,4 @@
-package app.revanced.manager.domain.sources
+package app.revanced.manager.domain.bundles
 
 import androidx.compose.runtime.Stable
 import app.revanced.manager.patcher.patch.PatchBundle
@@ -10,7 +10,7 @@ import java.io.File
  * A [PatchBundle] source.
  */
 @Stable
-sealed class Source(val name: String, val uid: Int, directory: File) {
+sealed class BundleSource(val name: String, val uid: Int, directory: File) {
     protected val patchesJar = directory.resolve("patches.jar")
     protected val integrations = directory.resolve("integrations.apk")
 
@@ -36,12 +36,12 @@ sealed class Source(val name: String, val uid: Int, directory: File) {
     val state = _state.asStateFlow()
 
     sealed interface State {
-        fun bundleOrNull(): PatchBundle? = null
+        fun patchBundleOrNull(): PatchBundle? = null
 
         object Missing : State
         data class Failed(val throwable: Throwable) : State
         data class Loaded(val bundle: PatchBundle) : State {
-            override fun bundleOrNull() = bundle
+            override fun patchBundleOrNull() = bundle
         }
     }
 }

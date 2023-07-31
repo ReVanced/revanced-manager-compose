@@ -1,7 +1,7 @@
-package app.revanced.manager.domain.sources
+package app.revanced.manager.domain.bundles
 
 import androidx.compose.runtime.Stable
-import app.revanced.manager.domain.repository.SourcePersistenceRepository
+import app.revanced.manager.domain.repository.PatchBundlePersistenceRepository
 import app.revanced.manager.network.api.ManagerAPI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -11,9 +11,9 @@ import org.koin.core.component.inject
 import java.io.File
 
 @Stable
-class RemoteSource(name: String, id: Int, directory: File, val apiUrl: String) :
-    Source(name, id, directory), KoinComponent {
-    private val configRepository: SourcePersistenceRepository by inject()
+class RemoteBundle(name: String, id: Int, directory: File, val apiUrl: String) :
+    BundleSource(name, id, directory), KoinComponent {
+    private val configRepository: PatchBundlePersistenceRepository by inject()
     private val api: ManagerAPI by inject()
 
     private suspend fun currentVersion() = configRepository.getProps(uid).first().versionInfo

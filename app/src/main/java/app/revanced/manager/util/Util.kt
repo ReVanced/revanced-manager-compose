@@ -11,9 +11,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import app.revanced.manager.data.room.sources.SourceProperties
-import app.revanced.manager.domain.sources.RemoteSource
-import app.revanced.manager.domain.sources.Source
+import app.revanced.manager.data.room.bundles.BundleProperties
+import app.revanced.manager.domain.bundles.RemoteBundle
+import app.revanced.manager.domain.bundles.BundleSource
 import io.ktor.http.Url
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -102,6 +102,6 @@ val Color.hexCode: String
         return java.lang.String.format(Locale.getDefault(), "%02X%02X%02X%02X", r, g, b, a)
     }
 
-val Source.isDefault get() = uid == 0
-fun Source.propsOrNullFlow() = (this as? RemoteSource)?.propsFlow() ?: flowOf(null)
-val SourceProperties.version get() = versionInfo.patches.takeUnless { it.isEmpty() }
+val BundleSource.isDefault get() = uid == 0
+fun BundleSource.propsOrNullFlow() = (this as? RemoteBundle)?.propsFlow() ?: flowOf(null)
+val BundleProperties.version get() = versionInfo.patches.takeUnless { it.isEmpty() }

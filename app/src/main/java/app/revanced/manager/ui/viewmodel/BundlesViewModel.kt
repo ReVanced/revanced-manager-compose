@@ -2,14 +2,14 @@ package app.revanced.manager.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import app.revanced.manager.domain.sources.Source
-import app.revanced.manager.domain.repository.SourceRepository
+import app.revanced.manager.domain.bundles.BundleSource
+import app.revanced.manager.domain.repository.PatchBundleRepository
 import kotlinx.coroutines.launch
 
 class BundlesViewModel(
-    private val sourceRepository: SourceRepository
+    private val patchBundleRepository: PatchBundleRepository
 ) : ViewModel() {
-    val sources = sourceRepository.sources
+    val sources = patchBundleRepository.sources
 
-    fun delete(source: Source) = viewModelScope.launch { sourceRepository.remove(source) }
+    fun delete(bundle: BundleSource) = viewModelScope.launch { patchBundleRepository.remove(bundle) }
 }

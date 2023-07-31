@@ -63,12 +63,12 @@ fun ImportExportSettingsScreen(
             }
         }
 
-        if (vm.selectedSource == null) {
+        if (vm.selectedBundle == null) {
             BundleSelector(sources) {
                 if (it == null) {
                     vm.clearSelectionAction()
                 } else {
-                    vm.selectSource(it)
+                    vm.selectBundle(it)
                     launcher.launch(action.activityArg)
                 }
             }

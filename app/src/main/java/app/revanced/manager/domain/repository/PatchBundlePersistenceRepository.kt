@@ -2,26 +2,26 @@ package app.revanced.manager.domain.repository
 
 import app.revanced.manager.data.room.AppDatabase
 import app.revanced.manager.data.room.AppDatabase.Companion.generateUid
-import app.revanced.manager.data.room.sources.SourceEntity
-import app.revanced.manager.data.room.sources.SourceLocation
-import app.revanced.manager.data.room.sources.VersionInfo
+import app.revanced.manager.data.room.bundles.PatchBundleEntity
+import app.revanced.manager.data.room.bundles.Source
+import app.revanced.manager.data.room.bundles.VersionInfo
 import io.ktor.http.*
 import kotlinx.coroutines.flow.distinctUntilChanged
 
-class SourcePersistenceRepository(db: AppDatabase) {
-    private val dao = db.sourceDao()
+class PatchBundlePersistenceRepository(db: AppDatabase) {
+    private val dao = db.patchBundleDao()
 
     private companion object {
-        val defaultSource = SourceEntity(
+        val defaultSource = PatchBundleEntity(
             uid = 0,
             name = "Main",
             versionInfo = VersionInfo("", ""),
-            location = SourceLocation.Remote(Url("manager://api")),
+            source = Source.Remote(Url("manager://api")),
             autoUpdate = false
         )
     }
 
-    suspend fun loadConfiguration(): List<SourceEntity> {
+    suspend fun loadConfiguration(): List<PatchBundleEntity> {
         val all = dao.all()
         if (all.isEmpty()) {
             dao.add(defaultSource)
@@ -33,14 +33,14 @@ class SourcePersistenceRepository(db: AppDatabase) {
 
     suspend fun reset() = dao.reset()
 
-    suspend fun create(name: String, location: SourceLocation, autoUpdate: Boolean = false): Int {
+    suspend fun create(name: String, source: Source, autoUpdate: Boolean = false): Int {
         val uid = generateUid()
         dao.add(
-            SourceEntity(
+            PatchBundleEntity(
                 uid = uid,
                 name = name,
                 versionInfo = VersionInfo("", ""),
-                location = location,
+                source = source,
                 autoUpdate = autoUpdate
             )
         )
