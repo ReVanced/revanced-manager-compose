@@ -5,10 +5,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Source
-import androidx.compose.material.icons.outlined.Storage
 import androidx.compose.material.icons.outlined.Update
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
@@ -30,14 +28,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.revanced.manager.R
-import app.revanced.manager.ui.viewmodel.AutoUpdatesDialogViewModel
-import org.koin.androidx.compose.getViewModel
 
 @Composable
-fun AutoUpdatesDialog(vm: AutoUpdatesDialogViewModel = getViewModel()) {
-    val showDialog by vm.showDialog.getAsState()
-    if (!showDialog) return
-
+fun AutoUpdatesDialog(onSubmit: (Boolean, Boolean) -> Unit) {
     var patchesEnabled by rememberSaveable { mutableStateOf(true) }
     var managerEnabled by rememberSaveable { mutableStateOf(true) }
 
@@ -45,7 +38,7 @@ fun AutoUpdatesDialog(vm: AutoUpdatesDialogViewModel = getViewModel()) {
         onDismissRequest = {},
         confirmButton = {
             TextButton(
-                onClick = { vm.save(managerEnabled, patchesEnabled) }
+                onClick = { onSubmit(managerEnabled, patchesEnabled) }
             ) {
                 Text(stringResource(R.string.save))
             }
