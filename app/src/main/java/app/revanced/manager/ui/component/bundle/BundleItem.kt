@@ -27,7 +27,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.revanced.manager.R
 import app.revanced.manager.domain.sources.RemoteSource
 import app.revanced.manager.domain.sources.Source
-import app.revanced.manager.ui.viewmodel.BundlesViewModel
 import app.revanced.manager.util.propsOrNullFlow
 import app.revanced.manager.util.uiSafe
 import app.revanced.manager.util.version
@@ -63,7 +62,7 @@ fun BundleItem(
                     uiSafe(
                         androidContext,
                         R.string.source_download_fail,
-                        BundlesViewModel.failLogMsg
+                        RemoteSource.updateFailMsg
                     ) {
                         if (source is RemoteSource) source.update()
                     }

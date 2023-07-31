@@ -45,4 +45,8 @@ class RemoteSource(name: String, id: Int, directory: File, val apiUrl: String) :
     fun propsFlow() = configRepository.getProps(uid)
 
     suspend fun setAutoUpdate(value: Boolean) = configRepository.setAutoUpdate(uid, value)
+
+    companion object {
+        const val updateFailMsg = "Failed to update patch bundle(s)"
+    }
 }

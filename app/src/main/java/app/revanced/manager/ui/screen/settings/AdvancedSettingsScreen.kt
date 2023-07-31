@@ -53,15 +53,6 @@ fun AdvancedSettingsScreen(
             activityManager.largeMemoryClass
         )
     }
-    val apiUrl by vm.apiUrl.getAsState()
-    var showApiUrlDialog by rememberSaveable { mutableStateOf(false) }
-
-    if (showApiUrlDialog) {
-        APIUrlDialog(apiUrl) {
-            showApiUrlDialog = false
-            it?.let(vm::setApiUrl)
-        }
-    }
 
     Scaffold(
         topBar = {
@@ -77,11 +68,34 @@ fun AdvancedSettingsScreen(
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
         ) {
+            val apiUrl by vm.apiUrl.getAsState()
+            var showApiUrlDialog by rememberSaveable { mutableStateOf(false) }
+
+            if (showApiUrlDialog) {
+                APIUrlDialog(apiUrl) {
+                    showApiUrlDialog = false
+                    it?.let(vm::setApiUrl)
+                }
+            }
             ListItem(
                 headlineContent = { Text(stringResource(R.string.api_url)) },
                 supportingContent = { Text(apiUrl) },
                 modifier = Modifier.clickable {
                     showApiUrlDialog = true
+                }
+            )
+
+            GroupHeader(stringResource(R.string.patch_bundles_section))
+            ListItem(
+                headlineContent = { Text(stringResource(R.string.patch_bundles_redownload)) },
+                modifier = Modifier.clickable {
+                    vm.redownloadBundles()
+                }
+            )
+            ListItem(
+                headlineContent = { Text(stringResource(R.string.patch_bundles_reset)) },
+                modifier = Modifier.clickable {
+                    vm.resetBundles()
                 }
             )
 

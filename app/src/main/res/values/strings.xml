@@ -104,6 +104,9 @@
     <string name="device_architectures">CPU Architectures</string>
     <string name="device_memory_limit">Memory limits</string>
     <string name="device_memory_limit_format">Normal: %1$d MB, Large: %2$d MB</string>
+    <string name="patch_bundles_section">Patch bundles</string>
+    <string name="patch_bundles_redownload">Redownload all patch bundles</string>
+    <string name="patch_bundles_reset">Reset patch bundles</string>
     <string name="patching">Patching</string>
     <string name="signing">Signing</string>
     <string name="storage">Storage</string>
@@ -113,7 +116,6 @@
     <string name="refresh">Refresh</string>
     <string name="remote">Remote</string>
     <string name="local">Local</string>
-    <string name="reload_sources">Reload all sources</string>
     <string name="continue_anyways">Continue anyways</string>
     <string name="download_another_version">Download another version</string>
     <string name="download_app">Download app</string>

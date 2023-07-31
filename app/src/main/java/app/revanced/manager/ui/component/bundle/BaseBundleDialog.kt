@@ -83,7 +83,7 @@ inline fun BaseBundleDialog(
         )
     ) Info@{
         if (remoteUrl != null) {
-            BundleInfoListItem(
+            BundleListItem(
                 headlineText = stringResource(R.string.automatically_update),
                 supportingText = stringResource(R.string.automatically_update_description),
                 trailingContent = {
@@ -95,7 +95,7 @@ inline fun BaseBundleDialog(
             )
         }
 
-        BundleInfoListItem(
+        BundleListItem(
             headlineText = stringResource(R.string.bundle_type),
             supportingText = stringResource(R.string.bundle_type_description)
         ) {
@@ -123,7 +123,7 @@ inline fun BaseBundleDialog(
             color = MaterialTheme.colorScheme.primary,
         )
 
-        BundleInfoListItem(
+        BundleListItem(
             headlineText = stringResource(R.string.patches),
             supportingText = if (patchCount == 0) stringResource(R.string.no_patches)
             else stringResource(R.string.patches_available, patchCount),
@@ -141,7 +141,7 @@ inline fun BaseBundleDialog(
 
         if (version == null) return@Info
 
-        BundleInfoListItem(
+        BundleListItem(
             headlineText = stringResource(R.string.version),
             supportingText = version,
         )
