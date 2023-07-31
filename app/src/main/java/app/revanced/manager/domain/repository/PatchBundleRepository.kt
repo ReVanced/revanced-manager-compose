@@ -124,7 +124,7 @@ class PatchBundleRepository(
 
     suspend fun updateCheck() = supervisorScope {
         if (!networkInfo.isSafe()) {
-            Log.d(tag, "Skipping update check because the network is unsafe.")
+            Log.d(tag, "Skipping update check because the network is down or metered.")
             return@supervisorScope
         }
 
