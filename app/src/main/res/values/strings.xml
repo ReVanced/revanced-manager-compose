@@ -12,7 +12,7 @@
     <string name="select_patches">Select patches</string>
 
     <string name="import_">Import</string>
-    <string name="import_bundle">Import Bundle</string>
+    <string name="import_bundle">Import patch bundle</string>
     <string name="bundle_information">Bundle information</string>
     <string name="bundle_patches">Bundle patches</string>
 
@@ -108,7 +108,7 @@
     <string name="signing">Signing</string>
     <string name="storage">Storage</string>
     <string name="tab_apps">Apps</string>
-    <string name="tab_bundles">Bundles</string>
+    <string name="tab_bundles">Patch bundles</string>
     <string name="delete">Delete</string>
     <string name="refresh">Refresh</string>
     <string name="remote">Remote</string>
