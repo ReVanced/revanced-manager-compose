@@ -32,4 +32,8 @@ data class PatchBundleEntity(
 data class BundleProperties(
     @Embedded val versionInfo: VersionInfo,
     @ColumnInfo(name = "auto_update") val autoUpdate: Boolean
-)
+) {
+    companion object {
+        val BundleProperties.version get() = versionInfo.patches.takeUnless { it.isEmpty() }
+    }
+}

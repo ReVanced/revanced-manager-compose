@@ -21,12 +21,12 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.revanced.manager.R
+import app.revanced.manager.data.room.bundles.BundleProperties.Companion.version
 import app.revanced.manager.domain.bundles.LocalPatchBundle
 import app.revanced.manager.domain.bundles.RemotePatchBundle
 import app.revanced.manager.domain.bundles.PatchBundleSource
-import app.revanced.manager.util.isDefault
-import app.revanced.manager.util.propsOrNullFlow
-import app.revanced.manager.util.version
+import app.revanced.manager.domain.bundles.PatchBundleSource.Companion.isDefault
+import app.revanced.manager.domain.bundles.PatchBundleSource.Companion.propsOrNullFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 

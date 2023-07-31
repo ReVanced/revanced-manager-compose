@@ -4,6 +4,7 @@ import androidx.compose.runtime.Stable
 import app.revanced.manager.patcher.patch.PatchBundle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flowOf
 import java.io.File
 
 /**
@@ -43,5 +44,10 @@ sealed class PatchBundleSource(val name: String, val uid: Int, directory: File) 
         data class Loaded(val bundle: PatchBundle) : State {
             override fun patchBundleOrNull() = bundle
         }
+    }
+
+    companion object {
+        val PatchBundleSource.isDefault get() = uid == 0
+        fun PatchBundleSource.propsOrNullFlow() = (this as? RemotePatchBundle)?.propsFlow() ?: flowOf(null)
     }
 }

@@ -101,7 +101,3 @@ val Color.hexCode: String
         val b: Int = (blue * 255).toInt()
         return java.lang.String.format(Locale.getDefault(), "%02X%02X%02X%02X", r, g, b, a)
     }
-
-val PatchBundleSource.isDefault get() = uid == 0
-fun PatchBundleSource.propsOrNullFlow() = (this as? RemotePatchBundle)?.propsFlow() ?: flowOf(null)
-val BundleProperties.version get() = versionInfo.patches.takeUnless { it.isEmpty() }

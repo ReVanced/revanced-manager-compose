@@ -25,20 +25,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.revanced.manager.R
-import app.revanced.manager.domain.bundles.RemotePatchBundle
+import app.revanced.manager.data.room.bundles.BundleProperties.Companion.version
 import app.revanced.manager.domain.bundles.PatchBundleSource
-import app.revanced.manager.util.propsOrNullFlow
-import app.revanced.manager.util.uiSafe
-import app.revanced.manager.util.version
-import kotlinx.coroutines.CoroutineScope
+import app.revanced.manager.domain.bundles.PatchBundleSource.Companion.propsOrNullFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 
 @Composable
 fun BundleItem(
     bundle: PatchBundleSource,
     onDelete: () -> Unit,
-    coroutineScope: CoroutineScope,
+    onUpdate: () -> Unit
 ) {
     var viewBundleDialogPage by rememberSaveable { mutableStateOf(false) }
     val state by bundle.state.collectAsStateWithLifecycle()
@@ -57,17 +53,7 @@ fun BundleItem(
                 onDelete()
             },
             bundle = bundle,
-            onRefreshButton = {
-                coroutineScope.launch {
-                    uiSafe(
-                        androidContext,
-                        R.string.source_download_fail,
-                        RemotePatchBundle.updateFailMsg
-                    ) {
-                        if (bundle is RemotePatchBundle) bundle.update()
-                    }
-                }
-            },
+            onRefreshButton = onUpdate,
         )
     }
 

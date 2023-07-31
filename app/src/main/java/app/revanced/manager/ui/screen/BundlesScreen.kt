@@ -6,7 +6,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewModelScope
 import app.revanced.manager.ui.component.bundle.BundleItem
 import app.revanced.manager.ui.viewmodel.BundlesViewModel
 import org.koin.androidx.compose.getViewModel
@@ -27,7 +26,9 @@ fun BundlesScreen(
                 onDelete = {
                     vm.delete(it)
                 },
-                coroutineScope = vm.viewModelScope
+                onUpdate = {
+                    vm.update(it)
+                }
             )
         }
     }
