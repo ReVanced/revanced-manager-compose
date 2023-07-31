@@ -8,6 +8,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import app.revanced.manager.domain.manager.PreferencesManager
+import app.revanced.manager.ui.component.AutoUpdatesDialog
 import app.revanced.manager.ui.destination.Destination
 import app.revanced.manager.ui.screen.VersionSelectorScreen
 import app.revanced.manager.ui.screen.AppSelectorScreen
@@ -68,6 +69,8 @@ class MainActivity : ComponentActivity() {
                     rememberNavController<Destination>(startDestination = Destination.Dashboard)
 
                 NavBackHandler(navController)
+
+                AutoUpdatesDialog()
 
                 AnimatedNavHost(
                     controller = navController

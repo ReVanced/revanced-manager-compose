@@ -20,6 +20,12 @@
     <string name="bundle_error">Error</string>
 
     <string name="select_version">Select version</string>
+    
+    <string name="auto_updates_dialog_title">Select updates to receive</string>
+    <string name="auto_updates_dialog_description">Periodically connect to update providers to check for updates.</string>
+    <string name="auto_updates_dialog_manager">Manager updates</string>
+    <string name="auto_updates_dialog_patches">Patches</string>
+    <string name="auto_updates_dialog_note">These settings can be changed later.</string>
 
     <string name="general">General</string>
     <string name="general_description">General settings</string>
@@ -208,6 +214,7 @@
     <string name="downloading_manager_update">Downloading update…</string>
     <string name="download_manager_failed">Failed to download update: %s</string>
     <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
     <string name="update">Update</string>
     <string name="installing_message">Tap on <b>Update</b> when prompted. \n ReVanced Manager will close when updating.</string>
 </resources>

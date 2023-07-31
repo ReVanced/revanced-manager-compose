@@ -19,4 +19,5 @@ val viewModelModule = module {
     viewModelOf(::ImportExportViewModel)
     viewModelOf(::ContributorViewModel)
     viewModelOf(::DownloadsViewModel)
+    viewModelOf(::AutoUpdatesDialogViewModel)
 }
