@@ -21,7 +21,6 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.revanced.manager.R
-import app.revanced.manager.data.room.bundles.BundleProperties.Companion.version
 import app.revanced.manager.domain.bundles.LocalPatchBundle
 import app.revanced.manager.domain.bundles.RemotePatchBundle
 import app.revanced.manager.domain.bundles.PatchBundleSource
@@ -102,7 +101,7 @@ fun BundleInformationDialog(
                 name = bundle.name,
                 remoteUrl = (bundle as? RemotePatchBundle)?.apiUrl,
                 patchCount = patchCount,
-                version = props?.version,
+                version = props?.versionInfo?.patches,
                 autoUpdate = props?.autoUpdate ?: false,
                 onAutoUpdateChange = {
                     composableScope.launch {

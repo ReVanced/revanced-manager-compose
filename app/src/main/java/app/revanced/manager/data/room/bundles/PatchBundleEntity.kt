@@ -16,8 +16,8 @@ sealed class Source {
 }
 
 data class VersionInfo(
-    @ColumnInfo(name = "version") val patches: String,
-    @ColumnInfo(name = "integrations_version") val integrations: String,
+    @ColumnInfo(name = "version") val patches: String? = null,
+    @ColumnInfo(name = "integrations_version") val integrations: String? = null,
 )
 
 @Entity(tableName = "patch_bundles", indices = [Index(value = ["name"], unique = true)])
@@ -32,8 +32,4 @@ data class PatchBundleEntity(
 data class BundleProperties(
     @Embedded val versionInfo: VersionInfo,
     @ColumnInfo(name = "auto_update") val autoUpdate: Boolean
-) {
-    companion object {
-        val BundleProperties.version get() = versionInfo.patches.takeUnless { it.isEmpty() }
-    }
-}
+)

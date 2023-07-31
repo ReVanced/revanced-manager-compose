@@ -24,7 +24,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.revanced.manager.R
-import app.revanced.manager.data.room.bundles.BundleProperties.Companion.version
 import app.revanced.manager.domain.bundles.PatchBundleSource
 import app.revanced.manager.domain.bundles.PatchBundleSource.Companion.propsOrNullFlow
 import kotlinx.coroutines.flow.map
@@ -39,7 +38,7 @@ fun BundleItem(
     val state by bundle.state.collectAsStateWithLifecycle()
 
     val version by remember(bundle) {
-        bundle.propsOrNullFlow().map { props -> props?.version }
+        bundle.propsOrNullFlow().map { props -> props?.versionInfo?.patches }
     }.collectAsStateWithLifecycle(null)
 
     if (viewBundleDialogPage) {

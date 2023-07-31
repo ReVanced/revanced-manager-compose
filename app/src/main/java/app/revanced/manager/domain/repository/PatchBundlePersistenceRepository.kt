@@ -15,7 +15,7 @@ class PatchBundlePersistenceRepository(db: AppDatabase) {
         val defaultSource = PatchBundleEntity(
             uid = 0,
             name = "Main",
-            versionInfo = VersionInfo("", ""),
+            versionInfo = VersionInfo(),
             source = Source.Remote(Url("manager://api")),
             autoUpdate = false
         )
@@ -39,7 +39,7 @@ class PatchBundlePersistenceRepository(db: AppDatabase) {
             PatchBundleEntity(
                 uid = uid,
                 name = name,
-                versionInfo = VersionInfo("", ""),
+                versionInfo = VersionInfo(),
                 source = source,
                 autoUpdate = autoUpdate
             )
