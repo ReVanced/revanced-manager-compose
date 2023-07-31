@@ -74,7 +74,7 @@ class PatchBundleRepository(
         }
     }
 
-    suspend fun resetConfig() = withContext(Dispatchers.Default) {
+    suspend fun reset() = withContext(Dispatchers.Default) {
         persistenceRepo.reset()
         _sources.value = emptyMap()
         bundlesDir.apply {
@@ -115,7 +115,7 @@ class PatchBundleRepository(
 
     private suspend fun getRemoteBundles() = sources.first().filterIsInstance<RemotePatchBundle>()
 
-    suspend fun onApiUrlChange() {
+    suspend fun reloadDefaultBundle() {
         _sources.value[0]?.let { it as? RemotePatchBundle }?.deleteLocalFiles()
         load()
     }
