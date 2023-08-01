@@ -32,13 +32,12 @@ import app.revanced.manager.R
 import app.revanced.manager.util.APK_MIMETYPE
 import app.revanced.manager.util.JAR_MIMETYPE
 import app.revanced.manager.util.parseUrlOrNull
-import io.ktor.http.Url
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ImportBundleDialog(
     onDismissRequest: () -> Unit,
-    onRemoteSubmit: (String, Url, Boolean) -> Unit,
+    onRemoteSubmit: (String, String, Boolean) -> Unit,
     onLocalSubmit: (String, Uri, Uri?) -> Unit
 ) {
     var name by rememberSaveable { mutableStateOf("") }
@@ -102,7 +101,7 @@ fun ImportBundleDialog(
                                     } else {
                                         onRemoteSubmit(
                                             name,
-                                            remoteUrl.parseUrlOrNull()!!,
+                                            remoteUrl,
                                             autoUpdate
                                         )
                                     }

@@ -19,7 +19,7 @@ class BundlesViewModel(
     fun delete(bundle: PatchBundleSource) = viewModelScope.launch { patchBundleRepository.remove(bundle) }
 
     fun update(bundle: PatchBundleSource) = viewModelScope.launch {
-        if (bundle !is RemotePatchBundle) return@launch
+        if (bundle !is RemotePatchBundle<*>) return@launch
 
         uiSafe(
             app,

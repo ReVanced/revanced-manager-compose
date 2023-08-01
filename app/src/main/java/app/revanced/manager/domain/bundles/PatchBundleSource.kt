@@ -12,19 +12,19 @@ import java.io.File
  */
 @Stable
 sealed class PatchBundleSource(val name: String, val uid: Int, directory: File) {
-    protected val patchesJar = directory.resolve("patches.jar")
-    protected val integrations = directory.resolve("integrations.apk")
+    protected val patchesFile = directory.resolve("patches.jar")
+    protected val integrationsFile = directory.resolve("integrations.apk")
 
     /**
      * Returns true if the bundle has been downloaded to local storage.
      */
-    fun hasInstalled() = patchesJar.exists()
+    fun hasInstalled() = patchesFile.exists()
 
     private fun load(): State {
         if (!hasInstalled()) return State.Missing
 
         return try {
-            State.Loaded(PatchBundle(patchesJar, integrations.takeIf(File::exists)))
+            State.Loaded(PatchBundle(patchesFile, integrationsFile.takeIf(File::exists)))
         } catch (t: Throwable) {
             State.Failed(t)
         }
@@ -48,6 +48,7 @@ sealed class PatchBundleSource(val name: String, val uid: Int, directory: File) 
 
     companion object {
         val PatchBundleSource.isDefault get() = uid == 0
-        fun PatchBundleSource.propsOrNullFlow() = (this as? RemotePatchBundle)?.propsFlow() ?: flowOf(null)
+        val PatchBundleSource.asRemoteOrNull get() = this as? RemotePatchBundle<*>
+        fun PatchBundleSource.propsOrNullFlow() = asRemoteOrNull?.propsFlow() ?: flowOf(null)
     }
 }

@@ -24,6 +24,7 @@ import app.revanced.manager.R
 import app.revanced.manager.domain.bundles.LocalPatchBundle
 import app.revanced.manager.domain.bundles.RemotePatchBundle
 import app.revanced.manager.domain.bundles.PatchBundleSource
+import app.revanced.manager.domain.bundles.PatchBundleSource.Companion.asRemoteOrNull
 import app.revanced.manager.domain.bundles.PatchBundleSource.Companion.isDefault
 import app.revanced.manager.domain.bundles.PatchBundleSource.Companion.propsOrNullFlow
 import kotlinx.coroutines.flow.map
@@ -99,13 +100,13 @@ fun BundleInformationDialog(
                 modifier = Modifier.padding(paddingValues),
                 isDefault = bundle.isDefault,
                 name = bundle.name,
-                remoteUrl = (bundle as? RemotePatchBundle)?.apiUrl,
+                remoteUrl = bundle.asRemoteOrNull?.endpoint,
                 patchCount = patchCount,
                 version = props?.versionInfo?.patches,
                 autoUpdate = props?.autoUpdate ?: false,
                 onAutoUpdateChange = {
                     composableScope.launch {
-                        (bundle as? RemotePatchBundle)?.setAutoUpdate(it)
+                        bundle.asRemoteOrNull?.setAutoUpdate(it)
                     }
                 },
                 onPatchesClick = {

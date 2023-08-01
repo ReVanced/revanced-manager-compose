@@ -22,7 +22,7 @@ class AdvancedSettingsViewModel(
         if (value == apiUrl.get()) return@launch
 
         apiUrl.update(value)
-        patchBundleRepository.reloadDefaultBundle()
+        patchBundleRepository.reloadApiBundles()
     }
 
     fun redownloadBundles() = viewModelScope.launch {

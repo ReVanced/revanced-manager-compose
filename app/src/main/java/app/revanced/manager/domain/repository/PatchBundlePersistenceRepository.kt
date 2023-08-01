@@ -16,7 +16,7 @@ class PatchBundlePersistenceRepository(db: AppDatabase) {
             uid = 0,
             name = "Main",
             versionInfo = VersionInfo(),
-            source = Source.Remote(Url("manager://api")),
+            source = Source.API,
             autoUpdate = false
         )
     }
@@ -33,25 +33,23 @@ class PatchBundlePersistenceRepository(db: AppDatabase) {
 
     suspend fun reset() = dao.reset()
 
-    suspend fun create(name: String, source: Source, autoUpdate: Boolean = false): Int {
-        val uid = generateUid()
-        dao.add(
-            PatchBundleEntity(
-                uid = uid,
-                name = name,
-                versionInfo = VersionInfo(),
-                source = source,
-                autoUpdate = autoUpdate
-            )
-        )
 
-        return uid
-    }
+    suspend fun create(name: String, source: Source, autoUpdate: Boolean = false) =
+        PatchBundleEntity(
+            uid = generateUid(),
+            name = name,
+            versionInfo = VersionInfo(),
+            source = source,
+            autoUpdate = autoUpdate
+        ).also {
+            dao.add(it)
+        }
 
     suspend fun delete(uid: Int) = dao.remove(uid)
 
     suspend fun updateVersion(uid: Int, patches: String, integrations: String) =
         dao.updateVersion(uid, patches, integrations)
+
     suspend fun setAutoUpdate(uid: Int, value: Boolean) = dao.setAutoUpdate(uid, value)
 
     fun getProps(id: Int) = dao.getPropsById(id).distinctUntilChanged()

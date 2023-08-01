@@ -7,10 +7,7 @@ import java.io.File
 
 class Converters {
     @TypeConverter
-    fun sourceFromString(value: String) = when(value) {
-        Source.Local.SENTINEL -> Source.Local
-        else -> Source.Remote(Url(value))
-    }
+    fun sourceFromString(value: String) = Source.from(value)
 
     @TypeConverter
     fun sourceToString(value: Source) = value.toString()

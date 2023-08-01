@@ -10,8 +10,22 @@ sealed class Source {
         override fun toString() = SENTINEL
     }
 
+    object API : Source() {
+        const val SENTINEL = "manager://api"
+
+        override fun toString() = SENTINEL
+    }
+
     data class Remote(val url: Url) : Source() {
         override fun toString() = url.toString()
+    }
+
+    companion object {
+        fun from(value: String) = when(value) {
+            Local.SENTINEL -> Local
+            API.SENTINEL -> API
+            else -> Remote(Url(value))
+        }
     }
 }
 

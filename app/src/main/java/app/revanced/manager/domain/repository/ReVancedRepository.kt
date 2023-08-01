@@ -11,9 +11,11 @@ class ReVancedRepository(
     private val service: ReVancedService,
     private val prefs: PreferencesManager
 ) {
-    suspend fun getContributors() = service.getContributors(prefs.api.get())
+    private suspend fun apiUrl() = prefs.api.get()
 
-    suspend fun getAssets(api: String? = null) = Assets(service.getAssets(api ?: prefs.api.get()).getOrThrow())
+    suspend fun getContributors() = service.getContributors(apiUrl())
+
+    suspend fun getAssets() = Assets(service.getAssets(apiUrl()).getOrThrow())
 }
 
 class Assets(private val releases: ReVancedReleases): List<Asset> by releases.tools {

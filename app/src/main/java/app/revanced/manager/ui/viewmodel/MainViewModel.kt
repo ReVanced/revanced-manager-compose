@@ -2,6 +2,7 @@ package app.revanced.manager.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.revanced.manager.domain.bundles.PatchBundleSource.Companion.asRemoteOrNull
 import app.revanced.manager.domain.bundles.RemotePatchBundle
 import app.revanced.manager.domain.manager.PreferencesManager
 import app.revanced.manager.domain.repository.PatchBundleRepository
@@ -31,7 +32,7 @@ class MainViewModel(
                 sources
                     .first()
                     .find { it.uid == 0 }
-                    ?.let { it as? RemotePatchBundle }
+                    ?.asRemoteOrNull
                     ?.setAutoUpdate(true)
 
                 updateCheck()

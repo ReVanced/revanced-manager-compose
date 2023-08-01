@@ -11,10 +11,10 @@ class LocalPatchBundle(name: String, id: Int, directory: File) : PatchBundleSour
     suspend fun replace(patches: InputStream? = null, integrations: InputStream? = null) {
         withContext(Dispatchers.IO) {
             patches?.let {
-                Files.copy(it, patchesJar.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                Files.copy(it, patchesFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
             }
             integrations?.let {
-                Files.copy(it, this@LocalPatchBundle.integrations.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                Files.copy(it, this@LocalPatchBundle.integrationsFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
             }
         }
 

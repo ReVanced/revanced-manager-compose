@@ -33,28 +33,11 @@ class ManagerAPI(
         downloadProgress = null
     }
 
-    suspend fun getLatestBundleVersion(api: String) = revancedRepository.getAssets(api).let { (patches, integrations) ->
-        patches.version to integrations.version
-    }
-
-    suspend fun downloadBundle(api: String, patchBundle: File, integrations: File): Pair<String, String> {
-        val (patchBundleAsset, integrationsAsset) = revancedRepository.getAssets(api)
-
-        downloadAsset(patchBundleAsset, patchBundle)
-        downloadAsset(integrationsAsset, integrations)
-
-        return patchBundleAsset.version to integrationsAsset.version
-    }
-
     suspend fun downloadManager(location: File) {
         val managerAsset = revancedRepository.getAssets().find(ghManager, ".apk")
         downloadAsset(managerAsset, location)
     }
 
-    private companion object {
-        operator fun Assets.component1() = find(ghPatches, ".jar")
-        operator fun Assets.component2() = find(ghIntegrations, ".apk")
-    }
 }
 
 class MissingAssetException : Exception()

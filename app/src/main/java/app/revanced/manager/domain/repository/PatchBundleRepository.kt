@@ -5,14 +5,14 @@ import android.content.Context
 import android.util.Log
 import app.revanced.manager.data.platform.NetworkInfo
 import app.revanced.manager.data.room.bundles.PatchBundleEntity
+import app.revanced.manager.domain.bundles.APIPatchBundle
+import app.revanced.manager.domain.bundles.JsonPatchBundle
 import app.revanced.manager.data.room.bundles.Source as SourceInfo
-import app.revanced.manager.domain.manager.PreferencesManager
 import app.revanced.manager.domain.bundles.LocalPatchBundle
 import app.revanced.manager.domain.bundles.RemotePatchBundle
 import app.revanced.manager.domain.bundles.PatchBundleSource
 import app.revanced.manager.util.flatMapLatestAndCombine
 import app.revanced.manager.util.tag
-import io.ktor.http.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
@@ -21,18 +21,17 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
-import java.io.File
 import java.io.InputStream
 
 class PatchBundleRepository(
     app: Application,
     private val persistenceRepo: PatchBundlePersistenceRepository,
     private val networkInfo: NetworkInfo,
-    private val prefs: PreferencesManager
 ) {
     private val bundlesDir = app.getDir("patch_bundles", Context.MODE_PRIVATE)
 
-    private val _sources: MutableStateFlow<Map<Int, PatchBundleSource>> = MutableStateFlow(emptyMap())
+    private val _sources: MutableStateFlow<Map<Int, PatchBundleSource>> =
+        MutableStateFlow(emptyMap())
     val sources = _sources.map { it.values.toList() }
 
     val bundles = sources.flatMapLatestAndCombine(
@@ -51,14 +50,19 @@ class PatchBundleRepository(
      */
     private fun directoryOf(uid: Int) = bundlesDir.resolve(uid.toString()).also { it.mkdirs() }
 
-    private suspend fun PatchBundleEntity.load(dir: File) = when (source) {
-        is SourceInfo.Local -> LocalPatchBundle(name, uid, dir)
-        is SourceInfo.Remote -> RemotePatchBundle(
-            name,
-            uid,
-            dir,
-            if (uid != 0) source.url.toString() else prefs.api.get()
-        )
+    private fun PatchBundleEntity.load(): PatchBundleSource {
+        val dir = directoryOf(uid)
+
+        return when (source) {
+            is SourceInfo.Local -> LocalPatchBundle(name, uid, dir)
+            is SourceInfo.API -> APIPatchBundle(name, uid, dir, SourceInfo.API.SENTINEL)
+            is SourceInfo.Remote -> JsonPatchBundle(
+                name,
+                uid,
+                dir,
+                source.url.toString()
+            )
+        }
     }
 
     suspend fun load() = withContext(Dispatchers.Default) {
@@ -67,10 +71,7 @@ class PatchBundleRepository(
         }
 
         _sources.value = entities.associate {
-            val dir = directoryOf(it.uid)
-            val bundle = it.load(dir)
-
-            it.uid to bundle
+            it.uid to it.load()
         }
     }
 
@@ -100,23 +101,26 @@ class PatchBundleRepository(
         _sources.update { it.toMutableMap().apply { put(patchBundle.uid, patchBundle) } }
 
     suspend fun createLocal(name: String, patches: InputStream, integrations: InputStream?) {
-        val id = persistenceRepo.create(name, SourceInfo.Local)
-        val source = LocalPatchBundle(name, id, directoryOf(id))
+        val id = persistenceRepo.create(name, SourceInfo.Local).uid
+        val bundle = LocalPatchBundle(name, id, directoryOf(id))
 
-        addBundle(source)
-
-        source.replace(patches, integrations)
+        bundle.replace(patches, integrations)
+        addBundle(bundle)
     }
 
-    suspend fun createRemote(name: String, apiUrl: Url, autoUpdate: Boolean) {
-        val id = persistenceRepo.create(name, SourceInfo.Remote(apiUrl), autoUpdate)
-        addBundle(RemotePatchBundle(name, id, directoryOf(id), apiUrl.toString()))
+    suspend fun createRemote(name: String, url: String, autoUpdate: Boolean) {
+        val entity = persistenceRepo.create(name, SourceInfo.from(url), autoUpdate)
+        addBundle(entity.load())
     }
 
-    private suspend fun getRemoteBundles() = sources.first().filterIsInstance<RemotePatchBundle>()
+    private suspend fun getRemoteBundles() =
+        sources.first().filterIsInstance<RemotePatchBundle<*>>()
 
-    suspend fun reloadDefaultBundle() {
-        _sources.value[0]?.let { it as? RemotePatchBundle }?.deleteLocalFiles()
+    suspend fun reloadApiBundles() {
+        sources.first().filterIsInstance<APIPatchBundle>().forEach {
+            it.deleteLocalFiles()
+        }
+
         load()
     }
 
