@@ -114,7 +114,7 @@ class PatchBundleRepository(
     }
 
     private suspend fun getRemoteBundles() =
-        sources.first().filterIsInstance<RemotePatchBundle<*>>()
+        sources.first().filterIsInstance<RemotePatchBundle>()
 
     suspend fun reloadApiBundles() {
         sources.first().filterIsInstance<APIPatchBundle>().forEach {

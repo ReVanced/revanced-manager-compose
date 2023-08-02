@@ -16,10 +16,11 @@ class BundlesViewModel(
 ) : ViewModel() {
     val sources = patchBundleRepository.sources
 
-    fun delete(bundle: PatchBundleSource) = viewModelScope.launch { patchBundleRepository.remove(bundle) }
+    fun delete(bundle: PatchBundleSource) =
+        viewModelScope.launch { patchBundleRepository.remove(bundle) }
 
     fun update(bundle: PatchBundleSource) = viewModelScope.launch {
-        if (bundle !is RemotePatchBundle<*>) return@launch
+        if (bundle !is RemotePatchBundle) return@launch
 
         uiSafe(
             app,

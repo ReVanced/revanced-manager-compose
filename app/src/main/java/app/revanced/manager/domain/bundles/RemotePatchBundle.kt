@@ -2,9 +2,12 @@ package app.revanced.manager.domain.bundles
 
 import androidx.compose.runtime.Stable
 import app.revanced.manager.data.room.bundles.VersionInfo
+import app.revanced.manager.domain.bundles.APIPatchBundle.Companion.toBundleAsset
 import app.revanced.manager.domain.repository.Assets
 import app.revanced.manager.domain.repository.PatchBundlePersistenceRepository
 import app.revanced.manager.domain.repository.ReVancedRepository
+import app.revanced.manager.network.dto.Asset
+import app.revanced.manager.network.dto.BundleAsset
 import app.revanced.manager.network.dto.BundleInfo
 import app.revanced.manager.network.service.HttpService
 import app.revanced.manager.network.utils.getOrThrow
@@ -22,41 +25,48 @@ import org.koin.core.component.inject
 import java.io.File
 
 @Stable
-sealed class RemotePatchBundle<Meta>(name: String, id: Int, directory: File, val endpoint: String) :
+sealed class RemotePatchBundle(name: String, id: Int, directory: File, val endpoint: String) :
     PatchBundleSource(name, id, directory), KoinComponent {
     private val configRepository: PatchBundlePersistenceRepository by inject()
     protected val http: HttpService by inject()
 
-    protected abstract suspend fun download(metadata: Meta)
-    protected abstract suspend fun getLatestMetadata(): Meta
-    protected abstract fun getVersionInfo(metadata: Meta): VersionInfo
+    protected abstract suspend fun getLatestInfo(): BundleInfo
 
-    suspend fun downloadLatest() {
-        download(getLatestMetadata())
-    }
-
-    protected suspend fun downloadAssets(assets: Map<String, File>) = coroutineScope {
-        assets.forEach { (asset, file) ->
-            launch {
-                http.download(file) {
-                    url(asset)
+    private suspend fun download(info: BundleInfo) = withContext(Dispatchers.IO) {
+        val (patches, integrations) = info
+        coroutineScope {
+            mapOf(
+                patches.url to patchesFile,
+                integrations.url to integrationsFile
+            ).forEach { (asset, file) ->
+                launch {
+                    http.download(file) {
+                        url(asset)
+                    }
                 }
             }
         }
+
+        saveVersion(patches.version, integrations.version)
+        reload()
+    }
+
+    suspend fun downloadLatest() {
+        download(getLatestInfo())
     }
 
     suspend fun update(): Boolean = withContext(Dispatchers.IO) {
-        val metadata = getLatestMetadata()
-        if (hasInstalled() && getVersionInfo(metadata) == currentVersion()) {
+        val info = getLatestInfo()
+        if (hasInstalled() && VersionInfo(info.patches.version, info.integrations.version) == currentVersion()) {
             return@withContext false
         }
 
-        download(metadata)
+        download(info)
         true
     }
 
     private suspend fun currentVersion() = configRepository.getProps(uid).first().versionInfo
-    protected suspend fun saveVersion(patches: String, integrations: String) =
+    private suspend fun saveVersion(patches: String, integrations: String) =
         configRepository.updateVersion(uid, patches, integrations)
 
     suspend fun deleteLocalFiles() = withContext(Dispatchers.Default) {
@@ -74,57 +84,28 @@ sealed class RemotePatchBundle<Meta>(name: String, id: Int, directory: File, val
 }
 
 class JsonPatchBundle(name: String, id: Int, directory: File, endpoint: String) :
-    RemotePatchBundle<BundleInfo>(name, id, directory, endpoint) {
-    override suspend fun getLatestMetadata() = withContext(Dispatchers.IO) {
+    RemotePatchBundle(name, id, directory, endpoint) {
+    override suspend fun getLatestInfo() = withContext(Dispatchers.IO) {
         http.request<BundleInfo> {
             url(endpoint)
         }.getOrThrow()
     }
-
-    override fun getVersionInfo(metadata: BundleInfo) =
-        VersionInfo(metadata.patches.version, metadata.integrations.version)
-
-    override suspend fun download(metadata: BundleInfo) = withContext(Dispatchers.IO) {
-        val (patches, integrations) = metadata
-        downloadAssets(
-            mapOf(
-                patches.url to patchesFile,
-                integrations.url to integrationsFile
-            )
-        )
-
-        saveVersion(patches.version, integrations.version)
-        reload()
-    }
 }
 
 class APIPatchBundle(name: String, id: Int, directory: File, endpoint: String) :
-    RemotePatchBundle<Assets>(name, id, directory, endpoint) {
+    RemotePatchBundle(name, id, directory, endpoint) {
     private val api: ReVancedRepository by inject()
 
-    override suspend fun getLatestMetadata() = api.getAssets()
-    override fun getVersionInfo(metadata: Assets) = metadata.let { (patches, integrations) ->
-        VersionInfo(
-            patches.version,
-            integrations.version
-        )
-    }
-
-    override suspend fun download(metadata: Assets) = withContext(Dispatchers.IO) {
-        val (patches, integrations) = metadata
-        downloadAssets(
-            mapOf(
-                patches.downloadUrl to patchesFile,
-                integrations.downloadUrl to integrationsFile
-            )
-        )
-
-        saveVersion(patches.version, integrations.version)
-        reload()
-    }
+    override suspend fun getLatestInfo() = api.getAssets().toBundleInfo()
 
     private companion object {
-        operator fun Assets.component1() = find(ghPatches, ".jar")
-        operator fun Assets.component2() = find(ghIntegrations, ".apk")
+        fun Assets.toBundleInfo(): BundleInfo {
+            val patches = find(ghPatches, ".jar")
+            val integrations = find(ghIntegrations, ".apk")
+
+            return BundleInfo(patches.toBundleAsset(), integrations.toBundleAsset())
+        }
+
+        fun Asset.toBundleAsset() = BundleAsset(version, downloadUrl)
     }
 }

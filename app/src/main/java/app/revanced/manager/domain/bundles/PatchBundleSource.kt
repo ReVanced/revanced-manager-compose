@@ -48,7 +48,7 @@ sealed class PatchBundleSource(val name: String, val uid: Int, directory: File) 
 
     companion object {
         val PatchBundleSource.isDefault get() = uid == 0
-        val PatchBundleSource.asRemoteOrNull get() = this as? RemotePatchBundle<*>
+        val PatchBundleSource.asRemoteOrNull get() = this as? RemotePatchBundle
         fun PatchBundleSource.propsOrNullFlow() = asRemoteOrNull?.propsFlow() ?: flowOf(null)
     }
 }
