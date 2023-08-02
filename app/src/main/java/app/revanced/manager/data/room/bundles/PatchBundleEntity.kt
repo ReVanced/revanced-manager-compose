@@ -11,7 +11,7 @@ sealed class Source {
     }
 
     object API : Source() {
-        const val SENTINEL = "manager://api"
+        const val SENTINEL = "api"
 
         override fun toString() = SENTINEL
     }
