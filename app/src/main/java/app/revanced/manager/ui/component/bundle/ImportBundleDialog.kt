@@ -1,6 +1,7 @@
 package app.revanced.manager.ui.component.bundle
 
 import android.net.Uri
+import android.webkit.URLUtil
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -16,6 +17,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -53,8 +55,10 @@ fun ImportBundleDialog(
     val inputsAreValid by remember {
         derivedStateOf {
             val nameSize = name.length
-            nameSize in 4..19 && if (isLocal) patchBundle != null else {
-                remoteUrl.isNotEmpty() && remoteUrl.parseUrlOrNull() != null
+            when {
+                nameSize !in 1..19 -> false
+                isLocal -> patchBundle != null
+                else -> remoteUrl.isNotEmpty() && URLUtil.isValidUrl(remoteUrl)
             }
         }
     }
@@ -87,26 +91,22 @@ fun ImportBundleDialog(
                         )
                     },
                     actions = {
-                        Text(
-                            text = stringResource(R.string.import_),
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier
-                                .padding(end = 16.dp)
-                                .clickable {
-                                    if (!inputsAreValid) return@clickable
-
-                                    if (isLocal) {
-                                        onLocalSubmit(name, patchBundle!!, integrations)
-                                    } else {
-                                        onRemoteSubmit(
-                                            name,
-                                            remoteUrl,
-                                            autoUpdate
-                                        )
-                                    }
+                        TextButton(
+                            enabled = inputsAreValid,
+                            onClick = {
+                                if (isLocal) {
+                                    onLocalSubmit(name, patchBundle!!, integrations)
+                                } else {
+                                    onRemoteSubmit(
+                                        name,
+                                        remoteUrl,
+                                        autoUpdate
+                                    )
                                 }
-                        )
+                            }
+                        ) {
+                            Text(stringResource(R.string.import_))
+                        }
                     }
                 )
             },
