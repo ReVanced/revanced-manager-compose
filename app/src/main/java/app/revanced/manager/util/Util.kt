@@ -11,16 +11,11 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import app.revanced.manager.data.room.bundles.BundleProperties
-import app.revanced.manager.domain.bundles.RemotePatchBundle
-import app.revanced.manager.domain.bundles.PatchBundleSource
-import io.ktor.http.Url
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import java.util.Locale
 
