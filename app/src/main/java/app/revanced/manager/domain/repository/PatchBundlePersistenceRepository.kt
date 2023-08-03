@@ -11,16 +11,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 class PatchBundlePersistenceRepository(db: AppDatabase) {
     private val dao = db.patchBundleDao()
 
-    private companion object {
-        val defaultSource = PatchBundleEntity(
-            uid = 0,
-            name = "Main",
-            versionInfo = VersionInfo(),
-            source = Source.API,
-            autoUpdate = false
-        )
-    }
-
     suspend fun loadConfiguration(): List<PatchBundleEntity> {
         val all = dao.all()
         if (all.isEmpty()) {
@@ -53,4 +43,14 @@ class PatchBundlePersistenceRepository(db: AppDatabase) {
     suspend fun setAutoUpdate(uid: Int, value: Boolean) = dao.setAutoUpdate(uid, value)
 
     fun getProps(id: Int) = dao.getPropsById(id).distinctUntilChanged()
+
+    private companion object {
+        val defaultSource = PatchBundleEntity(
+            uid = 0,
+            name = "Main",
+            versionInfo = VersionInfo(),
+            source = Source.API,
+            autoUpdate = false
+        )
+    }
 }
