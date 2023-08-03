@@ -22,19 +22,19 @@ import androidx.compose.ui.unit.dp
 import app.revanced.manager.R
 
 @Composable
-inline fun BaseBundleDialog(
+fun BaseBundleDialog(
     modifier: Modifier = Modifier,
     isDefault: Boolean,
     name: String,
-    noinline onNameChange: (String) -> Unit = {},
+    onNameChange: (String) -> Unit = {},
     remoteUrl: String?,
-    noinline onRemoteUrlChange: (String) -> Unit = {},
+    onRemoteUrlChange: (String) -> Unit = {},
     patchCount: Int,
     version: String?,
     autoUpdate: Boolean,
-    noinline onAutoUpdateChange: (Boolean) -> Unit,
-    noinline onPatchesClick: () -> Unit,
-    noinline onBundleTypeClick: () -> Unit = {},
+    onAutoUpdateChange: (Boolean) -> Unit,
+    onPatchesClick: () -> Unit,
+    onBundleTypeClick: () -> Unit = {},
     extraFields: @Composable ColumnScope.() -> Unit = {}
 ) = Column(
     modifier = Modifier
