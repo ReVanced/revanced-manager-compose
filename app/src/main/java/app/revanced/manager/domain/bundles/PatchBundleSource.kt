@@ -15,6 +15,9 @@ sealed class PatchBundleSource(val name: String, val uid: Int, directory: File) 
     protected val patchesFile = directory.resolve("patches.jar")
     protected val integrationsFile = directory.resolve("integrations.apk")
 
+    private val _state = MutableStateFlow(load())
+    val state = _state.asStateFlow()
+
     /**
      * Returns true if the bundle has been downloaded to local storage.
      */
@@ -29,12 +32,10 @@ sealed class PatchBundleSource(val name: String, val uid: Int, directory: File) 
             State.Failed(t)
         }
     }
+
     fun reload() {
         _state.value = load()
     }
-
-    private val _state = MutableStateFlow(load())
-    val state = _state.asStateFlow()
 
     sealed interface State {
         fun patchBundleOrNull(): PatchBundle? = null
