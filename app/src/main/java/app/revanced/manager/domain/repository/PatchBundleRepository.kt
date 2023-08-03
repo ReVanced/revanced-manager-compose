@@ -113,18 +113,18 @@ class PatchBundleRepository(
         addBundle(entity.load())
     }
 
-    private suspend fun getRemoteBundles() =
-        sources.first().filterIsInstance<RemotePatchBundle>()
+    private suspend inline fun <reified T> getBundlesByType() =
+        sources.first().filterIsInstance<T>()
 
     suspend fun reloadApiBundles() {
-        sources.first().filterIsInstance<APIPatchBundle>().forEach {
+        getBundlesByType<APIPatchBundle>().forEach {
             it.deleteLocalFiles()
         }
 
         reload()
     }
 
-    suspend fun redownloadRemoteBundles() = getRemoteBundles().forEach { it.downloadLatest() }
+    suspend fun redownloadRemoteBundles() = getBundlesByType<RemotePatchBundle>().forEach { it.downloadLatest() }
 
     suspend fun updateCheck() = supervisorScope {
         if (!networkInfo.isSafe()) {
@@ -132,7 +132,7 @@ class PatchBundleRepository(
             return@supervisorScope
         }
 
-        getRemoteBundles().forEach {
+        getBundlesByType<RemotePatchBundle>().forEach {
             launch {
                 if (!it.propsFlow().first().autoUpdate) return@launch
                 Log.d(tag, "Updating patch bundle: ${it.name}")
