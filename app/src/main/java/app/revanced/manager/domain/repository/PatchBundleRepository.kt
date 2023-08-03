@@ -91,8 +91,8 @@ class PatchBundleRepository(
         directoryOf(bundle.uid).deleteRecursively()
 
         _sources.update {
-            it.filterValues { value ->
-                value.uid != bundle.uid
+            it.filterKeys { key ->
+                key != bundle.uid
             }
         }
     }
