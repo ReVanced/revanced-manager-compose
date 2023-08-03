@@ -65,7 +65,7 @@ class PatchBundleRepository(
         }
     }
 
-    suspend fun load() = withContext(Dispatchers.Default) {
+    suspend fun reload() = withContext(Dispatchers.Default) {
         val entities = persistenceRepo.loadConfiguration().onEach {
             Log.d(tag, "Bundle: $it")
         }
@@ -83,7 +83,7 @@ class PatchBundleRepository(
             mkdirs()
         }
 
-        load()
+        reload()
     }
 
     suspend fun remove(bundle: PatchBundleSource) = withContext(Dispatchers.Default) {
@@ -121,7 +121,7 @@ class PatchBundleRepository(
             it.deleteLocalFiles()
         }
 
-        load()
+        reload()
     }
 
     suspend fun redownloadRemoteBundles() = getRemoteBundles().forEach { it.downloadLatest() }
