@@ -12,7 +12,7 @@ interface PatchBundleDao {
     fun getPropsById(uid: Int): Flow<BundleProperties>
 
     @Query("UPDATE patch_bundles SET version = :patches, integrations_version = :integrations WHERE uid = :uid")
-    suspend fun updateVersion(uid: Int, patches: String, integrations: String)
+    suspend fun updateVersion(uid: Int, patches: String?, integrations: String?)
 
     @Query("UPDATE patch_bundles SET auto_update = :value WHERE uid = :uid")
     suspend fun setAutoUpdate(uid: Int, value: Boolean)
@@ -23,7 +23,7 @@ interface PatchBundleDao {
     @Transaction
     suspend fun reset() {
         purgeCustomBundles()
-        updateVersion(0, "", "") // Reset the main source
+        updateVersion(0, null, null) // Reset the main source
     }
 
     @Query("DELETE FROM patch_bundles WHERE uid = :uid")
