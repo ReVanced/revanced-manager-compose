@@ -23,8 +23,11 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -35,6 +38,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.revanced.manager.R
+import app.revanced.manager.domain.bundles.PatchBundleSource
 import app.revanced.manager.ui.component.AppTopBar
 import app.revanced.manager.ui.component.bundle.ImportBundleDialog
 import app.revanced.manager.ui.viewmodel.DashboardViewModel
@@ -58,6 +62,10 @@ fun DashboardScreen(
     onSettingsClick: () -> Unit,
 ) {
     var showImportBundleDialog by rememberSaveable { mutableStateOf(false) }
+
+    val selectedSources = remember { mutableStateListOf<PatchBundleSource>() }
+    val sourcesSelectable by remember { derivedStateOf { selectedSources.size > 0 } }
+
     val pages: Array<DashboardPage> = DashboardPage.values()
     val availablePatches by vm.availablePatches.collectAsStateWithLifecycle(0)
     val androidContext = LocalContext.current
@@ -154,7 +162,17 @@ fun DashboardScreen(
                         }
 
                         DashboardPage.BUNDLES -> {
-                            BundlesScreen()
+                            BundlesScreen(
+                                sourcesSelectable = sourcesSelectable,
+                                editSelectedList = {
+                                    if(selectedSources.contains(it)) {
+                                        selectedSources.remove(it)
+                                    }
+                                    else {
+                                        selectedSources.add(it)
+                                    }
+                                }
+                            )
                         }
                     }
                 }
