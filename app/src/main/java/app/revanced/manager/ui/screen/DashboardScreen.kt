@@ -9,7 +9,9 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.Apps
+import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.HelpOutline
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Source
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -93,17 +95,38 @@ fun DashboardScreen(
 
     Scaffold(
         topBar = {
-            AppTopBar(
-                title = stringResource(R.string.app_name),
-                actions = {
-                    IconButton(onClick = {}) {
-                        Icon(Icons.Outlined.HelpOutline, stringResource(R.string.help))
+            if(sourcesSelectable) {
+                AppTopBar(
+                    title = "Some Number Selected",
+                    actions = {
+                        IconButton(onClick = {}) {
+                            Icon(
+                                Icons.Outlined.DeleteOutline,
+                                stringResource(R.string.delete)
+                            )
+                        }
+                        IconButton(onClick = {}) {
+                            Icon(
+                                Icons.Outlined.Refresh,
+                                stringResource(R.string.refresh)
+                            )
+                        }
                     }
-                    IconButton(onClick = onSettingsClick) {
-                        Icon(Icons.Outlined.Settings, stringResource(R.string.settings))
+                )
+            }
+            else {
+                AppTopBar(
+                    title = stringResource(R.string.app_name),
+                    actions = {
+                        IconButton(onClick = {}) {
+                            Icon(Icons.Outlined.HelpOutline, stringResource(R.string.help))
+                        }
+                        IconButton(onClick = onSettingsClick) {
+                            Icon(Icons.Outlined.Settings, stringResource(R.string.settings))
+                        }
                     }
-                }
-            )
+                )
+            }
         },
         floatingActionButton = {
             FloatingActionButton(
