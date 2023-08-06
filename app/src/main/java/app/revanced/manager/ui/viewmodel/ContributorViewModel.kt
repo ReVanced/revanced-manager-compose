@@ -10,16 +10,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class ContributorViewModel(private val repository: ReVancedAPI): ViewModel() {
+class ContributorViewModel(private val repository: ReVancedAPI) : ViewModel() {
     val repositories = mutableStateListOf<ReVancedGitRepository>()
+
     init {
         viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                val repos = repository.getContributors().getOrNull()
-                withContext(Dispatchers.Main) {
-                    if (repos != null) { repositories.addAll(repos) }
-                }
-            }
+            withContext(Dispatchers.IO) { repository.getContributors().getOrNull() }?.let(
+                repositories::addAll
+            )
         }
     }
 }
