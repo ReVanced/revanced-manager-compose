@@ -7,14 +7,13 @@ import app.revanced.manager.network.api.ReVancedAPI
 import app.revanced.manager.network.api.ReVancedAPI.Extensions.findAssetByType
 import app.revanced.manager.network.dto.BundleAsset
 import app.revanced.manager.network.dto.BundleInfo
-import app.revanced.manager.network.dto.ReVancedRelease
 import app.revanced.manager.network.service.HttpService
-import app.revanced.manager.network.utils.APIResponse
 import app.revanced.manager.network.utils.getOrThrow
 import app.revanced.manager.util.APK_MIMETYPE
 import app.revanced.manager.util.JAR_MIMETYPE
 import io.ktor.client.request.url
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -99,28 +98,22 @@ class APIPatchBundle(name: String, id: Int, directory: File, endpoint: String) :
     RemotePatchBundle(name, id, directory, endpoint) {
     private val api: ReVancedAPI by inject()
 
-    override suspend fun getLatestInfo(): BundleInfo {
-        var patches: BundleAsset? = null
-        var integrations: BundleAsset? = null
-
-        coroutineScope {
-            launch {
-                patches =
-                    api.getRelease("revanced-patches").toBundleAsset(JAR_MIMETYPE)
-            }
-            launch {
-                integrations = api.getRelease("revanced-integrations").toBundleAsset(APK_MIMETYPE)
-            }
+    override suspend fun getLatestInfo() = coroutineScope {
+        fun getAssetAsync(repo: String, mime: String) = async(Dispatchers.IO) {
+            api
+                .getRelease(repo)
+                .getOrThrow()
+                .let {
+                    BundleAsset(it.metadata.tag, it.findAssetByType(mime).downloadUrl)
+                }
         }
 
-        return BundleInfo(
-            patches!!,
-            integrations!!
-        )
-    }
+        val patches = getAssetAsync("revanced-patches", JAR_MIMETYPE)
+        val integrations = getAssetAsync("revanced-integrations", APK_MIMETYPE)
 
-    private companion object {
-        fun APIResponse<ReVancedRelease>.toBundleAsset(mime: String) =
-            getOrThrow().let { BundleAsset(it.metadata.tag, it.findAssetByType(mime).downloadUrl) }
+        BundleInfo(
+            patches.await(),
+            integrations.await()
+        )
     }
 }
