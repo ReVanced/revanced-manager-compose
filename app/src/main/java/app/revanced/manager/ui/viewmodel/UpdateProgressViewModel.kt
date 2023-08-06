@@ -33,7 +33,7 @@ class UpdateProgressViewModel(
     var totalSize by mutableStateOf(0L)
         private set
     val downloadProgress by derivedStateOf {
-        if (downloadedSize == 0L) return@derivedStateOf 0f
+        if (downloadedSize == 0L || totalSize == 0L) return@derivedStateOf 0f
 
         downloadedSize.toFloat() / totalSize.toFloat()
     }
