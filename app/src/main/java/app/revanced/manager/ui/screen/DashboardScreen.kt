@@ -8,6 +8,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.Apps
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.HelpOutline
@@ -42,6 +43,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.revanced.manager.R
 import app.revanced.manager.domain.bundles.PatchBundleSource
 import app.revanced.manager.ui.component.AppTopBar
+import app.revanced.manager.ui.component.bundle.BundleTopBar
 import app.revanced.manager.ui.component.bundle.ImportBundleDialog
 import app.revanced.manager.ui.viewmodel.DashboardViewModel
 import app.revanced.manager.util.toast
@@ -67,6 +69,8 @@ fun DashboardScreen(
 
     val selectedSources = remember { mutableStateListOf<PatchBundleSource>() }
     val sourcesSelectable by remember { derivedStateOf { selectedSources.size > 0 } }
+    var deleteSelectedSources by remember { mutableStateOf(false) }
+    var refreshSelectedSources by remember { mutableStateOf(false) }
 
     val pages: Array<DashboardPage> = DashboardPage.values()
     val availablePatches by vm.availablePatches.collectAsStateWithLifecycle(0)
@@ -95,17 +99,29 @@ fun DashboardScreen(
 
     Scaffold(
         topBar = {
-            if(sourcesSelectable) {
-                AppTopBar(
-                    title = "Some Number Selected",
+            if (sourcesSelectable) {
+                BundleTopBar(
+                    title = stringResource(R.string.patches_selected, selectedSources.size),
+                    onBackClick = {
+                        selectedSources.clear()
+                    },
+                    onBackIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = stringResource(R.string.back)
+                        )
+                    },
                     actions = {
-                        IconButton(onClick = {}) {
+                        IconButton(onClick = { deleteSelectedSources = true }) {
                             Icon(
                                 Icons.Outlined.DeleteOutline,
                                 stringResource(R.string.delete)
                             )
                         }
-                        IconButton(onClick = {}) {
+                        IconButton(onClick = {
+                            refreshSelectedSources = true
+                            selectedSources.clear()
+                        }) {
                             Icon(
                                 Icons.Outlined.Refresh,
                                 stringResource(R.string.refresh)
@@ -113,8 +129,7 @@ fun DashboardScreen(
                         }
                     }
                 )
-            }
-            else {
+            } else {
                 AppTopBar(
                     title = stringResource(R.string.app_name),
                     actions = {
@@ -188,13 +203,23 @@ fun DashboardScreen(
                             BundlesScreen(
                                 sourcesSelectable = sourcesSelectable,
                                 editSelectedList = {
-                                    if(selectedSources.contains(it)) {
+                                    if (selectedSources.contains(it)) {
                                         selectedSources.remove(it)
-                                    }
-                                    else {
+                                    } else {
                                         selectedSources.add(it)
                                     }
-                                }
+                                },
+                                deleteSelectedSources = deleteSelectedSources,
+                                onDeleteSelectedSources = {
+                                    deleteSelectedSources = false
+                                    selectedSources.clear()
+                                },
+                                refreshSelectedSources = refreshSelectedSources,
+                                onRefreshSelectedSources = {
+                                    refreshSelectedSources = false
+                                    selectedSources.clear()
+                                },
+                                selectedSources = selectedSources,
                             )
                         }
                     }
