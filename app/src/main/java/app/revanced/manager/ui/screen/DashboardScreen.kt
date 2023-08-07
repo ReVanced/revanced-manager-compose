@@ -71,6 +71,7 @@ fun DashboardScreen(
     val sourcesSelectable by remember { derivedStateOf { selectedSources.size > 0 } }
     var deleteSelectedSources by remember { mutableStateOf(false) }
     var refreshSelectedSources by remember { mutableStateOf(false) }
+    var clearAllCheckBoxes by remember { mutableStateOf(false) }
 
     val pages: Array<DashboardPage> = DashboardPage.values()
     val availablePatches by vm.availablePatches.collectAsStateWithLifecycle(0)
@@ -103,6 +104,7 @@ fun DashboardScreen(
                 BundleTopBar(
                     title = stringResource(R.string.patches_selected, selectedSources.size),
                     onBackClick = {
+                        clearAllCheckBoxes = true
                         selectedSources.clear()
                     },
                     onBackIcon = {
@@ -120,6 +122,7 @@ fun DashboardScreen(
                         }
                         IconButton(onClick = {
                             refreshSelectedSources = true
+                            clearAllCheckBoxes = true
                             selectedSources.clear()
                         }) {
                             Icon(
@@ -220,6 +223,10 @@ fun DashboardScreen(
                                     selectedSources.clear()
                                 },
                                 selectedSources = selectedSources,
+                                clearAllCheckBoxes = clearAllCheckBoxes,
+                                onClearAllCheckBoxes = {
+                                    clearAllCheckBoxes = false
+                                }
                             )
                         }
                     }

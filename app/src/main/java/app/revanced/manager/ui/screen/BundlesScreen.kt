@@ -4,6 +4,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -22,6 +25,8 @@ fun BundlesScreen(
     onDeleteSelectedSources: () -> Unit,
     refreshSelectedSources: Boolean,
     onRefreshSelectedSources: () -> Unit,
+    clearAllCheckBoxes: Boolean,
+    onClearAllCheckBoxes: () -> Unit,
     selectedSources: SnapshotStateList<PatchBundleSource>,
 ) {
     val sources by vm.sources.collectAsStateWithLifecycle(initialValue = emptyList())
@@ -42,11 +47,18 @@ fun BundlesScreen(
         onRefreshSelectedSources()
     }
 
+
     Column(
         modifier = Modifier
             .fillMaxSize(),
     ) {
         sources.forEach {
+            var checkBoxTicked by rememberSaveable { mutableStateOf(false) }
+
+            if(clearAllCheckBoxes) {
+                checkBoxTicked = false
+                onClearAllCheckBoxes()
+            }
             BundleItem(
                 bundle = it,
                 onDelete = {
@@ -58,7 +70,10 @@ fun BundlesScreen(
                 sourcesSelectable = sourcesSelectable,
                 editSelectedList = {
                     editSelectedList(it)
-                }
+                },
+                checkBoxTicked = checkBoxTicked,
+                onCheckBoxTicked = { checkBoxTicked = true },
+                reAssignCheckBoxTicked = { newCheckBoxValue -> checkBoxTicked = newCheckBoxValue }
             )
         }
     }

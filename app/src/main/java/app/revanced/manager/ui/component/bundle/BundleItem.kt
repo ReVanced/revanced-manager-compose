@@ -37,10 +37,12 @@ fun BundleItem(
     onDelete: () -> Unit,
     onUpdate: () -> Unit,
     sourcesSelectable: Boolean,
-    editSelectedList: () -> Unit
+    editSelectedList: () -> Unit,
+    checkBoxTicked: Boolean,
+    onCheckBoxTicked: () -> Unit,
+    reAssignCheckBoxTicked: (Boolean) -> Unit,
 ) {
     var viewBundleDialogPage by rememberSaveable { mutableStateOf(false) }
-    var checkBoxTicked by rememberSaveable { mutableStateOf(false) }
     val state by bundle.state.collectAsStateWithLifecycle()
 
     val version by remember(bundle) {
@@ -68,7 +70,7 @@ fun BundleItem(
                     viewBundleDialogPage = true
                 },
                 onLongClick = {
-                    checkBoxTicked = true
+                    onCheckBoxTicked()
                     editSelectedList()
                 },
             ),
@@ -77,7 +79,7 @@ fun BundleItem(
                 Checkbox(
                     checked = checkBoxTicked,
                     onCheckedChange = {
-                        checkBoxTicked = it
+                        reAssignCheckBoxTicked(it)
                         editSelectedList()
                     }
                 )
