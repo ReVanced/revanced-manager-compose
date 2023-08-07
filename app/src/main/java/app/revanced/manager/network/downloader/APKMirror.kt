@@ -211,7 +211,7 @@ class APKMirror : AppDownloader, KoinComponent {
 
             val variant = orderedAPKTypes.firstNotNullOfOrNull { apkType ->
                 supportedArches.firstNotNullOfOrNull { arch ->
-                    variants.find { it.arch == arch && it.apkType == apkType }
+                    variants.find { it.arch == arch && it.apkType == APKType.APK } // TEMPORARY: Only accept APKType.APK since Bundles are not currently supported; replace APKType.APK with apkType once bundles are supported
                 }
             } ?: throw Exception("No compatible variant found")
 
