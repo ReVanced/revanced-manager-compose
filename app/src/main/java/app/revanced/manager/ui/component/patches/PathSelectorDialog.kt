@@ -59,7 +59,7 @@ fun PathSelectorDialog(root: Path, onSelect: (Path?) -> Unit) {
         Scaffold(
             topBar = {
                 AppTopBar(
-                    title = stringResource(R.string.select_file),
+                    title = stringResource(R.string.path_selector),
                     onBackClick = { onSelect(null) },
                     backIcon = {
                         Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.close))
@@ -78,8 +78,7 @@ fun PathSelectorDialog(root: Path, onSelect: (Path?) -> Unit) {
                     PathItem(
                         onClick = { onSelect(currentDirectory) },
                         icon = Icons.Outlined.Folder,
-                        name = currentDirectory.toString(),
-                        description = "Click to select this directory"
+                        name = currentDirectory.toString()
                     )
                 }
 
@@ -88,14 +87,14 @@ fun PathSelectorDialog(root: Path, onSelect: (Path?) -> Unit) {
                         PathItem(
                             onClick = { currentDirectory = currentDirectory.parent },
                             icon = Icons.Outlined.ArrowBack,
-                            name = "Previous directory",
+                            name = stringResource(R.string.path_selector_parent_dir)
                         )
                     }
                 }
 
                 if (directories.isNotEmpty()) {
                     item(key = "dirs_header") {
-                        GroupHeader(title = "Directories")
+                        GroupHeader(title = stringResource(R.string.path_selector_dirs))
                     }
                 }
                 items(directories, key = { it.absolutePathString() }) {
@@ -108,14 +107,14 @@ fun PathSelectorDialog(root: Path, onSelect: (Path?) -> Unit) {
 
                 if (files.isNotEmpty()) {
                     item(key = "files_header") {
-                        GroupHeader(title = "Files")
+                        GroupHeader(title = stringResource(R.string.path_selector_files))
                     }
                 }
                 items(files, key = { it.absolutePathString() }) {
                     PathItem(
                         onClick = { onSelect(it) },
                         icon = Icons.Outlined.InsertDriveFile,
-                        name = it.name,
+                        name = it.name
                     )
                 }
             }
@@ -127,13 +126,11 @@ fun PathSelectorDialog(root: Path, onSelect: (Path?) -> Unit) {
 private fun PathItem(
     onClick: () -> Unit,
     icon: ImageVector,
-    name: String,
-    description: String? = null
+    name: String
 ) {
     ListItem(
         modifier = Modifier.clickable(onClick = onClick),
         headlineContent = { Text(name) },
-        leadingContent = { Icon(icon, contentDescription = null) },
-        supportingContent = description?.let { { Text(it) } }
+        leadingContent = { Icon(icon, contentDescription = null) }
     )
 }

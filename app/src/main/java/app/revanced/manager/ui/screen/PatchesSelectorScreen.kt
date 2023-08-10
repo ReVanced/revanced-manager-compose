@@ -49,7 +49,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.revanced.manager.R
 import app.revanced.manager.patcher.patch.PatchInfo
 import app.revanced.manager.ui.component.AppTopBar
-import app.revanced.manager.ui.component.patches.OptionField
+import app.revanced.manager.ui.component.patches.OptionItem
 import app.revanced.manager.ui.viewmodel.PatchesSelectorViewModel
 import app.revanced.manager.ui.viewmodel.PatchesSelectorViewModel.Companion.SHOW_SUPPORTED
 import app.revanced.manager.ui.viewmodel.PatchesSelectorViewModel.Companion.SHOW_UNIVERSAL
@@ -359,27 +359,12 @@ fun OptionsDialog(
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
         ) {
-            patch.options?.forEach {
-                ListItem(
-                    headlineContent = { Text(it.title) },
-                    supportingContent = { Text(it.description) },
-                    overlineContent = {
-                        Button(onClick = { unset(it.key) }) {
-                            Text("reset")
-                        }
-                    },
-                    trailingContent = {
-                        val key = it.key
-                        val value =
-                            if (values == null || !values.contains(key)) it.defaultValue else values[key]
+            patch.options?.forEach { option ->
+                val key = option.key
+                val value =
+                    if (values == null || !values.contains(key)) option.defaultValue else values[key]
 
-                        OptionField(option = it, value = value, setValue = { set(key, it) })
-                    }
-                )
-            }
-
-            TextButton(onClick = onDismissRequest) {
-                Text(stringResource(R.string.apply))
+                OptionItem(option = option, value = value, setValue = { set(key, it) })
             }
         }
     }
