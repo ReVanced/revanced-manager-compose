@@ -90,6 +90,7 @@
 
     <string name="options">Options</string>
     <string name="ok">OK</string>
+    <string name="reset">Reset</string>
     <string name="patch">Patch</string>
     <string name="select_from_storage">Select from storage</string>
     <string name="search">Search</string>

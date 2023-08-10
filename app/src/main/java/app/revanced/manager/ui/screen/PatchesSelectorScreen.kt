@@ -18,6 +18,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.outlined.HelpOutline
+import androidx.compose.material.icons.outlined.Restore
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.AlertDialog
@@ -82,8 +83,8 @@ fun PatchesSelectorScreen(
             onDismissRequest = vm::dismissDialogs,
             patch = patch,
             values = vm.getOptions(bundle, patch),
-            set = { key, value -> vm.setOption(bundle, patch, key, value) },
-            unset = { vm.unsetOption(bundle, patch, it) }
+            reset = { vm.resetOptions(bundle, patch) },
+            set = { key, value -> vm.setOption(bundle, patch, key, value) }
         )
     }
 
@@ -336,7 +337,7 @@ fun UnsupportedDialog(
 fun OptionsDialog(
     patch: PatchInfo,
     values: Map<String, Any?>?,
-    unset: (String) -> Unit,
+    reset: () -> Unit,
     set: (String, Any?) -> Unit,
     onDismissRequest: () -> Unit,
 ) = Dialog(
@@ -350,7 +351,12 @@ fun OptionsDialog(
         topBar = {
             AppTopBar(
                 title = patch.name,
-                onBackClick = onDismissRequest
+                onBackClick = onDismissRequest,
+                actions = {
+                    IconButton(onClick = reset) {
+                        Icon(Icons.Outlined.Restore, stringResource(R.string.reset))
+                    }
+                }
             )
         }
     ) { paddingValues ->
