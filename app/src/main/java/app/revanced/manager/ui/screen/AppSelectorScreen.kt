@@ -49,7 +49,11 @@ fun AppSelectorScreen(
     val pickApkLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             uri?.let { apkUri ->
-                vm.loadSelectedFile(apkUri)?.let(onStorageClick) ?: context.toast(context.getString(R.string.failed_to_load_apk))
+                vm.loadSelectedFile(apkUri)?.let(onStorageClick) ?: context.toast(
+                    context.getString(
+                        R.string.failed_to_load_apk
+                    )
+                )
             }
         }
 
@@ -88,24 +92,39 @@ fun AppSelectorScreen(
                 LazyColumn(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    if (appList.isNotEmpty()) {
+                    if (appList.isNotEmpty() && filterText.isNotEmpty()) {
                         items(
                             items = filteredAppList,
                             key = { it.packageName }
                         ) { app ->
-
                             ListItem(
                                 modifier = Modifier.clickable { onAppClick(app.packageName) },
-                                leadingContent = { AppIcon(app.packageInfo, null, Modifier.size(36.dp)) },
+                                leadingContent = {
+                                    AppIcon(
+                                        app.packageInfo,
+                                        null,
+                                        Modifier.size(36.dp)
+                                    )
+                                },
                                 headlineContent = { AppLabel(app.packageInfo) },
                                 supportingContent = { Text(app.packageName) },
-                                trailingContent = app.patches?.let { { Text(pluralStringResource(R.plurals.patches_count, it, it)) } }
+                                trailingContent = app.patches?.let {
+                                    {
+                                        Text(
+                                            pluralStringResource(
+                                                R.plurals.patches_count,
+                                                it,
+                                                it
+                                            )
+                                        )
+                                    }
+                                }
                             )
 
                         }
                     } else {
                         item {
-                            LoadingIndicator()
+                            /* TODO: DO THIS THING */
                         }
                     }
                 }
@@ -167,7 +186,17 @@ fun AppSelectorScreen(
                         leadingContent = { AppIcon(app.packageInfo, null, Modifier.size(36.dp)) },
                         headlineContent = { AppLabel(app.packageInfo) },
                         supportingContent = { Text(app.packageName) },
-                        trailingContent = app.patches?.let { { Text(pluralStringResource(R.plurals.patches_count, it, it)) } }
+                        trailingContent = app.patches?.let {
+                            {
+                                Text(
+                                    pluralStringResource(
+                                        R.plurals.patches_count,
+                                        it,
+                                        it
+                                    )
+                                )
+                            }
+                        }
                     )
 
                 }
