@@ -13,8 +13,6 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.outlined.HelpOutline
@@ -22,7 +20,6 @@ import androidx.compose.material.icons.outlined.Restore
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -360,12 +357,12 @@ fun OptionsDialog(
             )
         }
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
+        LazyColumn(
+            modifier = Modifier.padding(paddingValues)
         ) {
-            patch.options?.forEach { option ->
+            if (patch.options == null) return@LazyColumn
+
+            items(patch.options, key = { it.key }) { option ->
                 val key = option.key
                 val value =
                     if (values == null || !values.contains(key)) option.defaultValue else values[key]
