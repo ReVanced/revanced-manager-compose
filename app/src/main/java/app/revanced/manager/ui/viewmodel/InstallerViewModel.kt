@@ -64,7 +64,7 @@ class InstallerViewModel(input: Destination.Installer) : ViewModel(), KoinCompon
     var installedPackageName by mutableStateOf<String?>(null)
         private set
     val appButtonText by derivedStateOf { if (installedPackageName == null) R.string.install_app else R.string.open_app }
-    private val selectedInstaller by derivedStateOf { prefs.installer.getBlocking() }
+    private val selectedInstaller by derivedStateOf { prefs.defaultInstaller.getBlocking() }
 
     private val workManager = WorkManager.getInstance(app)
 

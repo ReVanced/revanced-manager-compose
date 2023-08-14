@@ -27,7 +27,7 @@ class PreferencesManager(
     val keystorePass = stringPreference("keystore_pass", KeystoreManager.DEFAULT)
 
     val preferSplits = booleanPreference("prefer_splits", false)
-    val installer = enumPreference("installer", InstallerManager.DEFAULT)
+    val defaultInstaller = enumPreference("installer", InstallerManager.DEFAULT)
 
     val showAutoUpdatesDialog = booleanPreference("show_auto_updates_dialog", true)
     val managerAutoUpdates = booleanPreference("manager_auto_updates", false)

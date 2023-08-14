@@ -1,7 +1,9 @@
 package app.revanced.manager.ui.screen.settings
 
 import android.app.ActivityManager
+import android.content.Context
 import android.os.Build
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -41,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.getSystemService
 import app.revanced.manager.R
 import app.revanced.manager.domain.manager.PreferencesManager
+import app.revanced.manager.service.ShizukuApi
 import app.revanced.manager.ui.component.AppTopBar
 import app.revanced.manager.ui.component.GroupHeader
 import app.revanced.manager.ui.viewmodel.AdvancedSettingsViewModel
@@ -50,8 +53,7 @@ import org.koin.compose.koinInject
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdvancedSettingsScreen(
-    onBackClick: () -> Unit,
-    vm: AdvancedSettingsViewModel = getViewModel()
+    onBackClick: () -> Unit, vm: AdvancedSettingsViewModel = getViewModel()
 ) {
     val prefs = vm.prefs
     val context = LocalContext.current
@@ -66,20 +68,15 @@ fun AdvancedSettingsScreen(
     }
 
     if (showInstallerPicker) {
-        InstallerPicker(
-            onDismiss = { showInstallerPicker = false },
-            onConfirm = { vm.setInstaller(it) }
-        )
+        InstallerPicker(onDismiss = { showInstallerPicker = false },
+            onConfirm = { vm.setInstaller(it) })
     }
 
-    Scaffold(
-        topBar = {
-            AppTopBar(
-                title = stringResource(R.string.advanced),
-                onBackClick = onBackClick
-            )
-        }
-    ) { paddingValues ->
+    Scaffold(topBar = {
+        AppTopBar(
+            title = stringResource(R.string.advanced), onBackClick = onBackClick
+        )
+    }) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -95,65 +92,46 @@ fun AdvancedSettingsScreen(
                     it?.let(vm::setApiUrl)
                 }
             }
-            ListItem(
-                headlineContent = { Text(stringResource(R.string.api_url)) },
+            ListItem(headlineContent = { Text(stringResource(R.string.api_url)) },
                 supportingContent = { Text(apiUrl) },
                 modifier = Modifier.clickable {
                     showApiUrlDialog = true
-                }
-            )
+                })
 
             GroupHeader(stringResource(R.string.patch_bundles_section))
-            ListItem(
-                headlineContent = { Text(stringResource(R.string.patch_bundles_redownload)) },
+            ListItem(headlineContent = { Text(stringResource(R.string.patch_bundles_redownload)) },
                 modifier = Modifier.clickable {
                     vm.redownloadBundles()
-                }
-            )
-            ListItem(
-                headlineContent = { Text(stringResource(R.string.patch_bundles_reset)) },
+                })
+            ListItem(headlineContent = { Text(stringResource(R.string.patch_bundles_reset)) },
                 modifier = Modifier.clickable {
                     vm.resetBundles()
-                }
-            )
+                })
 
-            val installer by prefs.installer.getAsState()
+            val installer by prefs.defaultInstaller.getAsState()
             GroupHeader(stringResource(R.string.installer))
-            ListItem(
-                modifier = Modifier.clickable { showInstallerPicker = true },
+            ListItem(modifier = Modifier.clickable { showInstallerPicker = true },
                 headlineContent = { Text(stringResource(R.string.installer)) },
                 supportingContent = { Text(stringResource(R.string.installer_description)) },
                 trailingContent = {
-                    FilledTonalButton(
-                        colors = ButtonDefaults.filledTonalButtonColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        ),
-                        onClick = {
-                            showInstallerPicker = true
-                        }
-                    ) {
+                    FilledTonalButton(colors = ButtonDefaults.filledTonalButtonColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    ), onClick = {
+                        showInstallerPicker = true
+                    }) {
                         Text(stringResource(installer.displayName))
                     }
-                }
-            )
+                })
 
             GroupHeader(stringResource(R.string.device))
-            ListItem(
-                headlineContent = { Text(stringResource(R.string.device_model)) },
-                supportingContent = { Text(Build.MODEL) }
-            )
-            ListItem(
-                headlineContent = { Text(stringResource(R.string.device_android_version)) },
-                supportingContent = { Text(Build.VERSION.RELEASE) }
-            )
-            ListItem(
-                headlineContent = { Text(stringResource(R.string.device_architectures)) },
-                supportingContent = { Text(Build.SUPPORTED_ABIS.joinToString(", ")) }
-            )
-            ListItem(
-                headlineContent = { Text(stringResource(R.string.device_memory_limit)) },
-                supportingContent = { Text(memoryLimit) }
-            )
+            ListItem(headlineContent = { Text(stringResource(R.string.device_model)) },
+                supportingContent = { Text(Build.MODEL) })
+            ListItem(headlineContent = { Text(stringResource(R.string.device_android_version)) },
+                supportingContent = { Text(Build.VERSION.RELEASE) })
+            ListItem(headlineContent = { Text(stringResource(R.string.device_architectures)) },
+                supportingContent = { Text(Build.SUPPORTED_ABIS.joinToString(", ")) })
+            ListItem(headlineContent = { Text(stringResource(R.string.device_memory_limit)) },
+                supportingContent = { Text(memoryLimit) })
         }
     }
 }
@@ -162,54 +140,43 @@ fun AdvancedSettingsScreen(
 private fun APIUrlDialog(currentUrl: String, onSubmit: (String?) -> Unit) {
     var url by rememberSaveable(currentUrl) { mutableStateOf(currentUrl) }
 
-    AlertDialog(
-        onDismissRequest = { onSubmit(null) },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    onSubmit(url)
-                }
-            ) {
-                Text(stringResource(R.string.api_url_dialog_save))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = { onSubmit(null) }) {
-                Text(stringResource(R.string.cancel))
-            }
-        },
-        icon = {
-            Icon(Icons.Outlined.Http, null)
-        },
-        title = {
-            Text(
-                text = stringResource(R.string.api_url_dialog_title),
-                style = MaterialTheme.typography.headlineSmall.copy(textAlign = TextAlign.Center),
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-        },
-        text = {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Text(
-                    text = stringResource(R.string.api_url_dialog_description),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = stringResource(R.string.api_url_dialog_warning),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.error
-                )
-                OutlinedTextField(
-                    value = url,
-                    onValueChange = { url = it },
-                    label = { Text(stringResource(R.string.api_url)) }
-                )
-            }
+    AlertDialog(onDismissRequest = { onSubmit(null) }, confirmButton = {
+        TextButton(onClick = {
+            onSubmit(url)
+        }) {
+            Text(stringResource(R.string.api_url_dialog_save))
         }
-    )
+    }, dismissButton = {
+        TextButton(onClick = { onSubmit(null) }) {
+            Text(stringResource(R.string.cancel))
+        }
+    }, icon = {
+        Icon(Icons.Outlined.Http, null)
+    }, title = {
+        Text(
+            text = stringResource(R.string.api_url_dialog_title),
+            style = MaterialTheme.typography.headlineSmall.copy(textAlign = TextAlign.Center),
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+    }, text = {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.api_url_dialog_description),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = stringResource(R.string.api_url_dialog_warning),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.error
+            )
+            OutlinedTextField(value = url,
+                onValueChange = { url = it },
+                label = { Text(stringResource(R.string.api_url)) })
+        }
+    })
 }
 
 @Composable
@@ -218,10 +185,10 @@ private fun InstallerPicker(
     onConfirm: (PreferencesManager.InstallerManager) -> Unit,
     prefs: PreferencesManager = koinInject()
 ) {
-    var selectedInstaller by rememberSaveable { mutableStateOf(prefs.installer.getBlocking()) }
+    var selectedInstaller by rememberSaveable { mutableStateOf(prefs.defaultInstaller.getBlocking()) }
+    val context: Context = LocalContext.current
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
+    AlertDialog(onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.installer)) },
         text = {
             Column {
@@ -232,8 +199,7 @@ private fun InstallerPicker(
                             .clickable { selectedInstaller = it },
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        RadioButton(
-                            selected = selectedInstaller == it,
+                        RadioButton(selected = selectedInstaller == it,
                             onClick = { selectedInstaller = it })
                         Text(stringResource(it.displayName))
                     }
@@ -242,11 +208,16 @@ private fun InstallerPicker(
         },
         confirmButton = {
             Button(onClick = {
+                if (selectedInstaller == PreferencesManager.InstallerManager.SHIZUKU && !ShizukuApi.isShizukuPermissionGranted()) {
+                    Toast.makeText(
+                        context, R.string.shizuku_unavailable, Toast.LENGTH_SHORT
+                    ).show()
+                    return@Button
+                }
                 onConfirm(selectedInstaller)
                 onDismiss()
             }) {
                 Text(stringResource(R.string.apply))
             }
-        }
-    )
+        })
 }

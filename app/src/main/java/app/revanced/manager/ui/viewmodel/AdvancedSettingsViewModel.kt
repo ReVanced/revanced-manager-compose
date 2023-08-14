@@ -36,6 +36,6 @@ class AdvancedSettingsViewModel(
     }
 
     fun setInstaller(installer: PreferencesManager.InstallerManager) = viewModelScope.launch {
-        prefs.installer.update(installer)
+        prefs.defaultInstaller.update(installer)
     }
 }
