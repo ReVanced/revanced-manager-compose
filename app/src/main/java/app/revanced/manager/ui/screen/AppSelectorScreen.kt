@@ -139,7 +139,7 @@ fun AppSelectorScreen(
                         )
 
                         Text(
-                            text = "Type anything to continue",
+                            text = stringResource(R.string.type_anything),
                             style = MaterialTheme.typography.bodyLarge
                         )
                     }

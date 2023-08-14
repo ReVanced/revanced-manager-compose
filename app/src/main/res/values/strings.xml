@@ -92,7 +92,8 @@
     <string name="ok">OK</string>
     <string name="patch">Patch</string>
     <string name="select_from_storage">Select from storage</string>
-    <string name="select_an_installation_file">Select and installation file using file picker</string>
+    <string name="select_an_installation_file">Select an installation file using file picker</string>
+    <string name="type_anything">Type anything to continue</string>
     <string name="search">Search</string>
     <string name="apply">Apply</string>
     <string name="help">Help</string>
