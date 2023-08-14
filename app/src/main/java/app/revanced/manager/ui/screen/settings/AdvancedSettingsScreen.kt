@@ -5,18 +5,24 @@ import android.os.Build
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Http
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -26,6 +32,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -33,10 +40,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.getSystemService
 import app.revanced.manager.R
+import app.revanced.manager.domain.manager.PreferencesManager
 import app.revanced.manager.ui.component.AppTopBar
 import app.revanced.manager.ui.component.GroupHeader
 import app.revanced.manager.ui.viewmodel.AdvancedSettingsViewModel
 import org.koin.androidx.compose.getViewModel
+import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,13 +53,22 @@ fun AdvancedSettingsScreen(
     onBackClick: () -> Unit,
     vm: AdvancedSettingsViewModel = getViewModel()
 ) {
+    val prefs = vm.prefs
     val context = LocalContext.current
+    var showInstallerPicker by rememberSaveable { mutableStateOf(false) }
     val memoryLimit = remember {
         val activityManager = context.getSystemService<ActivityManager>()!!
         context.getString(
             R.string.device_memory_limit_format,
             activityManager.memoryClass,
             activityManager.largeMemoryClass
+        )
+    }
+
+    if (showInstallerPicker) {
+        InstallerPicker(
+            onDismiss = { showInstallerPicker = false },
+            onConfirm = { vm.setInstaller(it) }
         )
     }
 
@@ -96,6 +114,26 @@ fun AdvancedSettingsScreen(
                 headlineContent = { Text(stringResource(R.string.patch_bundles_reset)) },
                 modifier = Modifier.clickable {
                     vm.resetBundles()
+                }
+            )
+
+            val installer by prefs.installer.getAsState()
+            GroupHeader(stringResource(R.string.installer))
+            ListItem(
+                modifier = Modifier.clickable { showInstallerPicker = true },
+                headlineContent = { Text(stringResource(R.string.installer)) },
+                supportingContent = { Text(stringResource(R.string.installer_description)) },
+                trailingContent = {
+                    FilledTonalButton(
+                        colors = ButtonDefaults.filledTonalButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        ),
+                        onClick = {
+                            showInstallerPicker = true
+                        }
+                    ) {
+                        Text(stringResource(installer.displayName))
+                    }
                 }
             )
 
@@ -169,6 +207,45 @@ private fun APIUrlDialog(currentUrl: String, onSubmit: (String?) -> Unit) {
                     onValueChange = { url = it },
                     label = { Text(stringResource(R.string.api_url)) }
                 )
+            }
+        }
+    )
+}
+
+@Composable
+private fun InstallerPicker(
+    onDismiss: () -> Unit,
+    onConfirm: (PreferencesManager.InstallerManager) -> Unit,
+    prefs: PreferencesManager = koinInject()
+) {
+    var selectedInstaller by rememberSaveable { mutableStateOf(prefs.installer.getBlocking()) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.installer)) },
+        text = {
+            Column {
+                PreferencesManager.InstallerManager.values().forEach {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { selectedInstaller = it },
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = selectedInstaller == it,
+                            onClick = { selectedInstaller = it })
+                        Text(stringResource(it.displayName))
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(onClick = {
+                onConfirm(selectedInstaller)
+                onDismiss()
+            }) {
+                Text(stringResource(R.string.apply))
             }
         }
     )

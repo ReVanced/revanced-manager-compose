@@ -12,7 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class AdvancedSettingsViewModel(
-    prefs: PreferencesManager,
+    val prefs: PreferencesManager,
     private val app: Application,
     private val patchBundleRepository: PatchBundleRepository
 ) : ViewModel() {
@@ -33,5 +33,9 @@ class AdvancedSettingsViewModel(
 
     fun resetBundles() = viewModelScope.launch {
         patchBundleRepository.reset()
+    }
+
+    fun setInstaller(installer: PreferencesManager.InstallerManager) = viewModelScope.launch {
+        prefs.installer.update(installer)
     }
 }
