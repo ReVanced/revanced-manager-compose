@@ -89,10 +89,13 @@ fun AppSelectorScreen(
                 }
             },
             content = {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    if (appList.isNotEmpty() && filterText.isNotEmpty()) {
+
+                if (appList.isNotEmpty() && filterText.isNotEmpty()) {
+
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+
                         items(
                             items = filteredAppList,
                             key = { it.packageName }
@@ -122,12 +125,26 @@ fun AppSelectorScreen(
                             )
 
                         }
-                    } else {
-                        item {
-                            /* TODO: DO THIS THING */
-                        }
+                    }
+                } else {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Search,
+                            contentDescription = stringResource(R.string.search),
+                            modifier = Modifier.size(64.dp)
+                        )
+
+                        Text(
+                            text = "Type anything to continue",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
                     }
                 }
+
             }
         )
     }
