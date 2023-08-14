@@ -32,6 +32,7 @@ import app.revanced.manager.util.tag
 import app.revanced.manager.util.toast
 import app.revanced.patcher.logging.Logger
 import kotlinx.collections.immutable.ImmutableList
+import app.revanced.manager.service.ShizukuApi
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -123,7 +124,7 @@ class InstallerViewModel(input: Destination.Installer) : ViewModel(), KoinCompon
             }
         }
     }
-
+    
     init {
         app.registerReceiver(installBroadcastReceiver, IntentFilter().apply {
             addAction(InstallService.APP_INSTALL_ACTION)
@@ -188,7 +189,9 @@ class InstallerViewModel(input: Destination.Installer) : ViewModel(), KoinCompon
         isInstalling = true
         try {
             if (!signApk()) return@launch
-            pm.installApp(listOf(signedFile))
+//
+//            pm.installApp(listOf(signedFile))
+            ShizukuApi.installPackage(signedFile)
         } finally {
             isInstalling = false
         }

@@ -144,4 +144,10 @@ dependencies {
 
     // Markdown to HTML
     implementation(libs.markdown)
+
+    // Shizuku
+    implementation("dev.rikka.shizuku:api:13.1.2")
+    implementation("dev.rikka.shizuku:provider:13.1.2")
+    implementation("dev.rikka.tools.refine:runtime:4.3.0")
+    compileOnly("dev.rikka.hidden:stub:4.2.0")
 }

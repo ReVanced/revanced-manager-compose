@@ -39,6 +39,7 @@ import app.revanced.manager.ui.component.AppTopBar
 import app.revanced.manager.ui.component.bundle.ImportBundleDialog
 import app.revanced.manager.ui.viewmodel.DashboardViewModel
 import app.revanced.manager.util.toast
+import app.revanced.manager.ui.component.ShizukuCard
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.getViewModel
 
@@ -141,7 +142,7 @@ fun DashboardScreen(
                     )
                 }
             }
-
+            ShizukuCard()
             HorizontalPager(
                 pageCount = pages.size,
                 state = pagerState,
