@@ -23,10 +23,10 @@ sealed interface Destination : Parcelable {
     object Settings : Destination
 
     @Parcelize
-    data class VersionSelector(val packageName: String) : Destination
+    data class VersionSelector(val packageName: String, val patchesSelection: PatchesSelection? = null) : Destination
 
     @Parcelize
-    data class PatchesSelector(val selectedApp: SelectedApp) : Destination
+    data class PatchesSelector(val selectedApp: SelectedApp, val patchesSelection: PatchesSelection? = null) : Destination
 
     @Parcelize
     data class Installer(val selectedApp: SelectedApp, val selectedPatches: PatchesSelection, val options: @RawValue Options) : Destination

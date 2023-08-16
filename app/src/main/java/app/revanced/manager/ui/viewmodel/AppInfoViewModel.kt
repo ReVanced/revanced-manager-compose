@@ -18,6 +18,7 @@ import app.revanced.manager.data.room.apps.installed.InstalledApp
 import app.revanced.manager.domain.repository.InstalledAppRepository
 import app.revanced.manager.service.UninstallService
 import app.revanced.manager.util.PM
+import app.revanced.manager.util.PatchesSelection
 import app.revanced.manager.util.toast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -37,6 +38,7 @@ class AppInfoViewModel(
 
     var appInfo: PackageInfo? by mutableStateOf(null)
         private set
+    var appliedPatches: PatchesSelection? by mutableStateOf(null)
 
     fun launch() = pm.launch(installedApp.currentPackageName)
 
@@ -73,6 +75,12 @@ class AppInfoViewModel(
         viewModelScope.launch(Dispatchers.Main) {
             appInfo = withContext(Dispatchers.IO) {
                 app.packageManager.getPackageInfo(installedApp.currentPackageName, 0)
+            }
+        }
+
+        viewModelScope.launch(Dispatchers.Main) {
+            appliedPatches = withContext(Dispatchers.IO) {
+                installedAppRepository.getAppliedPatches(installedApp.currentPackageName)
             }
         }
 

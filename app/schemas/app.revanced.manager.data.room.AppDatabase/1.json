@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "7142188e25ce489eb233aed8fb76e4cc",
+    "identityHash": "c170ae11981cd34589405aa190f154bf",
     "entities": [
       {
         "tableName": "patch_bundles",
@@ -228,12 +228,69 @@
         },
         "indices": [],
         "foreignKeys": []
+      },
+      {
+        "tableName": "applied_patch",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`package_name` TEXT NOT NULL, `bundle_uid` INTEGER NOT NULL, `patch_name` TEXT NOT NULL, PRIMARY KEY(`package_name`, `bundle_uid`, `patch_name`), FOREIGN KEY(`package_name`) REFERENCES `installed_app`(`current_package_name`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`bundle_uid`) REFERENCES `patch_bundles`(`uid`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "fields": [
+          {
+            "fieldPath": "packageName",
+            "columnName": "package_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bundleUid",
+            "columnName": "bundle_uid",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "patchName",
+            "columnName": "patch_name",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "package_name",
+            "bundle_uid",
+            "patch_name"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": [
+          {
+            "table": "installed_app",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "package_name"
+            ],
+            "referencedColumns": [
+              "current_package_name"
+            ]
+          },
+          {
+            "table": "patch_bundles",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "bundle_uid"
+            ],
+            "referencedColumns": [
+              "uid"
+            ]
+          }
+        ]
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7142188e25ce489eb233aed8fb76e4cc')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c170ae11981cd34589405aa190f154bf')"
     ]
   }
 }

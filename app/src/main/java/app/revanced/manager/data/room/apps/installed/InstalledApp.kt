@@ -4,11 +4,12 @@ import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import app.revanced.manager.R
 import kotlinx.parcelize.Parcelize
 
-enum class InstallType(val displayName: String) {
-    DEFAULT("Default"),
-    ROOT("Root")
+enum class InstallType(val stringResource: Int) {
+    DEFAULT(R.string.default_install),
+    ROOT(R.string.root_install)
 }
 
 @Parcelize

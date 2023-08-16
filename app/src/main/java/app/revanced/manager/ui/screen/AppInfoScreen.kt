@@ -36,11 +36,12 @@ import app.revanced.manager.ui.component.AppLabel
 import app.revanced.manager.ui.component.AppTopBar
 import app.revanced.manager.ui.component.SegmentedButton
 import app.revanced.manager.ui.viewmodel.AppInfoViewModel
+import app.revanced.manager.util.PatchesSelection
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppInfoScreen(
-    onPatchClick: (packageName: String) -> Unit,
+    onPatchClick: (packageName: String, patchesSelection: PatchesSelection) -> Unit,
     onBackClick: () -> Unit,
     viewModel: AppInfoViewModel
 ) {
@@ -106,7 +107,11 @@ fun AppInfoScreen(
                 SegmentedButton(
                     icon = Icons.Outlined.Update,
                     text = stringResource(R.string.repatch),
-                    onClick = { onPatchClick(viewModel.installedApp.originalPackageName) }
+                    onClick = {
+                        viewModel.appliedPatches?.let {
+                            onPatchClick(viewModel.installedApp.originalPackageName, it)
+                        }
+                    }
                 )
             }
 
@@ -116,10 +121,16 @@ fun AppInfoScreen(
                 ListItem(
                     modifier = Modifier.clickable {  },
                     headlineContent = { Text(stringResource(R.string.applied_patches)) },
-                    supportingContent = { Text(pluralStringResource(
-                        id = R.plurals.applied_patches, 420, 420 
-                    )) },
-                    trailingContent = { Icon(Icons.Filled.ArrowRight, contentDescription = null) }
+                    supportingContent = {
+                        Text(
+                            pluralStringResource(
+                                id = R.plurals.applied_patches,
+                                viewModel.appliedPatches?.values?.sumOf { it.size } ?: 0,
+                                viewModel.appliedPatches?.values?.sumOf { it.size } ?: 0
+                            )
+                        )
+                    },
+                    trailingContent = { Icon(Icons.Filled.ArrowRight, contentDescription = stringResource(R.string.view_applied_patches)) }
                 )
 
                 ListItem(
@@ -127,9 +138,16 @@ fun AppInfoScreen(
                     supportingContent = { Text(viewModel.installedApp.currentPackageName) }
                 )
 
+                if (viewModel.installedApp.originalPackageName != viewModel.installedApp.currentPackageName) {
+                    ListItem(
+                        headlineContent = { Text(stringResource(R.string.original_package_name)) },
+                        supportingContent = { Text(viewModel.installedApp.originalPackageName) }
+                    )
+                }
+
                 ListItem(
                     headlineContent = { Text(stringResource(R.string.install_type)) },
-                    supportingContent = { Text(viewModel.installedApp.installType.displayName) }
+                    supportingContent = { Text(stringResource(viewModel.installedApp.installType.stringResource)) }
                 )
             }
 

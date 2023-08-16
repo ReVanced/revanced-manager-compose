@@ -1,8 +1,7 @@
 package app.revanced.manager.ui.screen
 
-import android.content.pm.PackageInfo
-import android.content.pm.PackageManager.NameNotFoundException
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
@@ -12,14 +11,9 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -29,8 +23,6 @@ import app.revanced.manager.ui.component.AppIcon
 import app.revanced.manager.ui.component.AppLabel
 import app.revanced.manager.ui.component.LoadingIndicator
 import app.revanced.manager.ui.viewmodel.InstalledAppsViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.koin.androidx.compose.getViewModel
 
 @Composable
@@ -42,26 +34,38 @@ fun InstalledAppsScreen(
 
     Column(
         modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
         installedApps?.let { installedApps ->
 
-            LazyColumn(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                items(
-                    installedApps,
-                    key = { it.currentPackageName }
-                ) { installedApp ->
-                    InstalledAppItem(
-                        installedApp = installedApp,
-                        onClick = { onAppClick(installedApp) },
-                        deleteApp = { viewModel.delete(installedApp) }
-                    )
-                }
-            }
+            if (installedApps.isNotEmpty()) {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(
+                        installedApps,
+                        key = { it.currentPackageName }
+                    ) { installedApp ->
+                        viewModel.packageInfoMap[installedApp.currentPackageName].let { packageInfo ->
 
-            installedApps.ifEmpty {
+                            ListItem(
+                                modifier = Modifier.clickable { onAppClick(installedApp) },
+                                leadingContent = {
+                                    AppIcon(
+                                        packageInfo,
+                                        contentDescription = null,
+                                        Modifier.size(36.dp)
+                                    )
+                                },
+                                headlineContent = { AppLabel(packageInfo, defaultText = null) },
+                                supportingContent = { Text(installedApp.currentPackageName) }
+                            )
+
+                        }
+                    }
+                }
+            } else {
                 Text(
                     text = stringResource(R.string.no_patched_apps_found),
                     style = MaterialTheme.typography.titleLarge
@@ -70,36 +74,4 @@ fun InstalledAppsScreen(
 
         } ?: LoadingIndicator()
     }
-}
-
-@Suppress("DEPRECATION")
-@Composable
-fun InstalledAppItem(
-    installedApp: InstalledApp,
-    onClick: () -> Unit,
-    deleteApp: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val packageManager = LocalContext.current.packageManager
-
-    var appInfo: PackageInfo? by rememberSaveable { mutableStateOf(null) }
-    
-    LaunchedEffect(Unit) {
-        try {
-            appInfo = withContext(Dispatchers.IO) {
-                packageManager.getPackageInfo(installedApp.currentPackageName, 0)
-            }
-        } catch (e: NameNotFoundException) {
-            deleteApp()
-        }
-    }
-
-    ListItem(
-        modifier = Modifier
-            .clickable(onClick = onClick)
-            .then(modifier),
-        leadingContent = { AppIcon(packageInfo = appInfo, contentDescription = null, Modifier.size(36.dp)) },
-        headlineContent = { AppLabel(packageInfo = appInfo, defaultText = null) },
-        supportingContent = { Text(installedApp.currentPackageName) }
-    )
 }

@@ -14,8 +14,14 @@ interface InstalledAppDao {
     @Query("SELECT * FROM installed_app WHERE current_package_name = :packageName")
     suspend fun get(packageName: String): InstalledApp?
 
+    @Query("SELECT * FROM applied_patch WHERE package_name = :packageName")
+    suspend fun getAppliedPatches(packageName: String): List<AppliedPatch>
+
     @Insert
     suspend fun insert(installedApp: InstalledApp)
+
+    @Insert
+    suspend fun insertAppliedPatch(appliedPatch: AppliedPatch)
 
     @Delete
     suspend fun delete(installedApp: InstalledApp)

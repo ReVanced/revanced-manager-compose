@@ -121,7 +121,8 @@ class InstallerViewModel(input: Destination.Installer) : ViewModel(), KoinCompon
                                 installedPackageName!!,
                                 packageName,
                                 input.selectedApp.version,
-                                InstallType.DEFAULT
+                                InstallType.DEFAULT,
+                                input.selectedPatches
                             )
                         }
                     } else {

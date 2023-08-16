@@ -67,7 +67,9 @@ class MainActivity : ComponentActivity() {
                         )
 
                         is Destination.ApplicationInfo -> AppInfoScreen(
-                            onPatchClick = { packageName -> navController.navigate(Destination.VersionSelector(packageName)) },
+                            onPatchClick = { packageName, patchesSelection ->
+                                navController.navigate(Destination.VersionSelector(packageName, patchesSelection))
+                            },
                             onBackClick = { navController.pop() },
                             viewModel = getViewModel { parametersOf(destination.installedApp) }
                         )
@@ -84,8 +86,15 @@ class MainActivity : ComponentActivity() {
 
                         is Destination.VersionSelector -> VersionSelectorScreen(
                             onBackClick = { navController.pop() },
-                            onAppClick = { navController.navigate(Destination.PatchesSelector(it)) },
-                            viewModel = getViewModel { parametersOf(destination.packageName) }
+                            onAppClick = { selectedApp ->
+                                navController.navigate(
+                                    Destination.PatchesSelector(
+                                        selectedApp,
+                                        destination.patchesSelection
+                                    )
+                                )
+                            },
+                            viewModel = getViewModel { parametersOf(destination.packageName, destination.patchesSelection) }
                         )
 
                         is Destination.PatchesSelector -> PatchesSelectorScreen(
@@ -99,7 +108,7 @@ class MainActivity : ComponentActivity() {
                                     )
                                 )
                             },
-                            vm = getViewModel { parametersOf(destination.selectedApp) }
+                            vm = getViewModel { parametersOf(destination) }
                         )
 
                         is Destination.Installer -> InstallerScreen(
