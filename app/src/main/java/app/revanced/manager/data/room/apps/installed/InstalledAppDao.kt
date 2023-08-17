@@ -24,7 +24,7 @@ interface InstalledAppDao {
     suspend fun getPatchesSelection(packageName: String): Map<Int, List<String>>
 
     @Transaction
-    suspend fun insertInstalledApp(installedApp: InstalledApp, appliedPatches: List<AppliedPatch>) {
+    suspend fun insertApp(installedApp: InstalledApp, appliedPatches: List<AppliedPatch>) {
         insertApp(installedApp)
         insertAppliedPatches(appliedPatches)
     }

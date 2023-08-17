@@ -26,7 +26,7 @@ class InstalledAppRepository(
         installType: InstallType,
         patchesSelection: PatchesSelection
     ) {
-        dao.insertInstalledApp(
+        dao.insertApp(
             InstalledApp(
                 currentPackageName = currentPackageName,
                 originalPackageName = originalPackageName,
