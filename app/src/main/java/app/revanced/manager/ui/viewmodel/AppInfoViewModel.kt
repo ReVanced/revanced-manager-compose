@@ -26,7 +26,6 @@ import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-@Suppress("DEPRECATION")
 class AppInfoViewModel(
     val installedApp: InstalledApp
 ) : ViewModel(), KoinComponent {
@@ -72,13 +71,13 @@ class AppInfoViewModel(
     }
 
     init {
-        viewModelScope.launch(Dispatchers.Main) {
+        viewModelScope.launch {
             appInfo = withContext(Dispatchers.IO) {
-                app.packageManager.getPackageInfo(installedApp.currentPackageName, 0)
+                pm.getPackageInfo(installedApp.currentPackageName)
             }
         }
 
-        viewModelScope.launch(Dispatchers.Main) {
+        viewModelScope.launch {
             appliedPatches = withContext(Dispatchers.IO) {
                 installedAppRepository.getAppliedPatches(installedApp.currentPackageName)
             }
@@ -88,5 +87,10 @@ class AppInfoViewModel(
             uninstallBroadcastReceiver,
             IntentFilter(UninstallService.APP_UNINSTALL_ACTION)
         )
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        app.unregisterReceiver(uninstallBroadcastReceiver)
     }
 }

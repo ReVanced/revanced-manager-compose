@@ -79,10 +79,8 @@ class VersionSelectorViewModel(
             }
 
             installedApp =
-                withContext(Dispatchers.Default) {
-                    packageInfo.await()?.let {
-                        it to alreadyPatched.await()
-                    }
+                packageInfo.await()?.let {
+                    it to alreadyPatched.await()
                 }
         }
 

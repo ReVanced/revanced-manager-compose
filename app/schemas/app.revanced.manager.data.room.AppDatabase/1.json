@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "c170ae11981cd34589405aa190f154bf",
+    "identityHash": "5515d164bc8f713201506d42a02d337f",
     "entities": [
       {
         "tableName": "patch_bundles",
@@ -231,7 +231,7 @@
       },
       {
         "tableName": "applied_patch",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`package_name` TEXT NOT NULL, `bundle_uid` INTEGER NOT NULL, `patch_name` TEXT NOT NULL, PRIMARY KEY(`package_name`, `bundle_uid`, `patch_name`), FOREIGN KEY(`package_name`) REFERENCES `installed_app`(`current_package_name`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`bundle_uid`) REFERENCES `patch_bundles`(`uid`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`package_name` TEXT NOT NULL, `bundle` INTEGER NOT NULL, `patch_name` TEXT NOT NULL, PRIMARY KEY(`package_name`, `bundle`, `patch_name`), FOREIGN KEY(`package_name`) REFERENCES `installed_app`(`current_package_name`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`bundle`) REFERENCES `patch_bundles`(`uid`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
         "fields": [
           {
             "fieldPath": "packageName",
@@ -240,8 +240,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "bundleUid",
-            "columnName": "bundle_uid",
+            "fieldPath": "bundle",
+            "columnName": "bundle",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -256,11 +256,21 @@
           "autoGenerate": false,
           "columnNames": [
             "package_name",
-            "bundle_uid",
+            "bundle",
             "patch_name"
           ]
         },
-        "indices": [],
+        "indices": [
+          {
+            "name": "index_applied_patch_bundle",
+            "unique": false,
+            "columnNames": [
+              "bundle"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_applied_patch_bundle` ON `${TABLE_NAME}` (`bundle`)"
+          }
+        ],
         "foreignKeys": [
           {
             "table": "installed_app",
@@ -278,7 +288,7 @@
             "onDelete": "NO ACTION",
             "onUpdate": "NO ACTION",
             "columns": [
-              "bundle_uid"
+              "bundle"
             ],
             "referencedColumns": [
               "uid"
@@ -290,7 +300,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c170ae11981cd34589405aa190f154bf')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5515d164bc8f713201506d42a02d337f')"
     ]
   }
 }

@@ -12,17 +12,11 @@ class InstalledAppRepository(
 ) {
     private val dao = db.installedAppDao()
 
-    fun getAll() = dao.getAllApps().distinctUntilChanged()
+    fun getAll() = dao.getAll().distinctUntilChanged()
 
     suspend fun get(packageName: String) = dao.get(packageName)
 
-    suspend fun getAppliedPatches(packageName: String): PatchesSelection {
-        return dao.getAppliedPatches(packageName)
-            .groupBy { it.bundleUid }
-            .mapValues { (_, appliedPatches) ->
-                appliedPatches.map { it.patchName }.toSet()
-            }
-    }
+    suspend fun getAppliedPatches(packageName: String): PatchesSelection = dao.getPatchesSelection(packageName)
 
     suspend fun add(
         currentPackageName: String,
@@ -31,25 +25,23 @@ class InstalledAppRepository(
         installType: InstallType,
         patchesSelection: PatchesSelection
     ) {
-        dao.insert(
+        dao.insertInstalledApp(
             InstalledApp(
                 currentPackageName = currentPackageName,
                 originalPackageName = originalPackageName,
                 version = version,
                 installType = installType
-            )
-        )
-        patchesSelection.forEach { (uid, patches) ->
-            patches.forEach { patch ->
-                dao.insertAppliedPatch(
+            ),
+            patchesSelection.flatMap { (uid, patches) ->
+                patches.map { patch ->
                     AppliedPatch(
                         packageName = currentPackageName,
-                        bundleUid = uid,
+                        bundle = uid,
                         patchName = patch
                     )
-                )
+                }
             }
-        }
+        )
     }
 
     suspend fun delete(installedApp: InstalledApp) {

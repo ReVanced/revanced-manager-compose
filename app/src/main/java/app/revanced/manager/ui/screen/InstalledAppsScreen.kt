@@ -2,7 +2,6 @@ package app.revanced.manager.ui.screen
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -32,46 +31,43 @@ fun InstalledAppsScreen(
 ) {
     val installedApps by viewModel.apps.collectAsStateWithLifecycle(initialValue = null)
 
-    Column(
+    LazyColumn(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = installedApps?.let { if (it.isEmpty()) Arrangement.Center else Arrangement.Top } ?: Arrangement.Center
     ) {
         installedApps?.let { installedApps ->
 
             if (installedApps.isNotEmpty()) {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    items(
-                        installedApps,
-                        key = { it.currentPackageName }
-                    ) { installedApp ->
-                        viewModel.packageInfoMap[installedApp.currentPackageName].let { packageInfo ->
+                items(
+                    installedApps,
+                    key = { it.currentPackageName }
+                ) { installedApp ->
+                    viewModel.packageInfoMap[installedApp.currentPackageName].let { packageInfo ->
+                         ListItem(
+                             modifier = Modifier.clickable { onAppClick(installedApp) },
+                             leadingContent = {
+                                 AppIcon(
+                                     packageInfo,
+                                     contentDescription = null,
+                                     Modifier.size(36.dp)
+                                 )
+                             },
+                             headlineContent = { AppLabel(packageInfo, defaultText = null) },
+                             supportingContent = { Text(installedApp.currentPackageName) }
+                         )
 
-                            ListItem(
-                                modifier = Modifier.clickable { onAppClick(installedApp) },
-                                leadingContent = {
-                                    AppIcon(
-                                        packageInfo,
-                                        contentDescription = null,
-                                        Modifier.size(36.dp)
-                                    )
-                                },
-                                headlineContent = { AppLabel(packageInfo, defaultText = null) },
-                                supportingContent = { Text(installedApp.currentPackageName) }
-                            )
-
-                        }
                     }
                 }
             } else {
-                Text(
-                    text = stringResource(R.string.no_patched_apps_found),
-                    style = MaterialTheme.typography.titleLarge
-                )
+                item {
+                    Text(
+                        text = stringResource(R.string.no_patched_apps_found),
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                }
             }
 
-        } ?: LoadingIndicator()
+        } ?: item { LoadingIndicator() }
     }
 }

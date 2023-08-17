@@ -123,11 +123,13 @@ fun AppInfoScreen(
                     headlineContent = { Text(stringResource(R.string.applied_patches)) },
                     supportingContent = {
                         Text(
-                            pluralStringResource(
-                                id = R.plurals.applied_patches,
-                                viewModel.appliedPatches?.values?.sumOf { it.size } ?: 0,
-                                viewModel.appliedPatches?.values?.sumOf { it.size } ?: 0
-                            )
+                            (viewModel.appliedPatches?.values?.sumOf { it.size } ?: 0).let {
+                                pluralStringResource(
+                                    id = R.plurals.applied_patches,
+                                    it,
+                                    it
+                                )
+                            }
                         )
                     },
                     trailingContent = { Icon(Icons.Filled.ArrowRight, contentDescription = stringResource(R.string.view_applied_patches)) }

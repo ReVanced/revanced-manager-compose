@@ -4,13 +4,14 @@ import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import app.revanced.manager.data.room.bundles.PatchBundleEntity
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
 @Entity(
     tableName = "applied_patch",
-    primaryKeys = ["package_name", "bundle_uid", "patch_name"],
+    primaryKeys = ["package_name", "bundle", "patch_name"],
     foreignKeys = [
         ForeignKey(
             InstalledApp::class,
@@ -21,12 +22,13 @@ import kotlinx.parcelize.Parcelize
         ForeignKey(
             PatchBundleEntity::class,
             parentColumns = ["uid"],
-            childColumns = ["bundle_uid"]
+            childColumns = ["bundle"]
         )
-    ]
+    ],
+    indices = [Index(value = ["bundle"], unique = false)]
 )
 data class AppliedPatch(
     @ColumnInfo(name = "package_name") val packageName: String,
-    @ColumnInfo(name = "bundle_uid") val bundleUid: Int,
+    @ColumnInfo(name = "bundle") val bundle: Int,
     @ColumnInfo(name = "patch_name") val patchName: String
 ) : Parcelable
