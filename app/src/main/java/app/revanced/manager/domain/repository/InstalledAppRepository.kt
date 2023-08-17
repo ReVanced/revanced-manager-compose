@@ -16,7 +16,8 @@ class InstalledAppRepository(
 
     suspend fun get(packageName: String) = dao.get(packageName)
 
-    suspend fun getAppliedPatches(packageName: String): PatchesSelection = dao.getPatchesSelection(packageName)
+    suspend fun getAppliedPatches(packageName: String): PatchesSelection =
+        dao.getPatchesSelection(packageName).mapValues { (_, patches) -> patches.toSet() }
 
     suspend fun add(
         currentPackageName: String,

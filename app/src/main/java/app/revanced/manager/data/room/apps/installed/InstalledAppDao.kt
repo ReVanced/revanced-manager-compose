@@ -6,7 +6,6 @@ import androidx.room.Insert
 import androidx.room.MapInfo
 import androidx.room.Query
 import androidx.room.Transaction
-import app.revanced.manager.util.PatchesSelection
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -22,7 +21,7 @@ interface InstalledAppDao {
         "SELECT bundle, patch_name FROM applied_patch" +
                 " WHERE package_name = :packageName"
     )
-    suspend fun getPatchesSelection(packageName: String): PatchesSelection
+    suspend fun getPatchesSelection(packageName: String): Map<Int, List<String>>
 
     @Transaction
     suspend fun insertInstalledApp(installedApp: InstalledApp, appliedPatches: List<AppliedPatch>) {
