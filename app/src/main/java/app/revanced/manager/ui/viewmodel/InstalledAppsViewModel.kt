@@ -21,14 +21,10 @@ class InstalledAppsViewModel(
     val packageInfoMap = mutableStateMapOf<String, PackageInfo?>()
 
     init {
-        viewModelScope.launch(Dispatchers.IO) {
-            apps.collectEach { installedApp ->
-                withContext(Dispatchers.Main) {
-                    packageInfoMap[installedApp.currentPackageName] = withContext(Dispatchers.IO) {
-                        pm.getPackageInfo(installedApp.currentPackageName)
-                            .also { if (it == null) installedAppsRepository.delete(installedApp) }
-                    }
-                }
+        apps.collectEach { installedApp ->
+            packageInfoMap[installedApp.currentPackageName] = withContext(Dispatchers.IO) {
+                pm.getPackageInfo(installedApp.currentPackageName)
+                    .also { if (it == null) installedAppsRepository.delete(installedApp) }
             }
         }
     }
