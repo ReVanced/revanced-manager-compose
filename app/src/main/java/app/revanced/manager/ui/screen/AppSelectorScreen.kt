@@ -186,7 +186,7 @@ fun AppSelectorScreen(
                     },
                     headlineContent = { Text(stringResource(R.string.select_from_storage)) },
                     supportingContent = {
-                        Text(stringResource(R.string.select_an_installation_file))
+                        Text(stringResource(R.string.select_from_storage_description))
                     }
                 )
                 Divider()
