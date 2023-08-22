@@ -34,11 +34,11 @@ jobs:
         releaseDirectory: ./app/build/outputs/apk/release/
         signingKeyBase64: ${{ secrets.TEMP_SIGNING_KEYSTORE }}
         keyStorePassword: ${{ secrets.TEMP_SIGNING_KEYSTORE_PASSWORD }}
-        alias: ${{ secrets.TEMP_SIGNING_KEY_ALIAS }}
+        alias: ${{ vars.TEMP_SIGNING_KEY_ALIAS }}
         keyPassword: ${{ secrets.TEMP_SIGNING_KEY_PASSWORD }}
 
     - name: Upload APK
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: manager
         path: ${{steps.sign_apk.outputs.signedReleaseFile}}

@@ -18,9 +18,10 @@ import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
-import app.revanced.manager.domain.manager.KeystoreManager
 import app.revanced.manager.R
-import app.revanced.manager.domain.manager.PreferencesManager
+import app.revanced.manager.data.room.apps.installed.InstallType
+import app.revanced.manager.domain.manager.KeystoreManager
+import app.revanced.manager.domain.repository.InstalledAppRepository
 import app.revanced.manager.domain.worker.WorkerRepository
 import app.revanced.manager.patcher.worker.PatcherProgressManager
 import app.revanced.manager.patcher.worker.PatcherWorker
@@ -33,7 +34,6 @@ import app.revanced.manager.util.tag
 import app.revanced.manager.util.toast
 import app.revanced.patcher.logging.Logger
 import kotlinx.collections.immutable.ImmutableList
-import app.revanced.manager.service.ShizukuApi
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -52,8 +52,8 @@ class InstallerViewModel(input: Destination.Installer) : ViewModel(), KoinCompon
     private val app: Application by inject()
     private val pm: PM by inject()
     private val workerRepository: WorkerRepository by inject()
+    private val installedAppReceiver: InstalledAppRepository by inject()
 
-    val prefs: PreferencesManager by inject()
     val packageName: String = input.selectedApp.packageName
     private val outputFile = File(app.cacheDir, "output.apk")
     private val signedFile = File(app.cacheDir, "signed.apk").also { if (it.exists()) it.delete() }
@@ -64,7 +64,6 @@ class InstallerViewModel(input: Destination.Installer) : ViewModel(), KoinCompon
     var installedPackageName by mutableStateOf<String?>(null)
         private set
     val appButtonText by derivedStateOf { if (installedPackageName == null) R.string.install_app else R.string.open_app }
-    private val selectedInstaller by derivedStateOf { prefs.defaultInstaller.getBlocking() }
 
     private val workManager = WorkManager.getInstance(app)
 
@@ -117,6 +116,15 @@ class InstallerViewModel(input: Destination.Installer) : ViewModel(), KoinCompon
                         app.toast(app.getString(R.string.install_app_success))
                         installedPackageName =
                             intent.getStringExtra(InstallService.EXTRA_PACKAGE_NAME)
+                        viewModelScope.launch {
+                            installedAppReceiver.add(
+                                installedPackageName!!,
+                                packageName,
+                                input.selectedApp.version,
+                                InstallType.DEFAULT,
+                                input.selectedPatches
+                            )
+                        }
                     } else {
                         app.toast(app.getString(R.string.install_app_fail, extra))
                     }
@@ -192,22 +200,7 @@ class InstallerViewModel(input: Destination.Installer) : ViewModel(), KoinCompon
         isInstalling = true
         try {
             if (!signApk()) return@launch
-
-            when (selectedInstaller) {
-                PreferencesManager.InstallerManager.DEFAULT -> {
-                    pm.installApp(listOf(signedFile))
-                }
-                PreferencesManager.InstallerManager.SHIZUKU -> {
-                    ShizukuApi.installPackage(signedFile)
-                }
-                PreferencesManager.InstallerManager.ROOT -> {
-                    // RootApi.installPackage(signedFile)
-                }
-                PreferencesManager.InstallerManager.MAGISK -> {
-                    // MagiskApi.installPackage(signedFile)
-                }
-            }
-
+            pm.installApp(listOf(signedFile))
         } finally {
             isInstalling = false
         }
