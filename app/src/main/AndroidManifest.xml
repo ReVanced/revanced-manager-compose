@@ -62,7 +62,7 @@
         </provider>
         <provider
             android:name="rikka.shizuku.ShizukuProvider"
-            android:authorities="app.revanced.manager.shizuku"
+            android:authorities="${applicationId}.shizuku"
             android:enabled="true"
             android:exported="true"
             android:multiprocess="false"

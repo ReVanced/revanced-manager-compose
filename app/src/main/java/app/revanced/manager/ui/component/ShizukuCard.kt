@@ -31,13 +31,17 @@ import app.revanced.manager.R
 import app.revanced.manager.service.ShizukuApi
 import rikka.shizuku.Shizuku
 
-private val listener: (Int, Int) -> Unit = { _, grantResult ->
-    ShizukuApi.isPermissionGranted = grantResult == PackageManager.PERMISSION_GRANTED
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ShizukuCard() {
+fun ShizukuCard(
+    shizukuApi: ShizukuApi
+) {
+
+    val listener: (Int, Int) -> Unit = { _, grantResult ->
+        shizukuApi.isPermissionGranted = grantResult == PackageManager.PERMISSION_GRANTED
+    }
+
     LaunchedEffect(Unit) {
         Shizuku.addRequestPermissionResultListener(listener)
     }
@@ -47,14 +51,14 @@ fun ShizukuCard() {
         }
     }
 
-    AnimatedVisibility(visible = !ShizukuApi.isPermissionGranted) {
+    AnimatedVisibility(visible = !shizukuApi.isPermissionGranted) {
         Card(
             colors = CardDefaults.cardColors(
                 MaterialTheme.colorScheme.errorContainer
             ),
             onClick = {
-                if (ShizukuApi.isBinderAvailable && !ShizukuApi.isPermissionGranted) {
-                    Log.e("ShizukuCard", "Requesting permission")
+                if (shizukuApi.isBinderAvailable && !shizukuApi.isPermissionGranted) {
+                    Log.i("ShizukuCard", "Requesting permission")
                     Shizuku.requestPermission(114514)
                 }
             },

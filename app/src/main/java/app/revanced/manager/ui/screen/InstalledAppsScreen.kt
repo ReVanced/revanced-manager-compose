@@ -2,6 +2,7 @@ package app.revanced.manager.ui.screen
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -21,6 +22,7 @@ import app.revanced.manager.data.room.apps.installed.InstalledApp
 import app.revanced.manager.ui.component.AppIcon
 import app.revanced.manager.ui.component.AppLabel
 import app.revanced.manager.ui.component.LoadingIndicator
+import app.revanced.manager.ui.component.ShizukuCard
 import app.revanced.manager.ui.viewmodel.InstalledAppsViewModel
 import org.koin.androidx.compose.getViewModel
 
@@ -36,8 +38,17 @@ fun InstalledAppsScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = installedApps?.let { if (it.isEmpty()) Arrangement.Center else Arrangement.Top } ?: Arrangement.Center
     ) {
-        installedApps?.let { installedApps ->
+        item {
+            if (viewModel.shizukuApi.isShizukuInstalled()) ShizukuCard(viewModel.shizukuApi)
 
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(
+                    text = stringResource(R.string.no_patched_apps_found),
+                    style = MaterialTheme.typography.titleLarge
+                )
+            }
+        }
+        installedApps?.let { installedApps ->
             if (installedApps.isNotEmpty()) {
                 items(
                     installedApps,

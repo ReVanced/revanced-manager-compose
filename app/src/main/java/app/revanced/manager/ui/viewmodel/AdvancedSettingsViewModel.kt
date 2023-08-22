@@ -7,14 +7,17 @@ import app.revanced.manager.R
 import app.revanced.manager.domain.manager.PreferencesManager
 import app.revanced.manager.domain.repository.PatchBundleRepository
 import app.revanced.manager.domain.bundles.RemotePatchBundle
+import app.revanced.manager.service.ShizukuApi
 import app.revanced.manager.util.uiSafe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 
 class AdvancedSettingsViewModel(
     val prefs: PreferencesManager,
     private val app: Application,
-    private val patchBundleRepository: PatchBundleRepository
+    private val patchBundleRepository: PatchBundleRepository,
+    val shizukuApi: ShizukuApi
 ) : ViewModel() {
     val apiUrl = prefs.api
 

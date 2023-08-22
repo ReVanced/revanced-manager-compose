@@ -244,7 +244,7 @@
     <string name="installing_message">Tap on <b>Update</b> when prompted. \n ReVanced Manager will close when updating.</string>
     <string name="shizuku_available">Shizuku service available</string>
     <string name="shizuku_unavailable">Shizuku service not connected</string>
-    <string name="home_shizuku_warning">Some functions unavailable</string>
+    <string name="home_shizuku_warning">Some functions are unavailable</string>
     <string name="installer_description">Choose the default installer</string>
     <string name="default_installer">Default</string>
     <string name="shizuku_installer">Shizuku</string>

@@ -146,7 +146,7 @@ dependencies {
     implementation(libs.markdown)
 
     // Shizuku
-    implementation("dev.rikka.shizuku:api:13.1.2")
-    implementation("dev.rikka.shizuku:provider:13.1.2")
-    compileOnly("dev.rikka.hidden:stub:4.2.0")
+    implementation(libs.shizuku.api)
+    implementation(libs.shizuku.provider)
+    compileOnly(libs.hidden.stub)
 }

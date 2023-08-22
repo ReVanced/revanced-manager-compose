@@ -68,8 +68,11 @@ fun AdvancedSettingsScreen(
     }
 
     if (showInstallerPicker) {
-        InstallerPicker(onDismiss = { showInstallerPicker = false },
-            onConfirm = { vm.setInstaller(it) })
+        InstallerPicker(
+            onDismiss = { showInstallerPicker = false },
+            onConfirm = { vm.setInstaller(it) },
+            viewModel = vm
+        )
     }
 
     Scaffold(topBar = {
@@ -183,7 +186,8 @@ private fun APIUrlDialog(currentUrl: String, onSubmit: (String?) -> Unit) {
 private fun InstallerPicker(
     onDismiss: () -> Unit,
     onConfirm: (PreferencesManager.InstallerManager) -> Unit,
-    prefs: PreferencesManager = koinInject()
+    prefs: PreferencesManager = koinInject(),
+    viewModel: AdvancedSettingsViewModel
 ) {
     var selectedInstaller by rememberSaveable { mutableStateOf(prefs.defaultInstaller.getBlocking()) }
     val context: Context = LocalContext.current
@@ -208,7 +212,7 @@ private fun InstallerPicker(
         },
         confirmButton = {
             Button(onClick = {
-                if (selectedInstaller == PreferencesManager.InstallerManager.SHIZUKU && !ShizukuApi.isShizukuPermissionGranted()) {
+                if (selectedInstaller == PreferencesManager.InstallerManager.SHIZUKU && viewModel.shizukuApi.isShizukuPermissionGranted()) {
                     Toast.makeText(
                         context, R.string.shizuku_unavailable, Toast.LENGTH_SHORT
                     ).show()
