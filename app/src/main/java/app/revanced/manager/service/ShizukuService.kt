@@ -7,23 +7,21 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.content.FileProvider
+import app.revanced.manager.util.PM
 import rikka.shizuku.Shizuku
 import java.io.File
 
-class ShizukuApi(
-    private val app: Application
+class ShizukuService(
+    private val app: Application,
+    private val pm: PM
 ) {
-
-    var isBinderAvailable = false
     var isPermissionGranted by mutableStateOf(false)
 
     init {
         Shizuku.addBinderReceivedListenerSticky {
-            isBinderAvailable = true
             isPermissionGranted = Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
         }
         Shizuku.addBinderDeadListener {
-            isBinderAvailable = false
             isPermissionGranted = false
         }
     }
@@ -37,7 +35,9 @@ class ShizukuApi(
         app.startActivity(intent)
     }
 
-    fun isShizukuPermissionGranted() = isBinderAvailable && isPermissionGranted
+    fun isShizukuInstalled() = pm.getPackageInfo(shizukuPackageName) != null
 
-    fun isShizukuInstalled() = Shizuku.pingBinder()
+    companion object {
+        const val shizukuPackageName = "moe.shizuku.privileged.api"
+    }
 }

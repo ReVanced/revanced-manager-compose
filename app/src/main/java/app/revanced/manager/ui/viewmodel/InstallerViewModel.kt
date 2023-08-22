@@ -28,7 +28,7 @@ import app.revanced.manager.patcher.worker.PatcherProgressManager
 import app.revanced.manager.patcher.worker.PatcherWorker
 import app.revanced.manager.patcher.worker.Step
 import app.revanced.manager.service.InstallService
-import app.revanced.manager.service.ShizukuApi
+import app.revanced.manager.service.ShizukuService
 import app.revanced.manager.service.UninstallService
 import app.revanced.manager.ui.destination.Destination
 import app.revanced.manager.util.PM
@@ -56,7 +56,7 @@ class InstallerViewModel(input: Destination.Installer) : ViewModel(), KoinCompon
     private val workerRepository: WorkerRepository by inject()
     private val installedAppReceiver: InstalledAppRepository by inject()
 
-    private val shizukuApi: ShizukuApi by inject()
+    private val shizukuService: ShizukuService by inject()
     val prefs: PreferencesManager by inject()
     val packageName: String = input.selectedApp.packageName
     private val outputFile = File(app.cacheDir, "output.apk")
@@ -210,7 +210,7 @@ class InstallerViewModel(input: Destination.Installer) : ViewModel(), KoinCompon
                     pm.installApp(listOf(signedFile))
                 }
                 PreferencesManager.InstallerManager.SHIZUKU -> {
-                    shizukuApi.installPackage(signedFile)
+                    shizukuService.installPackage(signedFile)
                 }
                 PreferencesManager.InstallerManager.ROOT -> {
                     // RootApi.installPackage(signedFile)

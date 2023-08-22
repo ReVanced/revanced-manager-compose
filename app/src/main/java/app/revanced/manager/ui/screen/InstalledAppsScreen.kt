@@ -1,8 +1,9 @@
 package app.revanced.manager.ui.screen
 
+import android.content.pm.PackageManager
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -39,12 +40,13 @@ fun InstalledAppsScreen(
         verticalArrangement = installedApps?.let { if (it.isEmpty()) Arrangement.Center else Arrangement.Top } ?: Arrangement.Center
     ) {
         item {
-            if (viewModel.shizukuApi.isShizukuInstalled()) ShizukuCard(viewModel.shizukuApi)
-
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(
-                    text = stringResource(R.string.no_patched_apps_found),
-                    style = MaterialTheme.typography.titleLarge
+            AnimatedVisibility(
+                visible = viewModel.shizukuService.isShizukuInstalled() && !viewModel.shizukuService.isPermissionGranted
+            ) {
+                ShizukuCard(
+                    onPermissionResult = { _, grantResult ->
+                        viewModel.shizukuService.isPermissionGranted = grantResult == PackageManager.PERMISSION_GRANTED
+                    }
                 )
             }
         }

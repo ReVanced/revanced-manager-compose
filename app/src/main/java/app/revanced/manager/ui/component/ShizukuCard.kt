@@ -1,8 +1,6 @@
 package app.revanced.manager.ui.component
 
-import android.content.pm.PackageManager
 import android.util.Log
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,77 +19,65 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.revanced.manager.R
-import app.revanced.manager.service.ShizukuApi
+import app.revanced.manager.util.tag
 import rikka.shizuku.Shizuku
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShizukuCard(
-    shizukuApi: ShizukuApi
+    onPermissionResult: (Int, Int) -> Unit,
 ) {
-
-    val listener: (Int, Int) -> Unit = { _, grantResult ->
-        shizukuApi.isPermissionGranted = grantResult == PackageManager.PERMISSION_GRANTED
-    }
-
-    LaunchedEffect(Unit) {
-        Shizuku.addRequestPermissionResultListener(listener)
-    }
     DisposableEffect(Unit) {
+        Shizuku.addRequestPermissionResultListener(onPermissionResult)
+
         onDispose {
-            Shizuku.removeRequestPermissionResultListener(listener)
+            Shizuku.removeRequestPermissionResultListener(onPermissionResult)
         }
     }
 
-    AnimatedVisibility(visible = !shizukuApi.isPermissionGranted) {
-        Card(
-            colors = CardDefaults.cardColors(
-                MaterialTheme.colorScheme.errorContainer
-            ),
-            onClick = {
-                if (shizukuApi.isBinderAvailable && !shizukuApi.isPermissionGranted) {
-                    Log.i("ShizukuCard", "Requesting permission")
-                    Shizuku.requestPermission(114514)
-                }
-            },
+    Card(
+        colors = CardDefaults.cardColors(
+            MaterialTheme.colorScheme.errorContainer
+        ),
+        onClick = {
+            Log.i(tag, "Requesting permission")
+            Shizuku.requestPermission(114514)
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .clip(RoundedCornerShape(24.dp))
+            .background(MaterialTheme.colorScheme.tertiaryContainer),
+    ) {
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
-                .clip(RoundedCornerShape(24.dp))
-                .background(MaterialTheme.colorScheme.tertiaryContainer),
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Warning,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onErrorContainer,
-                    modifier = Modifier.size(24.dp)
+            Icon(
+                imageVector = Icons.Default.Warning,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onErrorContainer,
+                modifier = Modifier.size(24.dp)
+            )
+            Column {
+                Text(
+                    text = stringResource(R.string.shizuku_unavailable),
+                    style = MaterialTheme.typography.titleMedium
                 )
-                Column() {
-                    Text(
-                        text = stringResource(R.string.shizuku_unavailable),
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Text(
-                        text = stringResource(R.string.home_shizuku_warning),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onErrorContainer
-                    )
-                }
+                Text(
+                    text = stringResource(R.string.home_shizuku_warning),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onErrorContainer
+                )
             }
         }
     }

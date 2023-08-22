@@ -1,9 +1,7 @@
 package app.revanced.manager.ui.screen.settings
 
 import android.app.ActivityManager
-import android.content.Context
 import android.os.Build
-import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -43,12 +41,11 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.getSystemService
 import app.revanced.manager.R
 import app.revanced.manager.domain.manager.PreferencesManager
-import app.revanced.manager.service.ShizukuApi
 import app.revanced.manager.ui.component.AppTopBar
 import app.revanced.manager.ui.component.GroupHeader
 import app.revanced.manager.ui.viewmodel.AdvancedSettingsViewModel
+import app.revanced.manager.util.toast
 import org.koin.androidx.compose.getViewModel
-import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,9 +66,15 @@ fun AdvancedSettingsScreen(
 
     if (showInstallerPicker) {
         InstallerPicker(
+            currentInstaller = prefs.defaultInstaller.getAsState().value,
             onDismiss = { showInstallerPicker = false },
-            onConfirm = { vm.setInstaller(it) },
-            viewModel = vm
+            onConfirm = {
+                if (it == PreferencesManager.InstallerManager.SHIZUKU && !vm.shizukuService.isPermissionGranted) {
+                    context.toast(context.getString(R.string.shizuku_unavailable))
+                    return@InstallerPicker
+                }
+                vm.setInstaller(it)
+            }
         )
     }
 
@@ -184,15 +187,14 @@ private fun APIUrlDialog(currentUrl: String, onSubmit: (String?) -> Unit) {
 
 @Composable
 private fun InstallerPicker(
+    currentInstaller: PreferencesManager.InstallerManager,
     onDismiss: () -> Unit,
     onConfirm: (PreferencesManager.InstallerManager) -> Unit,
-    prefs: PreferencesManager = koinInject(),
-    viewModel: AdvancedSettingsViewModel
 ) {
-    var selectedInstaller by rememberSaveable { mutableStateOf(prefs.defaultInstaller.getBlocking()) }
-    val context: Context = LocalContext.current
+    var selectedInstaller by rememberSaveable { mutableStateOf(currentInstaller) }
 
-    AlertDialog(onDismissRequest = onDismiss,
+    AlertDialog(
+        onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.installer)) },
         text = {
             Column {
@@ -203,8 +205,7 @@ private fun InstallerPicker(
                             .clickable { selectedInstaller = it },
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        RadioButton(selected = selectedInstaller == it,
-                            onClick = { selectedInstaller = it })
+                        RadioButton(selected = selectedInstaller == it, onClick = null)
                         Text(stringResource(it.displayName))
                     }
                 }
@@ -212,16 +213,11 @@ private fun InstallerPicker(
         },
         confirmButton = {
             Button(onClick = {
-                if (selectedInstaller == PreferencesManager.InstallerManager.SHIZUKU && viewModel.shizukuApi.isShizukuPermissionGranted()) {
-                    Toast.makeText(
-                        context, R.string.shizuku_unavailable, Toast.LENGTH_SHORT
-                    ).show()
-                    return@Button
-                }
                 onConfirm(selectedInstaller)
                 onDismiss()
             }) {
                 Text(stringResource(R.string.apply))
             }
-        })
+        }
+    )
 }
