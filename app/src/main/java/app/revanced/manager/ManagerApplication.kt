@@ -37,6 +37,7 @@ class ManagerApplication : Application() {
                 workerModule,
                 viewModelModule,
                 databaseModule,
+                rootModule
             )
         }
 

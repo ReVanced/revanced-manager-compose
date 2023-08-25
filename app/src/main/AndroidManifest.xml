@@ -49,6 +49,7 @@
 
         <service android:name=".service.InstallService" />
         <service android:name=".service.UninstallService" />
+        <service android:name=".service.ManagerRootService" />
 
         <provider
                 android:name="androidx.startup.InitializationProvider"

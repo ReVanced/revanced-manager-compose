@@ -15,6 +15,7 @@ import androidx.lifecycle.viewModelScope
 import app.revanced.manager.R
 import app.revanced.manager.data.room.apps.installed.InstallType
 import app.revanced.manager.data.room.apps.installed.InstalledApp
+import app.revanced.manager.domain.installer.RootInstaller
 import app.revanced.manager.domain.repository.InstalledAppRepository
 import app.revanced.manager.service.UninstallService
 import app.revanced.manager.util.PM
@@ -32,6 +33,7 @@ class AppInfoViewModel(
     private val app: Application by inject()
     private val pm: PM by inject()
     private val installedAppRepository: InstalledAppRepository by inject()
+    private val rootInstaller: RootInstaller by inject()
 
     lateinit var onBackClick: () -> Unit
 
@@ -45,7 +47,11 @@ class AppInfoViewModel(
         when (installedApp.installType) {
             InstallType.DEFAULT -> pm.uninstallPackage(installedApp.currentPackageName)
 
-            InstallType.ROOT -> TODO()
+            InstallType.ROOT -> viewModelScope.launch {
+                rootInstaller.uninstall(installedApp.currentPackageName)
+                installedAppRepository.delete(installedApp)
+                onBackClick()
+            }
         }
     }
 
@@ -59,7 +65,7 @@ class AppInfoViewModel(
                     if (extraStatus == PackageInstaller.STATUS_SUCCESS) {
                         viewModelScope.launch {
                             installedAppRepository.delete(installedApp)
-                            withContext(Dispatchers.Main) { onBackClick() }
+                            onBackClick()
                         }
                     } else if (extraStatus != PackageInstaller.STATUS_FAILURE_ABORTED) {
                         app.toast(app.getString(R.string.uninstall_app_fail, extraStatusMessage))

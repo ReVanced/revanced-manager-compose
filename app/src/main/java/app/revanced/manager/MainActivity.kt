@@ -1,5 +1,6 @@
 package app.revanced.manager
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -7,6 +8,8 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import app.revanced.manager.service.RootConnection
+import app.revanced.manager.service.ManagerRootService
 import app.revanced.manager.ui.component.AutoUpdatesDialog
 import app.revanced.manager.ui.destination.Destination
 import app.revanced.manager.ui.screen.AppInfoScreen
@@ -19,6 +22,10 @@ import app.revanced.manager.ui.screen.SettingsScreen
 import app.revanced.manager.ui.theme.ReVancedManagerTheme
 import app.revanced.manager.ui.theme.Theme
 import app.revanced.manager.ui.viewmodel.MainViewModel
+import com.topjohnwu.superuser.Shell
+import com.topjohnwu.superuser.Shell.FLAG_MOUNT_MASTER
+import com.topjohnwu.superuser.internal.BuilderImpl
+import com.topjohnwu.superuser.ipc.RootService
 import dev.olshevski.navigation.reimagined.AnimatedNavHost
 import dev.olshevski.navigation.reimagined.NavBackHandler
 import dev.olshevski.navigation.reimagined.navigate
@@ -26,17 +33,25 @@ import dev.olshevski.navigation.reimagined.pop
 import dev.olshevski.navigation.reimagined.popUpTo
 import dev.olshevski.navigation.reimagined.rememberNavController
 import org.koin.androidx.compose.getViewModel
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
 import org.koin.core.parameter.parametersOf
 import org.koin.androidx.viewmodel.ext.android.getViewModel as getActivityViewModel
 
-class MainActivity : ComponentActivity() {
+class MainActivity : ComponentActivity(), KoinComponent {
     @ExperimentalAnimationApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val vm: MainViewModel = getActivityViewModel()
-
         installSplashScreen()
+
+        val shellBuilder = BuilderImpl.create().setFlags(FLAG_MOUNT_MASTER)
+        Shell.setDefaultBuilder(shellBuilder)
+
+        val intent = Intent(this, ManagerRootService::class.java)
+        RootService.bind(intent, get<RootConnection>())
+
+        val vm: MainViewModel = getActivityViewModel()
 
         setContent {
             val theme by vm.prefs.theme.getAsState()

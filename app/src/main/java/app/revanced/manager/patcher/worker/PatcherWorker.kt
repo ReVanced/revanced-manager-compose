@@ -14,8 +14,11 @@ import androidx.core.content.ContextCompat
 import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
 import app.revanced.manager.R
+import app.revanced.manager.data.room.apps.installed.InstallType
+import app.revanced.manager.domain.installer.RootInstaller
 import app.revanced.manager.domain.manager.PreferencesManager
 import app.revanced.manager.domain.repository.DownloadedAppRepository
+import app.revanced.manager.domain.repository.InstalledAppRepository
 import app.revanced.manager.domain.repository.PatchBundleRepository
 import app.revanced.manager.domain.worker.Worker
 import app.revanced.manager.domain.worker.WorkerRepository
@@ -48,6 +51,8 @@ class PatcherWorker(
     private val prefs: PreferencesManager by inject()
     private val downloadedAppRepository: DownloadedAppRepository by inject()
     private val pm: PM by inject()
+    private val installedAppRepository: InstalledAppRepository by inject()
+    private val rootInstaller: RootInstaller by inject()
 
     data class Args(
         val input: SelectedApp,
@@ -147,6 +152,19 @@ class PatcherWorker(
         }
 
         return try {
+
+            installedAppRepository.get(args.packageName)?.let {
+                if (it.installType == InstallType.ROOT) {
+
+                    if (!rootInstaller.hasRootAccess())
+                        throw Exception("Failed to unmount APK, no root access")
+
+                    if (rootInstaller.isAppMounted(args.packageName) && !rootInstaller.unmount(args.packageName))
+                        throw Exception("Failed to unmount APK")
+
+                }
+            }
+
             // TODO: consider passing all the classes directly now that the input no longer needs to be serializable.
             val selectedBundles = args.selectedPatches.keys
             val allPatches = bundles.filterKeys { selectedBundles.contains(it) }

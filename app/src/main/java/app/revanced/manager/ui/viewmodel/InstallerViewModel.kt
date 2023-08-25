@@ -20,6 +20,7 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import app.revanced.manager.R
 import app.revanced.manager.data.room.apps.installed.InstallType
+import app.revanced.manager.domain.installer.RootInstaller
 import app.revanced.manager.domain.manager.KeystoreManager
 import app.revanced.manager.domain.repository.InstalledAppRepository
 import app.revanced.manager.domain.worker.WorkerRepository
@@ -47,12 +48,15 @@ import java.nio.file.Files
 import java.util.UUID
 
 @Stable
-class InstallerViewModel(input: Destination.Installer) : ViewModel(), KoinComponent {
+class InstallerViewModel(
+    private val input: Destination.Installer
+) : ViewModel(), KoinComponent {
     private val keystoreManager: KeystoreManager by inject()
     private val app: Application by inject()
     private val pm: PM by inject()
     private val workerRepository: WorkerRepository by inject()
-    private val installedAppReceiver: InstalledAppRepository by inject()
+    private val installedAppRepository: InstalledAppRepository by inject()
+    private val rootInstaller: RootInstaller by inject()
 
     val packageName: String = input.selectedApp.packageName
     private val outputFile = File(app.cacheDir, "output.apk")
@@ -117,7 +121,7 @@ class InstallerViewModel(input: Destination.Installer) : ViewModel(), KoinCompon
                         installedPackageName =
                             intent.getStringExtra(InstallService.EXTRA_PACKAGE_NAME)
                         viewModelScope.launch {
-                            installedAppReceiver.add(
+                            installedAppRepository.add(
                                 installedPackageName!!,
                                 packageName,
                                 input.selectedApp.version,
@@ -158,6 +162,8 @@ class InstallerViewModel(input: Destination.Installer) : ViewModel(), KoinCompon
         super.onCleared()
         app.unregisterReceiver(installBroadcastReceiver)
         workManager.cancelWorkById(patcherWorkerId)
+
+        rootInstaller.mount(packageName)
 
         outputFile.delete()
         signedFile.delete()
@@ -200,10 +206,34 @@ class InstallerViewModel(input: Destination.Installer) : ViewModel(), KoinCompon
         isInstalling = true
         try {
             if (!signApk()) return@launch
-            pm.installApp(listOf(signedFile))
+            //pm.installApp(listOf(signedFile))
+
+            installAsRoot()
         } finally {
             isInstalling = false
         }
+    }
+
+    @Suppress("DEPRECATION")
+    private suspend fun installAsRoot() {
+        val label = app.packageManager.getPackageArchiveInfo(signedFile.absolutePath, 0)
+            ?.applicationInfo
+            ?.loadLabel(app.packageManager)
+            .toString()
+
+        rootInstaller.install(outputFile, packageName, input.selectedApp.version, label)
+
+        installedAppRepository.add(
+            packageName,
+            packageName,
+            input.selectedApp.version,
+            InstallType.ROOT,
+            input.selectedPatches
+        )
+
+        rootInstaller.mount(packageName)
+
+        app.toast("Successfully mounted")
     }
 }
 

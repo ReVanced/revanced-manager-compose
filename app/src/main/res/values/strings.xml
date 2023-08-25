@@ -158,6 +158,7 @@
 
     <string name="app_info">App info</string>
     <string name="uninstall">Uninstall</string>
+    <string name="unpatch">Unpatch</string>
     <string name="repatch">Repatch</string>
     <string name="install_type">Installation type</string>
     <string name="package_name">Package name</string>

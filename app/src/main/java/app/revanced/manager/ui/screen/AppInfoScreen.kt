@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowRight
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.OpenInNew
+import androidx.compose.material.icons.outlined.SettingsBackupRestore
 import androidx.compose.material.icons.outlined.Update
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -31,6 +32,7 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.revanced.manager.R
+import app.revanced.manager.data.room.apps.installed.InstallType
 import app.revanced.manager.ui.component.AppIcon
 import app.revanced.manager.ui.component.AppLabel
 import app.revanced.manager.ui.component.AppTopBar
@@ -98,11 +100,19 @@ fun AppInfoScreen(
                     onClick = viewModel::launch
                 )
 
-                SegmentedButton(
-                    icon = Icons.Outlined.Delete,
-                    text = stringResource(R.string.uninstall),
-                    onClick = viewModel::uninstall
-                )
+                when (viewModel.installedApp.installType) {
+                    InstallType.DEFAULT -> SegmentedButton(
+                        icon = Icons.Outlined.Delete,
+                        text = stringResource(R.string.uninstall),
+                        onClick = viewModel::uninstall
+                    )
+
+                    InstallType.ROOT -> SegmentedButton(
+                        icon = Icons.Outlined.SettingsBackupRestore,
+                        text = stringResource(R.string.unpatch),
+                        onClick = viewModel::uninstall
+                    )
+                }
 
                 SegmentedButton(
                     icon = Icons.Outlined.Update,
