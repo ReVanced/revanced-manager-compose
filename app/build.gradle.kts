@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.devtools)
     alias(libs.plugins.about.libraries)
     id("kotlin-parcelize")
-    kotlin("plugin.serialization") version "1.8.22"
+    kotlin("plugin.serialization") version "1.9.0"
 }
 
 android {
@@ -67,7 +67,7 @@ android {
 
     buildFeatures.compose = true
 
-    composeOptions.kotlinCompilerExtensionVersion = "1.5.1"
+    composeOptions.kotlinCompilerExtensionVersion = "1.5.2"
 }
 
 kotlin {
