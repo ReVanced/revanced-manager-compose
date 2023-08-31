@@ -32,3 +32,15 @@ By using Material 3 and Material You, we are ensuring that the app's user interf
 * **Better performance:** Jetpack Compose uses the power of the Android framework to provide smooth and fast performance, which enhances the user experience.
 * **Modern and efficient UI development:** Jetpack Compose provides a modern and efficient way of building UI, which makes it easier for developers to create beautiful and performant user interfaces.
 
+## Building Manager from Source
+
+1. Download [Android Studio](https://developer.android.com/studio)
+2. Download Java SDK 17 ([Azul JDK](https://www.azul.com/downloads/?version=java-17-lts&package=jdk#zulu) or [OpenJDK](https://jdk.java.net/java-se-ri/17)) and add it to path
+3. Clone the repository locally
+4. Create a GitHub personal access token with the read:packages scope [here](https://github.com/settings/tokens/new?scopes=read:packages&description=ReVanced)
+5. Add your GitHub username and the token to `~/gradle.properties`
+    ```properties
+    gpr.user = YourUsername
+    gpr.key = ghp_longrandomkey
+    ```
+6. Run the app from Android Studio to run in debug more or run `./gradlew assembleRelease` to build a release APK
