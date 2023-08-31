@@ -43,4 +43,4 @@ By using Material 3 and Material You, we are ensuring that the app's user interf
     gpr.user = YourUsername
     gpr.key = ghp_longrandomkey
     ```
-6. Run the app from Android Studio to run in debug more or run `./gradlew assembleRelease` to build a release APK
+6. Run the app from Android Studio to run in debug mode or run `./gradlew assembleRelease` to build a release APK
