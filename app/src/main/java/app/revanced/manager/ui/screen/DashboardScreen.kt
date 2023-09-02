@@ -28,7 +28,6 @@ import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -41,7 +40,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.revanced.manager.R
-import app.revanced.manager.domain.bundles.PatchBundleSource
 import app.revanced.manager.domain.bundles.PatchBundleSource.Companion.isDefault
 import app.revanced.manager.ui.component.AppTopBar
 import app.revanced.manager.ui.component.bundle.BundleItem
@@ -69,8 +67,7 @@ fun DashboardScreen(
 ) {
     var showImportBundleDialog by rememberSaveable { mutableStateOf(false) }
 
-    val selectedSources = remember { mutableStateListOf<PatchBundleSource>() }
-    val sourcesSelectable by remember { derivedStateOf { selectedSources.size > 0 } }
+    val bundlesSelectable by remember { derivedStateOf { vm.selectedSources.size > 0 } }
     val pages: Array<DashboardPage> = DashboardPage.values()
     val availablePatches by vm.availablePatches.collectAsStateWithLifecycle(0)
     val androidContext = LocalContext.current
@@ -98,11 +95,11 @@ fun DashboardScreen(
 
     Scaffold(
         topBar = {
-            if (sourcesSelectable) {
+            if (bundlesSelectable) {
                 BundleTopBar(
-                    title = stringResource(R.string.bundles_selected, selectedSources.size),
+                    title = stringResource(R.string.bundles_selected, vm.selectedSources.size),
                     onBackClick = {
-                        selectedSources.clear()
+                        vm.selectedSources.clear()
                     },
                     onBackIcon = {
                         Icon(
@@ -112,8 +109,8 @@ fun DashboardScreen(
                     },
                     actions = {
                         IconButton(onClick = {
-                            selectedSources.forEach { if(!it.isDefault) vm.delete(it) }
-                            selectedSources.clear()
+                            vm.selectedSources.forEach { if(!it.isDefault) vm.delete(it) }
+                            vm.selectedSources.clear()
                         }) {
                             Icon(
                                 Icons.Outlined.DeleteOutline,
@@ -121,8 +118,8 @@ fun DashboardScreen(
                             )
                         }
                         IconButton(onClick = {
-                            selectedSources.forEach { vm.update(it) }
-                            selectedSources.clear()
+                            vm.selectedSources.forEach { vm.update(it) }
+                            vm.selectedSources.clear()
                         }) {
                             Icon(
                                 Icons.Outlined.Refresh,
@@ -203,7 +200,7 @@ fun DashboardScreen(
 
                         DashboardPage.BUNDLES -> {
 
-                            val sources by vm.sources.collectAsStateWithLifecycle(initialValue = listOf())
+                            val sources by vm.sources.collectAsStateWithLifecycle(initialValue = emptyList())
 
                             Column(
                                 modifier = Modifier
@@ -219,19 +216,17 @@ fun DashboardScreen(
                                         onUpdate = {
                                             vm.update(it)
                                         },
-                                        sourcesSelectable = sourcesSelectable,
-                                        onLongClick = {
-                                            selectedSources.add(it)
+                                        selectable = bundlesSelectable,
+                                        onSelect = {
+                                            vm.selectedSources.add(it)
                                         },
-                                        isBundleSelected = {
-                                            selectedSources.contains(it)
-                                        },
-                                        invertBundleSelectionStatus = { bundleIsNotSelected ->
+                                        isBundleSelected = vm.selectedSources.contains(it),
+                                        toggleSelection = { bundleIsNotSelected ->
                                             if(bundleIsNotSelected) {
-                                                selectedSources.add(it)
+                                                vm.selectedSources.add(it)
                                             }
                                             else {
-                                                selectedSources.remove(it)
+                                                vm.selectedSources.remove(it)
                                             }
                                         }
                                     )

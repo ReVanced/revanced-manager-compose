@@ -3,6 +3,7 @@ package app.revanced.manager.ui.viewmodel
 import android.app.Application
 import android.content.ContentResolver
 import android.net.Uri
+import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.revanced.manager.R
@@ -21,6 +22,7 @@ class DashboardViewModel(
         patchBundleRepository.bundles.map { it.values.sumOf { bundle -> bundle.patches.size } }
     private val contentResolver: ContentResolver = app.contentResolver
     val sources = patchBundleRepository.sources
+    val selectedSources = mutableStateListOf<PatchBundleSource>()
     fun createLocalSource(name: String, patchBundle: Uri, integrations: Uri?) =
         viewModelScope.launch {
             contentResolver.openInputStream(patchBundle)!!.use { patchesStream ->

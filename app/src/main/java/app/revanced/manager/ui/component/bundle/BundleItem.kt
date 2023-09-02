@@ -36,10 +36,10 @@ fun BundleItem(
     bundle: PatchBundleSource,
     onDelete: () -> Unit,
     onUpdate: () -> Unit,
-    sourcesSelectable: Boolean,
-    onLongClick: () -> Unit,
-    isBundleSelected: () -> Boolean,
-    invertBundleSelectionStatus: (Boolean) -> Unit,
+    selectable: Boolean,
+    onSelect: () -> Unit,
+    isBundleSelected: Boolean,
+    toggleSelection: (Boolean) -> Unit,
 ) {
     var viewBundleDialogPage by rememberSaveable { mutableStateOf(false) }
     val state by bundle.state.collectAsStateWithLifecycle()
@@ -68,13 +68,13 @@ fun BundleItem(
                 onClick = {
                     viewBundleDialogPage = true
                 },
-                onLongClick = onLongClick,
+                onLongClick = onSelect,
             ),
         leadingContent = {
-            if(sourcesSelectable) {
+            if(selectable) {
                 Checkbox(
-                    checked = isBundleSelected(),
-                    onCheckedChange = invertBundleSelectionStatus,
+                    checked = isBundleSelected,
+                    onCheckedChange = toggleSelection,
                 )
             }
         },
