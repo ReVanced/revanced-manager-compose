@@ -42,7 +42,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.revanced.manager.R
 import app.revanced.manager.domain.bundles.PatchBundleSource
+import app.revanced.manager.domain.bundles.PatchBundleSource.Companion.isDefault
 import app.revanced.manager.ui.component.AppTopBar
+import app.revanced.manager.ui.component.bundle.BundleItem
 import app.revanced.manager.ui.component.bundle.BundleTopBar
 import app.revanced.manager.ui.component.bundle.ImportBundleDialog
 import app.revanced.manager.ui.viewmodel.DashboardViewModel
@@ -69,10 +71,6 @@ fun DashboardScreen(
 
     val selectedSources = remember { mutableStateListOf<PatchBundleSource>() }
     val sourcesSelectable by remember { derivedStateOf { selectedSources.size > 0 } }
-    var deleteSelectedSources by remember { mutableStateOf(false) }
-    var refreshSelectedSources by remember { mutableStateOf(false) }
-    var clearAllCheckBoxes by remember { mutableStateOf(false) }
-
     val pages: Array<DashboardPage> = DashboardPage.values()
     val availablePatches by vm.availablePatches.collectAsStateWithLifecycle(0)
     val androidContext = LocalContext.current
@@ -102,9 +100,8 @@ fun DashboardScreen(
         topBar = {
             if (sourcesSelectable) {
                 BundleTopBar(
-                    title = stringResource(R.string.patches_selected, selectedSources.size),
+                    title = stringResource(R.string.bundles_selected, selectedSources.size),
                     onBackClick = {
-                        clearAllCheckBoxes = true
                         selectedSources.clear()
                     },
                     onBackIcon = {
@@ -114,15 +111,17 @@ fun DashboardScreen(
                         )
                     },
                     actions = {
-                        IconButton(onClick = { deleteSelectedSources = true }) {
+                        IconButton(onClick = {
+                            selectedSources.forEach { if(!it.isDefault) vm.delete(it) }
+                            selectedSources.clear()
+                        }) {
                             Icon(
                                 Icons.Outlined.DeleteOutline,
                                 stringResource(R.string.delete)
                             )
                         }
                         IconButton(onClick = {
-                            refreshSelectedSources = true
-                            clearAllCheckBoxes = true
+                            selectedSources.forEach { vm.update(it) }
                             selectedSources.clear()
                         }) {
                             Icon(
@@ -203,31 +202,41 @@ fun DashboardScreen(
                         }
 
                         DashboardPage.BUNDLES -> {
-                            BundlesScreen(
-                                sourcesSelectable = sourcesSelectable,
-                                editSelectedList = {
-                                    if (selectedSources.contains(it)) {
-                                        selectedSources.remove(it)
-                                    } else {
-                                        selectedSources.add(it)
-                                    }
-                                },
-                                deleteSelectedSources = deleteSelectedSources,
-                                onDeleteSelectedSources = {
-                                    deleteSelectedSources = false
-                                    selectedSources.clear()
-                                },
-                                refreshSelectedSources = refreshSelectedSources,
-                                onRefreshSelectedSources = {
-                                    refreshSelectedSources = false
-                                    selectedSources.clear()
-                                },
-                                selectedSources = selectedSources,
-                                clearAllCheckBoxes = clearAllCheckBoxes,
-                                onClearAllCheckBoxes = {
-                                    clearAllCheckBoxes = false
+
+                            val sources by vm.sources.collectAsStateWithLifecycle(initialValue = listOf())
+
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize(),
+                            ) {
+                                sources.forEach {
+
+                                    BundleItem(
+                                        bundle = it,
+                                        onDelete = {
+                                            vm.delete(it)
+                                        },
+                                        onUpdate = {
+                                            vm.update(it)
+                                        },
+                                        sourcesSelectable = sourcesSelectable,
+                                        onLongClick = {
+                                            selectedSources.add(it)
+                                        },
+                                        isBundleSelected = {
+                                            selectedSources.contains(it)
+                                        },
+                                        invertBundleSelectionStatus = { bundleIsNotSelected ->
+                                            if(bundleIsNotSelected) {
+                                                selectedSources.add(it)
+                                            }
+                                            else {
+                                                selectedSources.remove(it)
+                                            }
+                                        }
+                                    )
                                 }
-                            )
+                            }
                         }
                     }
                 }
