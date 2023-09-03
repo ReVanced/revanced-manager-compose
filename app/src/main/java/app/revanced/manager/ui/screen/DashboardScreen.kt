@@ -15,16 +15,7 @@ import androidx.compose.material.icons.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Source
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
-import androidx.compose.material3.Text
-import androidx.compose.material3.surfaceColorAtElevation
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -41,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.revanced.manager.R
 import app.revanced.manager.domain.bundles.PatchBundleSource.Companion.isDefault
+import app.revanced.manager.data.room.apps.installed.InstalledApp
 import app.revanced.manager.ui.component.AppTopBar
 import app.revanced.manager.ui.component.bundle.BundleItem
 import app.revanced.manager.ui.component.bundle.BundleTopBar
@@ -64,6 +56,7 @@ fun DashboardScreen(
     vm: DashboardViewModel = getViewModel(),
     onAppSelectorClick: () -> Unit,
     onSettingsClick: () -> Unit,
+    onAppClick: (InstalledApp) -> Unit
 ) {
     var showImportBundleDialog by rememberSaveable { mutableStateOf(false) }
 
@@ -195,7 +188,9 @@ fun DashboardScreen(
                 pageContent = { index ->
                     when (pages[index]) {
                         DashboardPage.DASHBOARD -> {
-                            InstalledAppsScreen()
+                            InstalledAppsScreen(
+                                onAppClick = onAppClick
+                            )
                         }
 
                         DashboardPage.BUNDLES -> {

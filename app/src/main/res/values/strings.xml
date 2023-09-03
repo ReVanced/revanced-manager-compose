@@ -13,8 +13,13 @@
 
     <string name="import_">Import</string>
     <string name="import_bundle">Import patch bundle</string>
-    <string name="bundle_information">Bundle information</string>
     <string name="bundle_patches">Bundle patches</string>
+    <string name="patch_bundle_field">Patch bundle</string>
+    <string name="integrations_field">Integrations</string>
+    <string name="file_field_set">Provided</string>
+    <string name="file_field_not_set">Not provided</string>
+
+    <string name="field_not_set">Not set</string>
 
     <string name="bundle_missing">Missing</string>
     <string name="bundle_error">Error</string>
@@ -85,8 +90,11 @@
 
     <string name="options">Options</string>
     <string name="ok">OK</string>
+    <string name="reset">Reset</string>
     <string name="patch">Patch</string>
     <string name="select_from_storage">Select from storage</string>
+    <string name="select_from_storage_description">Select an APK file from storage using file picker</string>
+    <string name="type_anything">Type anything to continue</string>
     <string name="search">Search</string>
     <string name="apply">Apply</string>
     <string name="help">Help</string>
@@ -149,10 +157,28 @@
     <string name="loading">Loading…</string>
     <string name="not_installed">Not installed</string>
 
+    <string name="app_info">App info</string>
+    <string name="uninstall">Uninstall</string>
+    <string name="repatch">Repatch</string>
+    <string name="install_type">Installation type</string>
+    <string name="package_name">Package name</string>
+    <string name="original_package_name">Original package name</string>
+    <string name="applied_patches">Applied patches</string>
+    <string name="view_applied_patches">View applied patches</string>
+    <string name="default_install">Default</string>
+    <string name="root_install">Root</string>
+
     <string name="error_occurred">An error occurred</string>
     <string name="already_downloaded">Already downloaded</string>
 
-    <string name="select_file">Select file</string>
+    <string name="string_option_icon_description">Edit</string>
+    <string name="string_option_menu_description">More options</string>
+    <string name="string_option_placeholder">Value</string>
+
+    <string name="path_selector">Select from storage</string>
+    <string name="path_selector_parent_dir">Previous directory</string>
+    <string name="path_selector_dirs">Directories</string>
+    <string name="path_selector_files">Files</string>
 
     <string name="show_password_field">Show password</string>
     <string name="hide_password_field">Hide password</string>
@@ -161,6 +187,7 @@
     <string name="install_app">Install</string>
     <string name="install_app_success">App installed</string>
     <string name="install_app_fail">Failed to install app: %s</string>
+    <string name="uninstall_app_fail">Failed to uninstall app: %s</string>
     <string name="open_app">Open</string>
     <string name="export_app">Export</string>
     <string name="export_app_success">Apk exported</string>
