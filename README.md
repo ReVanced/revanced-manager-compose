@@ -1,7 +1,3 @@
-# ⚠️ MOVING NOTICE ⚠️
-
-All future development on the Compose version of ReVanced Manager has been moved to the [revanced-manager](https://github.com/ReVanced/revanced-manager) repository on the [compose-dev](https://github.com/ReVanced/revanced-manager/tree/compose-dev) branch.
-
 # ReVanced Manager (Compose Rewrite)
 
 [![GitHub license](https://img.shields.io/github/license/revanced/revanced-manager-compose)](/LICENSE)
@@ -9,6 +5,10 @@ All future development on the Compose version of ReVanced Manager has been moved
 [![GitHub commit activity](https://img.shields.io/github/commit-activity/w/revanced/revanced-manager-compose)](https://github.com/ReVanced/revanced-manager-compose/commits)
 
 _(Yet another)_ rewrite of the ReVanced Manager using Kotlin and Jetpack Compose.
+
+## ⚠️ MOVING NOTICE ⚠️
+
+All future development on the Compose rewrite of ReVanced Manager has been moved to the [compose-dev](https://github.com/ReVanced/revanced-manager/tree/compose-dev) branch in the [revanced-manager](https://github.com/ReVanced/revanced-manager) repository.
 
 ## Design system
 
