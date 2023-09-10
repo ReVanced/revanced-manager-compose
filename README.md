@@ -1,3 +1,7 @@
+# ⚠️ MOVING NOTICE ⚠️
+
+All future development on the ReVanced Manager Compose will be done in the [revanced-manager](https://github.com/ReVanced/revanced-manager) repo.
+
 # ReVanced Manager (Compose Rewrite)
 
 [![GitHub license](https://img.shields.io/github/license/revanced/revanced-manager-compose)](/LICENSE)
