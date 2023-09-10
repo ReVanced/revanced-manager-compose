@@ -1,6 +1,6 @@
 # ⚠️ MOVING NOTICE ⚠️
 
-All future development on the ReVanced Manager Compose will be done in the [revanced-manager](https://github.com/ReVanced/revanced-manager) repo.
+All future development on the ReVanced Manager Compose has been moved to the [revanced-manager](https://github.com/ReVanced/revanced-manager) repository.
 
 # ReVanced Manager (Compose Rewrite)
 
