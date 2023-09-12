@@ -6,9 +6,9 @@
 
 _(Yet another)_ rewrite of the ReVanced Manager using Kotlin and Jetpack Compose.
 
-## ⚠️ MOVING NOTICE ⚠️
+## MOVING NOTICE
 
-All future development on the Compose rewrite of ReVanced Manager has been moved to the [compose-dev](https://github.com/ReVanced/revanced-manager/tree/compose-dev) branch in the [revanced-manager](https://github.com/ReVanced/revanced-manager) repository.
+All future development on the Compose rewrite of ReVanced Manager has been moved to the [revanced-manager](https://github.com/ReVanced/revanced-manager) repository.
 
 ## Design system
 
