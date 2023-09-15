@@ -6,6 +6,10 @@
 
 _(Yet another)_ rewrite of the ReVanced Manager using Kotlin and Jetpack Compose.
 
+## Notice
+
+Development is continued in the [ReVanced Manager](https://github.com/ReVanced/revanced-manager) repository.
+
 ## Design system
 
 In this rewrite, we are adopting the latest Material Design principles and guidelines by using Material 3 and Material You.
