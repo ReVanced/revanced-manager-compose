@@ -134,7 +134,6 @@ fun DashboardScreen(
                     )
                 }
             }
-
             HorizontalPager(
                 pageCount = pages.size,
                 state = pagerState,

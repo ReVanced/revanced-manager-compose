@@ -1,7 +1,6 @@
 package app.revanced.manager.ui.screen.settings
 
 import android.os.Build
-import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -23,7 +22,6 @@ import app.revanced.manager.ui.component.GroupHeader
 import app.revanced.manager.ui.component.settings.BooleanItem
 import app.revanced.manager.ui.theme.Theme
 import app.revanced.manager.ui.viewmodel.SettingsViewModel
-import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -65,7 +63,10 @@ fun GeneralSettingsScreen(
                 headlineContent = { Text(stringResource(R.string.theme)) },
                 supportingContent = { Text(stringResource(R.string.theme_description)) },
                 trailingContent = {
-                    Button(
+                    FilledTonalButton(
+                        colors = ButtonDefaults.filledTonalButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        ),
                         onClick = {
                             showThemePicker = true
                         }

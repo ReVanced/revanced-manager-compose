@@ -1,5 +1,7 @@
 package app.revanced.manager.ui.screen
 
+import android.content.pm.PackageManager
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,6 +23,7 @@ import app.revanced.manager.data.room.apps.installed.InstalledApp
 import app.revanced.manager.ui.component.AppIcon
 import app.revanced.manager.ui.component.AppLabel
 import app.revanced.manager.ui.component.LoadingIndicator
+import app.revanced.manager.ui.component.ShizukuCard
 import app.revanced.manager.ui.viewmodel.InstalledAppsViewModel
 import org.koin.androidx.compose.getViewModel
 
@@ -36,8 +39,18 @@ fun InstalledAppsScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = installedApps?.let { if (it.isEmpty()) Arrangement.Center else Arrangement.Top } ?: Arrangement.Center
     ) {
+        item {
+            AnimatedVisibility(
+                visible = viewModel.shizukuService.isShizukuInstalled() && !viewModel.shizukuService.isPermissionGranted
+            ) {
+                ShizukuCard(
+                    onPermissionResult = { _, grantResult ->
+                        viewModel.shizukuService.isPermissionGranted = grantResult == PackageManager.PERMISSION_GRANTED
+                    }
+                )
+            }
+        }
         installedApps?.let { installedApps ->
-
             if (installedApps.isNotEmpty()) {
                 items(
                     installedApps,

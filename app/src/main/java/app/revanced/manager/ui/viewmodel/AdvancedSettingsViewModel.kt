@@ -7,14 +7,16 @@ import app.revanced.manager.R
 import app.revanced.manager.domain.manager.PreferencesManager
 import app.revanced.manager.domain.repository.PatchBundleRepository
 import app.revanced.manager.domain.bundles.RemotePatchBundle
+import app.revanced.manager.service.ShizukuService
 import app.revanced.manager.util.uiSafe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class AdvancedSettingsViewModel(
-    prefs: PreferencesManager,
+    val prefs: PreferencesManager,
     private val app: Application,
-    private val patchBundleRepository: PatchBundleRepository
+    private val patchBundleRepository: PatchBundleRepository,
+    val shizukuService: ShizukuService
 ) : ViewModel() {
     val apiUrl = prefs.api
 
@@ -33,5 +35,9 @@ class AdvancedSettingsViewModel(
 
     fun resetBundles() = viewModelScope.launch {
         patchBundleRepository.reset()
+    }
+
+    fun setInstaller(installer: PreferencesManager.InstallerManager) = viewModelScope.launch {
+        prefs.defaultInstaller.update(installer)
     }
 }

@@ -21,12 +21,14 @@ import androidx.work.WorkManager
 import app.revanced.manager.R
 import app.revanced.manager.data.room.apps.installed.InstallType
 import app.revanced.manager.domain.manager.KeystoreManager
+import app.revanced.manager.domain.manager.PreferencesManager
 import app.revanced.manager.domain.repository.InstalledAppRepository
 import app.revanced.manager.domain.worker.WorkerRepository
 import app.revanced.manager.patcher.worker.PatcherProgressManager
 import app.revanced.manager.patcher.worker.PatcherWorker
 import app.revanced.manager.patcher.worker.Step
 import app.revanced.manager.service.InstallService
+import app.revanced.manager.service.ShizukuService
 import app.revanced.manager.service.UninstallService
 import app.revanced.manager.ui.destination.Destination
 import app.revanced.manager.util.PM
@@ -54,6 +56,8 @@ class InstallerViewModel(input: Destination.Installer) : ViewModel(), KoinCompon
     private val workerRepository: WorkerRepository by inject()
     private val installedAppReceiver: InstalledAppRepository by inject()
 
+    private val shizukuService: ShizukuService by inject()
+    val prefs: PreferencesManager by inject()
     val packageName: String = input.selectedApp.packageName
     private val outputFile = File(app.cacheDir, "output.apk")
     private val signedFile = File(app.cacheDir, "signed.apk").also { if (it.exists()) it.delete() }
@@ -200,7 +204,22 @@ class InstallerViewModel(input: Destination.Installer) : ViewModel(), KoinCompon
         isInstalling = true
         try {
             if (!signApk()) return@launch
-            pm.installApp(listOf(signedFile))
+
+            when (prefs.defaultInstaller.get()) {
+                PreferencesManager.InstallerManager.DEFAULT -> {
+                    pm.installApp(listOf(signedFile))
+                }
+                PreferencesManager.InstallerManager.SHIZUKU -> {
+                    shizukuService.installPackage(signedFile)
+                }
+                PreferencesManager.InstallerManager.ROOT -> {
+                    // RootApi.installPackage(signedFile)
+                }
+                PreferencesManager.InstallerManager.MAGISK -> {
+                    // MagiskApi.installPackage(signedFile)
+                }
+            }
+
         } finally {
             isInstalling = false
         }
